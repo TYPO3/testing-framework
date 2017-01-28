@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\Core\Tests;
+namespace TYPO3\Components\TestingFramework\Core\Acceptance\Step\Backend;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -15,8 +15,15 @@ namespace TYPO3\CMS\Core\Tests;
  */
 
 /**
- * @deprecated since TYPO3 8, will be removed in TYPO3 9
+ * A backend user with admin access
  */
-class Testbase extends \TYPO3\Components\TestingFramework\Core\Testbase
+class Admin extends \AcceptanceTester
 {
+    /**
+     * The session cookie that is used if the session is injected.
+     * This session must exist in the database fixture to get a logged in state.
+     *
+     * @var string
+     */
+    protected $sessionCookie = '886526ce72b86870739cc41991144ec1';
 }
