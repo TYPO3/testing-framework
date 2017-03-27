@@ -603,6 +603,7 @@ class Testbase
      */
     public function importXmlDatabaseFixture($path)
     {
+        $path = $this->resolvePath($path);
         if (!is_file($path)) {
             throw new \RuntimeException(
                 'Fixture file ' . $path . ' not found',
@@ -700,6 +701,21 @@ class Testbase
     }
 
     /**
+     * Get Path to vendor dir
+     *
+     * @return string
+     */
+    protected function getVendorPath(): string
+    {
+        if (getenv('TYPO3_PATH_VENDOR')) {
+            $vendorPath = getenv('TYPO3_PATH_VENDOR');
+        } else {
+            $vendorPath = 'vendor/';
+        }
+        return rtrim(strtr($vendorPath, '\\', '/'), '/') . '/';
+    }
+
+    /**
      * Returns the absolute path the TYPO3 document root.
      * This is the "original" document root, not the "instance" root for functional / acceptance tests.
      *
@@ -724,6 +740,16 @@ class Testbase
     {
         echo $message . LF;
         exit(1);
+    }
+
+    protected function resolvePath(string $path)
+    {
+        if (strpos($path, 'EXT:') === 0) {
+            $path = GeneralUtility::getFileAbsFileName($path);
+        } elseif (strpos($path, 'VENDOR:') === 0) {
+            $path = $this->getVendorPath() . str_replace('VENDOR:', '',$path);
+        }
+        return $path;
     }
 
     /**

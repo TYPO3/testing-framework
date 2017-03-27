@@ -198,7 +198,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string
      */
-    protected $backendUserFixture = 'components/testing_framework/Resources/Core/Functional/Fixtures/be_users.xml';
+    protected $backendUserFixture = 'VENDOR:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
      * Set up creates a test instance and database.
@@ -317,7 +317,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function setUpBackendUserFromFixture($userUid)
     {
-        $this->importDataSet(ORIGINAL_ROOT . $this->backendUserFixture);
+        $this->importDataSet($this->backendUserFixture);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
@@ -340,7 +340,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         $GLOBALS['BE_USER'] = $backendUser;
         $GLOBALS['BE_USER']->start();
         if (!is_array($GLOBALS['BE_USER']->user) || !$GLOBALS['BE_USER']->user['uid']) {
-            throw new Exception(
+            throw new \Exception(
                 'Can not initialize backend user',
                 1377095807
             );
