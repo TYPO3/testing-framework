@@ -220,6 +220,7 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         $testbase = new Testbase();
         $testbase->defineTypo3ModeBe();
+        $testbase->defineVendorPath();
         $testbase->setTypo3TestingContext();
         if ($testbase->recentTestInstanceExists($this->instancePath)) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
@@ -684,6 +685,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             [
                 'arguments' => var_export($arguments, true),
                 'originalRoot' => ORIGINAL_ROOT,
+                'vendorPath' => TYPO3_PATH_VENDOR
             ]
         );
 

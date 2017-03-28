@@ -106,6 +106,11 @@ class Testbase
         }
     }
 
+    public function defineVendorPath()
+    {
+        define('TYPO3_PATH_VENDOR', $this->getVendorPath());
+    }
+
     /**
      * Defines the constant ORIGINAL_ROOT for the path to the original TYPO3 document root.
      * For functional / acceptance tests only
