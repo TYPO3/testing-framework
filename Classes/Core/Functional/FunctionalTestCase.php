@@ -198,7 +198,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string
      */
-    protected $backendUserFixture = 'components/testing_framework/Resources/Core/Functional/Fixtures/be_users.xml';
+    protected $backendUserFixture = '/../../../Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
      * Set up creates a test instance and database.
@@ -317,7 +317,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function setUpBackendUserFromFixture($userUid)
     {
-        $this->importDataSet(ORIGINAL_ROOT . $this->backendUserFixture);
+        $this->importDataSet(__DIR__ . $this->backendUserFixture);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();

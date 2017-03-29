@@ -1,0 +1,30 @@
+########################
+# TYPO3 CMS
+# global ignore file
+########################
+#
+# Don't ignore .rej and .orig as we want to see/clean files after conflict resolution.
+#
+# For local exclude patterns please edit .git/info/exclude.
+#
+########################
+#
+# Ignore temporary files (left by editors)
+*~
+*.bak
+*.swp
+#
+# Ignore by common IDEs used directories/files
+nbproject
+*.idea
+*.project
+.buildpath
+.project
+.settings
+.TemporaryItems
+.webprj
+.php_cs.cache
+#
+# Ignore composer stuff
+bin/*
+vendor/*
