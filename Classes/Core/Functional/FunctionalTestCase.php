@@ -19,9 +19,11 @@ use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
+use TYPO3\CMS\Core\Configuration\ConfigurationManager;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Tests\Functional\DataHandling\Framework\DataSet;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Install\Configuration\FeatureManager;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
@@ -766,5 +768,19 @@ abstract class FunctionalTestCase extends BaseTestCase
     {
         $this->fixturePath = $fixturePath;
         return $this;
+    }
+
+    /**
+     * Initializes best matching feature preset
+     * Used e.g. to set config settings for image manipulation
+     * call in own setUp() if needed
+     */
+    public function initializeFeatureConfig() {
+        /** @var FeatureManager $featureManager */
+        $featureManager = GeneralUtility::makeInstance(FeatureManager::class);
+        $configurationValues = $featureManager->getBestMatchingConfigurationForAllFeatures();
+        /** @var ConfigurationManager $configurationManager */
+        $configurationManager = GeneralUtility::makeInstance(ConfigurationManager::class);
+        $configurationManager->setLocalConfigurationValuesByPathValuePairs($configurationValues);
     }
 }
