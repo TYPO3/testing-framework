@@ -106,9 +106,9 @@ class Testbase
         }
     }
 
-    public function defineVendorPath()
+    public function definePackagesPath()
     {
-        define('TYPO3_PATH_VENDOR', $this->getVendorPath());
+        define('TYPO3_PATH_PACKAGES', $this->getPackagesPath());
     }
 
     /**
@@ -710,10 +710,10 @@ class Testbase
      *
      * @return string
      */
-    protected function getVendorPath(): string
+    protected function getPackagesPath(): string
     {
-        if (getenv('TYPO3_PATH_VENDOR')) {
-            $vendorPath = getenv('TYPO3_PATH_VENDOR');
+        if (getenv('TYPO3_PATH_PACKAGES')) {
+            $vendorPath = getenv('TYPO3_PATH_PACKAGES');
         } else {
             $vendorPath = 'vendor/';
         }
@@ -752,7 +752,7 @@ class Testbase
         if (strpos($path, 'EXT:') === 0) {
             $path = GeneralUtility::getFileAbsFileName($path);
         } elseif (strpos($path, 'PACKAGE:') === 0) {
-            $path = $this->getVendorPath() . str_replace('PACKAGE:', '',$path);
+            $path = $this->getPackagesPath() . str_replace('PACKAGE:', '',$path);
         }
         return $path;
     }
