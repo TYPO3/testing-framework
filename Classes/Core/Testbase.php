@@ -106,6 +106,11 @@ class Testbase
         }
     }
 
+    public function definePackagesPath()
+    {
+        define('TYPO3_PATH_PACKAGES', $this->getPackagesPath());
+    }
+
     /**
      * Defines the constant ORIGINAL_ROOT for the path to the original TYPO3 document root.
      * For functional / acceptance tests only
@@ -603,6 +608,7 @@ class Testbase
      */
     public function importXmlDatabaseFixture($path)
     {
+        $path = $this->resolvePath($path);
         if (!is_file($path)) {
             throw new \RuntimeException(
                 'Fixture file ' . $path . ' not found',
@@ -700,6 +706,21 @@ class Testbase
     }
 
     /**
+     * Get Path to vendor dir
+     *
+     * @return string
+     */
+    protected function getPackagesPath(): string
+    {
+        if (getenv('TYPO3_PATH_PACKAGES')) {
+            $packagePath = getenv('TYPO3_PATH_PACKAGES');
+        } else {
+            $packagePath = 'vendor/';
+        }
+        return rtrim(strtr($packagePath, '\\', '/'), '/') . '/';
+    }
+
+    /**
      * Returns the absolute path the TYPO3 document root.
      * This is the "original" document root, not the "instance" root for functional / acceptance tests.
      *
@@ -724,6 +745,16 @@ class Testbase
     {
         echo $message . LF;
         exit(1);
+    }
+
+    protected function resolvePath(string $path)
+    {
+        if (strpos($path, 'EXT:') === 0) {
+            $path = GeneralUtility::getFileAbsFileName($path);
+        } elseif (strpos($path, 'PACKAGE:') === 0) {
+            $path = $this->getPackagesPath() . str_replace('PACKAGE:', '',$path);
+        }
+        return $path;
     }
 
     /**

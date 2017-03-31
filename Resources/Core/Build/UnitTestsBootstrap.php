@@ -33,6 +33,7 @@ call_user_func(function () {
     $testbase->defineSitePath();
     $testbase->defineTypo3ModeBe();
     $testbase->setTypo3TestingContext();
+    $testbase->definePackagesPath();
     $testbase->createDirectory(PATH_site . 'typo3conf/ext');
     $testbase->createDirectory(PATH_site . 'typo3temp/assets');
     $testbase->createDirectory(PATH_site . 'typo3temp/var/tests');
@@ -43,7 +44,7 @@ call_user_func(function () {
     define('TYPO3_DLOG', false);
 
     // Retrieve an instance of class loader and inject to core bootstrap
-    $classLoaderFilepath = __DIR__ . '/../../../../../vendor/autoload.php';
+    $classLoaderFilepath = TYPO3_PATH_PACKAGES . 'autoload.php';
     if (!file_exists($classLoaderFilepath)) {
         die('ClassLoader can\'t be loaded. Please check your path or set an environment variable \'TYPO3_PATH_WEB\' to your root path.');
     }

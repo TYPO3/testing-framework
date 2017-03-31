@@ -133,12 +133,12 @@ class AcceptanceCoreEnvironment extends Extension
      * @var array
      */
     protected $xmlDatabaseFixtures = [
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/sys_category.xml',
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
-        'components/testing_framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/sys_category.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
     ];
 
     /**
@@ -247,7 +247,7 @@ class AcceptanceCoreEnvironment extends Extension
         $suite->setBackupGlobals(false);
 
         foreach ($this->xmlDatabaseFixtures as $fixture) {
-            $testbase->importXmlDatabaseFixture(ORIGINAL_ROOT . $fixture);
+            $testbase->importXmlDatabaseFixture($fixture);
         }
 
         // styleguide generator uses DataHandler for some parts. DataHandler needs an initialized BE user
