@@ -5,13 +5,13 @@
 # This file is typically executed by travis and / or bamboo.
 # It expects to be run from the core root.
 #
-# ./components/testing_framework/core/Build/Scripts/splitFunctionalTests.sh <numberOfConfigs>
+# ./vendor/typo3/testing-framework/core/Build/Scripts/splitFunctionalTests.sh <numberOfConfigs>
 #
 # The scripts finds all functional tests and creates <numberOfConfigs> number
 # of phpunit .xml configuration files where each configuration lists a weighted
 # number of single functional tests.
 #
-# components/testing_framework/core/Build/FunctionalTests-Job-<counter>.xml
+# vendor/typo3/testing-framework/core/Build/FunctionalTests-Job-<counter>.xml
 #
 #########################
 
@@ -46,26 +46,26 @@ cat buildTemp/testFilesWithNumberOfTestFiles.txt | sort -n -r > buildTemp/testFi
 
 # Config file boilerplate per job
 for (( i=0; i<${numberOfFunctionalTestJobs}; i++)); do
-	if [ -f components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml ]; then
-		rm components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	if [ -f vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml ]; then
+		rm vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	fi
-	echo '<phpunit' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	backupGlobals="true"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	backupStaticAttributes="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	bootstrap="FunctionalTestsBootstrap.php"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	colors="true"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	convertErrorsToExceptions="true"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	convertWarningsToExceptions="true"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	forceCoversAnnotation="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	processIsolation="true"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	stopOnError="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	stopOnFailure="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	stopOnIncomplete="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	stopOnSkipped="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	verbose="false"' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	<testsuites>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '		<testsuite name="Core tests">' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '<phpunit' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	backupGlobals="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	backupStaticAttributes="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	bootstrap="FunctionalTestsBootstrap.php"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	colors="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	convertErrorsToExceptions="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	convertWarningsToExceptions="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	forceCoversAnnotation="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	processIsolation="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	stopOnError="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	stopOnFailure="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	stopOnIncomplete="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	stopOnSkipped="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	verbose="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	<testsuites>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '		<testsuite name="Core tests">' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 done
 
 counter=0
@@ -97,17 +97,17 @@ while read testFileWeighted; do
 		fi
 	fi
 
-	echo '			<directory>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
-	echo "				../../../../../${testFile}" >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
-	echo '			</directory>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
+	echo '			<directory>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
+	echo "				../../../../../../${testFile}" >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
+	echo '			</directory>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${targetJobNumberForFile}.xml
 	(( counter ++ ))
 done < buildTemp/testFilesWeighted.txt
 
 # Final part of config file
 for (( i=0; i<${numberOfFunctionalTestJobs}; i++)); do
-	echo '		</testsuite>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	</testsuites>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '</phpunit>' >> components/testing_framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '		</testsuite>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	</testsuites>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '</phpunit>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 done
 
 # Clean up
