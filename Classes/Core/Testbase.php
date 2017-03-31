@@ -751,8 +751,8 @@ class Testbase
     {
         if (strpos($path, 'EXT:') === 0) {
             $path = GeneralUtility::getFileAbsFileName($path);
-        } elseif (strpos($path, 'VENDOR:') === 0) {
-            $path = $this->getVendorPath() . str_replace('VENDOR:', '',$path);
+        } elseif (strpos($path, 'PACKAGE:') === 0) {
+            $path = $this->getVendorPath() . str_replace('PACKAGE:', '',$path);
         }
         return $path;
     }

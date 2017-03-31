@@ -133,12 +133,12 @@ class AcceptanceCoreEnvironment extends Extension
      * @var array
      */
     protected $xmlDatabaseFixtures = [
-        'VENDOR:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
-        'VENDOR:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
-        'VENDOR:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
-        'VENDOR:typo3/testing-frameworkResources/Core/Acceptance/Fixtures/sys_category.xml',
-        'VENDOR:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
-        'VENDOR:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
+        'PACKAGE:typo3/testing-frameworkResources/Core/Acceptance/Fixtures/sys_category.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
+        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
     ];
 
     /**

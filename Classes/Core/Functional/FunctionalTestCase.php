@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Tests\Functional\DataHandling\Framework\DataSet;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
+use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -198,7 +199,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string
      */
-    protected $backendUserFixture = 'VENDOR:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
+    protected $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
      * Set up creates a test instance and database.
@@ -341,7 +342,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         $GLOBALS['BE_USER'] = $backendUser;
         $GLOBALS['BE_USER']->start();
         if (!is_array($GLOBALS['BE_USER']->user) || !$GLOBALS['BE_USER']->user['uid']) {
-            throw new \Exception(
+            throw new Exception(
                 'Can not initialize backend user',
                 1377095807
             );
