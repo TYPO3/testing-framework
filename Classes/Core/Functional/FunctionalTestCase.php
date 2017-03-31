@@ -128,7 +128,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var array
      */
-    protected $testExtensionsToLoad = [];
+    protected $testExtensionsToLoad = GLOBAL_TEST_EXTENSIONS_TO_LOAD;
 
     /**
      * Array of test/fixture folder or file paths that should be linked for a test.
@@ -243,6 +243,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->createLastRunTextfile($this->instancePath);
             $testbase->setUpInstanceCoreLinks($this->instancePath);
+            $this->testExtensionsToLoad = array_unique($this->testExtensionsToLoad);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
