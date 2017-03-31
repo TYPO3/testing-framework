@@ -102,7 +102,7 @@ class Testbase
         $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
 
         if (!file_exists(PATH_thisScript)) {
-            $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_WEB\' to your root path.');
+            $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
     }
 
