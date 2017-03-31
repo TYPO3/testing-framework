@@ -7,7 +7,7 @@
 module.exports = function(config) {
 	config.set({
 		// base path that will be used to resolve all patterns (eg. files, exclude)
-		basePath: '../../../../../../../',
+		basePath: '../../../../../../../../',
 
 		// frameworks to use
 		// available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -18,8 +18,8 @@ module.exports = function(config) {
 			{ pattern: 'typo3/sysext/core/Resources/Public/JavaScript/Contrib/jquery/jquery-3.2.1.js', included: true },
 			{ pattern: 'typo3/sysext/**/Resources/Public/JavaScript/**/*.js', included: false },
 			{ pattern: 'typo3/sysext/**/Tests/JavaScript/**/*.js', included: false },
-			'components/testing_framework/Resources/Core/Build/Configuration/JSUnit/Helper.js',
-			'components/testing_framework/Resources/Core/Build/Configuration/JSUnit/Bootstrap.js'
+			'vendor/typo3/testing-framework/Resources/Core/Build/Configuration/JSUnit/Helper.js',
+			'vendor/typo3/testing-framework/Resources/Core/Build/Configuration/JSUnit/Bootstrap.js'
 		],
 
 		// list of files to exclude
