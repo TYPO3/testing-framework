@@ -713,11 +713,11 @@ class Testbase
     protected function getPackagesPath(): string
     {
         if (getenv('TYPO3_PATH_PACKAGES')) {
-            $vendorPath = getenv('TYPO3_PATH_PACKAGES');
+            $packagePath = getenv('TYPO3_PATH_PACKAGES');
         } else {
-            $vendorPath = 'vendor/';
+            $packagePath = 'vendor/';
         }
-        return rtrim(strtr($vendorPath, '\\', '/'), '/') . '/';
+        return rtrim(strtr($packagePath, '\\', '/'), '/') . '/';
     }
 
     /**
