@@ -7,15 +7,15 @@
 #
 # It expects to be run from the core root.
 #
-# ./components/testing_framework/core/Build/Scripts/splitAcceptanceTests.sh <numberOfConfigs>
+# ./vendor/typo3/testing-framework/core/Build/Scripts/splitAcceptanceTests.sh <numberOfConfigs>
 #
 # The script finds all acceptance tests and creates <numberOfConfigs> number
 # of codeception group files, each containing a sub set of Cest files to execute.
 #
-# components/testing_framework/Resources/Core/Build/Configuration/Acceptance/AcceptanceTests-Job-<counter>
+# vendor/typo3/testing-framework/Resources/Core/Build/Configuration/Acceptance/AcceptanceTests-Job-<counter>
 #
 # Those sub-groups can then be executed with a command like (example for files in group 2 here)
-# ./bin/codecept run Acceptance -d -g AcceptanceTests-Job-2 -c components/testing_framework/Resources/Core/Build/AcceptanceTests.yml
+# ./bin/codecept run Acceptance -d -g AcceptanceTests-Job-2 -c vendor/typo3/testing-framework/Resources/Core/Build/AcceptanceTests.yml
 #
 #########################
 
@@ -47,7 +47,7 @@ done < buildTemp/testFiles.txt
 # Sort list of files numeric
 cat buildTemp/testFilesWithNumberOfTestFiles.txt | sort -n -r > buildTemp/testFilesWeighted.txt
 
-groupFilePath="components/testing_framework/Resources/Core/Build/Configuration/Acceptance"
+groupFilePath="vendor/typo3/testing-framework/Resources/Core/Build/Configuration/Acceptance"
 # Config file boilerplate per job
 for (( i=1; i<=${numberOfAcceptanceTestJobs}; i++)); do
 	if [ -f ${groupFilePath}/AcceptanceTests-Job-${i} ]; then
@@ -84,7 +84,7 @@ while read testFileWeighted; do
 			direction=descending
 		fi
 	fi
-	echo "../../../../../${testFile}" >> ${groupFilePath}/AcceptanceTests-Job-$(( targetJobNumberForFile + 1 ))
+	echo "../../../../../../${testFile}" >> ${groupFilePath}/AcceptanceTests-Job-$(( targetJobNumberForFile + 1 ))
 	(( counter ++ ))
 done < buildTemp/testFilesWeighted.txt
 
