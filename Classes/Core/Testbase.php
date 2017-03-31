@@ -777,4 +777,12 @@ class Testbase
         }
         return false;
     }
+
+    /**
+     * @param array $globalTestExtensionsToLoad
+     */
+    public function registerGlobalTestExtensions(array $globalTestExtensionsToLoad = [])
+    {
+        define('GLOBAL_TEST_EXTENSIONS_TO_LOAD', $globalTestExtensionsToLoad);
+    }
 }
