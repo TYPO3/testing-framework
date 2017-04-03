@@ -707,17 +707,14 @@ class Testbase
 
     /**
      * Get Path to vendor dir
+     * Since we are installed in vendor dir, we can safely assume the path of the vendor
+     * directory relative to this file
      *
      * @return string
      */
     protected function getPackagesPath(): string
     {
-        if (getenv('TYPO3_PATH_PACKAGES')) {
-            $packagePath = getenv('TYPO3_PATH_PACKAGES');
-        } else {
-            $packagePath = 'vendor/';
-        }
-        return rtrim(strtr($packagePath, '\\', '/'), '/') . '/';
+        return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/') . '/';
     }
 
     /**
