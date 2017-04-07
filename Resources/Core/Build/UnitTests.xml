@@ -24,4 +24,9 @@
 			<directory>../../../../../../typo3/sysext/core/Tests/Integrity/</directory>
 		</testsuite>
 	</testsuites>
+    <filter>
+        <whitelist>
+            <directory>../../../../../../typo3/sysext/*/Classes/</directory>
+        </whitelist>
+    </filter>
 </phpunit>
