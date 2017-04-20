@@ -494,8 +494,6 @@ class Testbase
      */
     public function setUpTestDatabase($databaseName, $originalDatabaseName)
     {
-        Bootstrap::getInstance()->initializeTypo3DbGlobal();
-
         // Drop database if exists. Directly using the Doctrine DriverManager to
         // work around connection caching in ConnectionPool
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
@@ -554,8 +552,6 @@ class Testbase
      */
     public function initializeTestDatabaseAndTruncateTables()
     {
-        Bootstrap::getInstance()->initializeTypo3DbGlobal();
-
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $schemaManager = $connection->getSchemaManager();
