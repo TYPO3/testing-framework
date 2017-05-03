@@ -1,3 +1,5 @@
+Don't use for forking (why ever you would want to do that). Will not be in line with upstream.
+
 # TYPO3 testing framework for core and extensions
 
 A straight and slim set of classes and configuration to test TYPO3 extensions. This framework is

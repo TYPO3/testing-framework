@@ -538,6 +538,7 @@ class Testbase
             ->baseSetup()
             ->loadConfigurationAndInitialize(true)
             ->loadTypo3LoadedExtAndExtLocalconf(true)
+            ->initializeBackendRouter()
             ->setFinalCachingFrameworkCacheConfiguration()
             ->defineLoggingAndExceptionConstants()
             ->unsetReservedGlobalVariables();
@@ -772,5 +773,13 @@ class Testbase
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param array $globalTestExtensionsToLoad
+     */
+    public function registerGlobalTestExtensions(array $globalTestExtensionsToLoad = [])
+    {
+        define('GLOBAL_TEST_EXTENSIONS_TO_LOAD', $globalTestExtensionsToLoad);
     }
 }

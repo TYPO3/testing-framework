@@ -43,7 +43,7 @@ class RequestBootstrap
         }
 
         // Populating $_POST
-        $_POST = [];
+        $_POST = isset($requestArguments['inputData']) ? json_decode($requestArguments['inputData'], true) : [];
         // Populating $_COOKIE
         $_COOKIE = [];
 
@@ -57,7 +57,7 @@ class RequestBootstrap
         $_SERVER['SCRIPT_FILENAME'] = $_SERVER['_'] = $_SERVER['PATH_TRANSLATED'] = $requestArguments['documentRoot'] . '/index.php';
         $_SERVER['QUERY_STRING'] = (isset($requestUrlParts['query']) ? $requestUrlParts['query'] : '');
         $_SERVER['REQUEST_URI'] = $requestUrlParts['path'] . (isset($requestUrlParts['query']) ? '?' . $requestUrlParts['query'] : '');
-        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_METHOD'] = $requestArguments['requestMethod'] ?: 'GET';
 
         // Define HTTPS and server port:
         if (isset($requestUrlParts['scheme'])) {
@@ -99,7 +99,7 @@ class RequestBootstrap
             $result['status'] = 'success';
             $result['content'] = ob_get_contents();
         } catch (\Exception $exception) {
-            $result['error'] = $exception->__toString();
+            $result['error'] = (string)$exception;
         }
         ob_end_clean();
 
