@@ -48,5 +48,8 @@
       "TYPO3\\CMS\\Core\\Tests\\": "compat/core/",
       "TYPO3\\CMS\\Fluid\\Tests\\": "compat/fluid/"
     }
+  },
+  "replace": {
+    "typo3/testing-framework": "*"
   }
 }
