@@ -20,10 +20,10 @@ use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Tests\Functional\DataHandling\Framework\DataSet;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
+use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
