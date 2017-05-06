@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
 /*
@@ -14,6 +15,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -34,28 +36,32 @@ class ActionService
     /**
      * @return DataHandler
      */
-    public function getDataHandler()
+    public function getDataHandler(): DataHandler
     {
         return $this->dataHandler;
     }
 
     /**
+     * Creates the new record and returns an array keyed by table, containing the new id
+     *
      * @param string $tableName
      * @param int $pageId
      * @param array $recordData
      * @return array
      */
-    public function createNewRecord($tableName, $pageId, array $recordData)
+    public function createNewRecord(string $tableName, int $pageId, array $recordData): array
     {
         return $this->createNewRecords($pageId, [$tableName => $recordData]);
     }
 
     /**
+     * Creates the records and returns an array keyed by table, containing the new ids
+     *
      * @param int $pageId
      * @param array $tableRecordData
      * @return array
      */
-    public function createNewRecords($pageId, array $tableRecordData)
+    public function createNewRecords(int $pageId, array $tableRecordData): array
     {
         $dataMap = [];
         $newTableIds = [];
@@ -98,9 +104,9 @@ class ActionService
      * @param string $tableName
      * @param int $uid
      * @param array $recordData
-     * @param NULL|array $deleteTableRecordIds
+     * @param array $deleteTableRecordIds
      */
-    public function modifyRecord($tableName, $uid, array $recordData, array $deleteTableRecordIds = null)
+    public function modifyRecord(string $tableName, int $uid, array $recordData, array $deleteTableRecordIds = null)
     {
         $dataMap = [
             $tableName => [
@@ -127,7 +133,7 @@ class ActionService
      * @param int $pageId
      * @param array $tableRecordData
      */
-    public function modifyRecords($pageId, array $tableRecordData)
+    public function modifyRecords(int $pageId, array $tableRecordData)
     {
         $dataMap = [];
         $currentUid = null;
@@ -142,7 +148,7 @@ class ActionService
             if ($recordData['uid'] === '__NEW') {
                 $currentUid = StringUtility::getUniqueId('NEW');
             }
-            if (strpos($currentUid, 'NEW') === 0) {
+            if (strpos((string)$currentUid, 'NEW') === 0) {
                 $recordData['pid'] = $pageId;
             }
             unset($recordData['uid']);
@@ -166,7 +172,7 @@ class ActionService
      * @param int $uid
      * @return array
      */
-    public function deleteRecord($tableName, $uid)
+    public function deleteRecord(string $tableName, int $uid): array
     {
         return $this->deleteRecords(
             [
@@ -179,7 +185,7 @@ class ActionService
      * @param array $tableRecordIds
      * @return array
      */
-    public function deleteRecords(array $tableRecordIds)
+    public function deleteRecords(array $tableRecordIds): array
     {
         $commandMap = [];
         foreach ($tableRecordIds as $tableName => $ids) {
@@ -200,7 +206,7 @@ class ActionService
      * @param string $tableName
      * @param int $uid
      */
-    public function clearWorkspaceRecord($tableName, $uid)
+    public function clearWorkspaceRecord(string $tableName, int $uid)
     {
         $this->clearWorkspaceRecords(
             [
@@ -233,10 +239,10 @@ class ActionService
      * @param string $tableName
      * @param int $uid
      * @param int $pageId
-     * @param NULL|array $recordData
+     * @param array $recordData
      * @return array
      */
-    public function copyRecord($tableName, $uid, $pageId, array $recordData = null)
+    public function copyRecord(string $tableName, int $uid, int $pageId, array $recordData = null): array
     {
         $commandMap = [
             $tableName => [
@@ -262,10 +268,10 @@ class ActionService
      * @param string $tableName
      * @param int $uid
      * @param int $pageId
-     * @param NULL|array $recordData
+     * @param array $recordData
      * @return array
      */
-    public function moveRecord($tableName, $uid, $pageId, array $recordData = null)
+    public function moveRecord(string $tableName, int $uid, int $pageId, array $recordData = null): array
     {
         $commandMap = [
             $tableName => [
@@ -293,7 +299,7 @@ class ActionService
      * @param int $languageId
      * @return array
      */
-    public function localizeRecord($tableName, $uid, $languageId)
+    public function localizeRecord(string $tableName, int $uid, int $languageId): array
     {
         $commandMap = [
             $tableName => [
@@ -314,7 +320,7 @@ class ActionService
      * @param int $languageId
      * @return array
      */
-    public function copyRecordToLanguage($tableName, $uid, $languageId)
+    public function copyRecordToLanguage(string $tableName, int $uid, int $languageId): array
     {
         $commandMap = [
             $tableName => [
@@ -335,7 +341,7 @@ class ActionService
      * @param string $fieldName
      * @param array $referenceIds
      */
-    public function modifyReferences($tableName, $uid, $fieldName, array $referenceIds)
+    public function modifyReferences(string $tableName, int $uid, string $fieldName, array $referenceIds)
     {
         $dataMap = [
             $tableName => [
@@ -354,7 +360,7 @@ class ActionService
      * @param int $liveUid
      * @param bool $throwException
      */
-    public function publishRecord($tableName, $liveUid, $throwException = true)
+    public function publishRecord(string $tableName, $liveUid, bool $throwException = true)
     {
         $this->publishRecords([$tableName => [$liveUid]], $throwException);
     }
@@ -364,7 +370,7 @@ class ActionService
      * @param bool $throwException
      * @throws Exception
      */
-    public function publishRecords(array $tableLiveUids, $throwException = true)
+    public function publishRecords(array $tableLiveUids, bool $throwException = true)
     {
         $commandMap = [];
         foreach ($tableLiveUids as $tableName => $liveUids) {
@@ -395,7 +401,7 @@ class ActionService
     /**
      * @param int $workspaceId
      */
-    public function publishWorkspace($workspaceId)
+    public function publishWorkspace(int $workspaceId)
     {
         $commandMap = $this->getWorkspaceService()->getCmdArrayForPublishWS($workspaceId, false);
         $this->createDataHandler();
@@ -406,7 +412,7 @@ class ActionService
     /**
      * @param int $workspaceId
      */
-    public function swapWorkspace($workspaceId)
+    public function swapWorkspace(int $workspaceId)
     {
         $commandMap = $this->getWorkspaceService()->getCmdArrayForPublishWS($workspaceId, true);
         $this->createDataHandler();
@@ -419,13 +425,13 @@ class ActionService
      * @param NULL|string|int $previousUid
      * @return array
      */
-    protected function resolvePreviousUid(array $recordData, $previousUid)
+    protected function resolvePreviousUid(array $recordData, $previousUid): array
     {
         if ($previousUid === null) {
             return $recordData;
         }
         foreach ($recordData as $fieldName => $fieldValue) {
-            if (strpos($fieldValue, '__previousUid') === false) {
+            if (strpos((string)$fieldValue, '__previousUid') === false) {
                 continue;
             }
             $recordData[$fieldName] = str_replace('__previousUid', $previousUid, $fieldValue);
@@ -438,13 +444,13 @@ class ActionService
      * @param NULL|string|int $nextUid
      * @return array
      */
-    protected function resolveNextUid(array $recordData, $nextUid)
+    protected function resolveNextUid(array $recordData, $nextUid): array
     {
         if ($nextUid === null) {
             return $recordData;
         }
         foreach ($recordData as $fieldName => $fieldValue) {
-            if (strpos($fieldValue, '__nextUid') === false) {
+            if (strpos((string)$fieldValue, '__nextUid') === false) {
                 continue;
             }
             $recordData[$fieldName] = str_replace('__nextUid', $nextUid, $fieldValue);
@@ -454,10 +460,10 @@ class ActionService
 
     /**
      * @param string $tableName
-     * @param int $liveUid
+     * @param int|string $liveUid
      * @return NULL|int
      */
-    protected function getVersionedId($tableName, $liveUid)
+    protected function getVersionedId(string $tableName, $liveUid)
     {
         $versionedId = null;
         $liveUid = (int)$liveUid;
@@ -495,7 +501,7 @@ class ActionService
     /**
      * @return DataHandler
      */
-    protected function createDataHandler()
+    protected function createDataHandler(): DataHandler
     {
         $this->dataHandler = GeneralUtility::makeInstance(DataHandler::class);
         $backendUser = $this->getBackendUser();
@@ -508,7 +514,7 @@ class ActionService
     /**
      * @return WorkspaceService
      */
-    protected function getWorkspaceService()
+    protected function getWorkspaceService(): WorkspaceService
     {
         return GeneralUtility::makeInstance(
             WorkspaceService::class
@@ -518,7 +524,7 @@ class ActionService
     /**
      * @return \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
      */
-    protected function getBackendUser()
+    protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
