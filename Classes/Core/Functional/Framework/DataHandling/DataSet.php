@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
 /*
@@ -31,7 +33,7 @@ class DataSet
      * @param bool $applyDefaultValues
      * @return DataSet
      */
-    public static function read($fileName, $applyDefaultValues = false)
+    public static function read(string $fileName, bool $applyDefaultValues = false): DataSet
     {
         $data = self::parseData(self::readData($fileName));
 
@@ -50,7 +52,7 @@ class DataSet
      * @return array
      * @throws \RuntimeException
      */
-    protected static function readData($fileName)
+    protected static function readData(string $fileName): array
     {
         if (!file_exists($fileName)) {
             throw new \RuntimeException('File "' . $fileName . '" does not exist', 1476049619);
@@ -75,7 +77,7 @@ class DataSet
      * @param array $rawData
      * @return array
      */
-    protected static function parseData(array $rawData)
+    protected static function parseData(array $rawData): array
     {
         $data = [];
         $tableName = null;
@@ -142,7 +144,7 @@ class DataSet
      * @param array $data
      * @return array
      */
-    protected static function applyDefaultValues(array $data)
+    protected static function applyDefaultValues(array $data): array
     {
         foreach ($data as $tableName => $sections) {
             if (empty($GLOBALS['TCA'][$tableName]['columns'])) {
@@ -185,7 +187,7 @@ class DataSet
     /**
      * @return array
      */
-    public function getTableNames()
+    public function getTableNames(): array
     {
         return array_keys($this->data);
     }
@@ -194,7 +196,7 @@ class DataSet
      * @param string $tableName
      * @return NULL|array
      */
-    public function getFields($tableName)
+    public function getFields(string $tableName)
     {
         $fields = null;
         if (isset($this->data[$tableName]['fields'])) {
@@ -207,7 +209,7 @@ class DataSet
      * @param string $tableName
      * @return NULL|int
      */
-    public function getIdIndex($tableName)
+    public function getIdIndex(string $tableName)
     {
         $idIndex = null;
         if (isset($this->data[$tableName]['idIndex'])) {
@@ -220,7 +222,7 @@ class DataSet
      * @param string $tableName
      * @return NULL|array
      */
-    public function getElements($tableName)
+    public function getElements(string $tableName)
     {
         $elements = null;
         if (isset($this->data[$tableName]['elements'])) {
@@ -232,7 +234,7 @@ class DataSet
     /**
      * @param string $fileName
      */
-    public function persist($fileName)
+    public function persist(string $fileName)
     {
         $fileHandle = fopen($fileName, 'w');
 
