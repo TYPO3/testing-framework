@@ -13,4 +13,3 @@ extensions:
     - Codeception\Extension\RunFailed
     - Codeception\Extension\Recorder
     - TYPO3\TestingFramework\Core\Acceptance\AcceptanceInstallMysqlCoreEnvironment
-
