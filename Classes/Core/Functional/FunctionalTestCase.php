@@ -228,7 +228,10 @@ abstract class FunctionalTestCase extends BaseTestCase
         if ($testbase->recentTestInstanceExists($this->instancePath)) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
-            $testbase->defineSitePath($this->instancePath);
+            define('PATH_site', $this->instancePath . '/');
+            define('PATH_thisScript', PATH_site . 'index.php');
+            $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
+
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
             $testbase->loadExtensionTables();
@@ -246,7 +249,9 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->createLastRunTextfile($this->instancePath);
             $testbase->setUpInstanceCoreLinks($this->instancePath);
-            $testbase->defineSitePath($this->instancePath);
+            define('PATH_site', $this->instancePath . '/');
+            define('PATH_thisScript', PATH_site . 'index.php');
+            $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $defaultCoreExtensionsToLoad = [
