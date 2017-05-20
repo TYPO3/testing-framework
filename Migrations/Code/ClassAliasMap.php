@@ -19,6 +19,8 @@ return [
     '\\TYPO3\\Components\\TestingFramework\\Core\\Functional\\Framework\Frontend\\RequestBootstrap' => \TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap::class,
     '\\TYPO3\\Components\\TestingFramework\\Core\\Functional\\Framework\Frontend\\ResponseContent' => \TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseContent::class,
     '\\TYPO3\\Components\\TestingFramework\\Core\\Functional\\Framework\Frontend\\ResponseSection' => \TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseSection::class,
+    '\\TYPO3\\CMS\\Core\\Tests\\Functional\\DataHandling\\Framework\\ActionService' => \TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\ActionService::class,
+    '\\TYPO3\\CMS\\Core\\Tests\\Functional\\DataHandling\\Framework\\DataSet' => \TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet::class,
 
     // Unit
     '\\TYPO3\\Components\\TestingFramework\\Core\\Unit\\UnitTestCase' => \TYPO3\TestingFramework\Core\Unit\UnitTestCase::class,
