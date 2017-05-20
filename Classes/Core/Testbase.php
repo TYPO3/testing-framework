@@ -95,9 +95,9 @@ class Testbase
      *
      * @return void
      */
-    public function defineSitePath()
+    public function defineSitePath($instancePath = '')
     {
-        define('PATH_site', $this->getWebRoot());
+        define('PATH_site', $instancePath ? $instancePath . '/' : $this->getWebRoot());
         define('PATH_thisScript', PATH_site . 'typo3/index.php');
         $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
 
