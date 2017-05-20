@@ -115,9 +115,9 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
     {
         $viewHelper->setRenderingContext($this->renderingContext);
         $viewHelper->setArguments($this->arguments);
-        // this condition is needed, because the (Be)/Security\*ViewHelper don't extend the
-        // AbstractViewHelper and contain no method injectReflectionService()
-        if ($viewHelper instanceof AbstractViewHelper) {
+        // this condition is needed for compatibility with both CMS and Fluid base VH class,
+        // as well as support for testing on core source before/after https://review.typo3.org/#/c/52796/
+        if (method_exists($viewHelper, 'injectReflectionService')) {
             $reflectionServiceProphecy = $this->prophesize(ReflectionService::class);
             $viewHelper->injectReflectionService($reflectionServiceProphecy->reveal());
         }
