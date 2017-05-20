@@ -19,6 +19,7 @@ use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
+use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
@@ -228,6 +229,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             // in a test case, so environment is set up only once per test case.
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
+            Bootstrap::getInstance()->initializeBackendRouter();
             $testbase->loadExtensionTables();
         } else {
             $testbase->removeOldInstanceIfExists($this->instancePath);
@@ -272,6 +274,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
+            Bootstrap::getInstance()->initializeBackendRouter();
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();
         }
