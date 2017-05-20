@@ -230,8 +230,9 @@ class Testbase
     public function setUpInstanceCoreLinks($instancePath)
     {
         $linksToSet = [
-            ORIGINAL_ROOT . 'typo3' => $instancePath . '/typo3',
-            ORIGINAL_ROOT . 'index.php' => $instancePath . '/index.php'
+            '../../../../' => $instancePath . '/typo3_src',
+            'typo3_src/typo3' => $instancePath . '/typo3',
+            'typo3_src/index.php' => $instancePath . '/index.php',
         ];
         foreach ($linksToSet as $from => $to) {
             $success = symlink($from, $to);
@@ -536,6 +537,7 @@ class Testbase
             ->initializeClassLoader($classLoader)
             ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
             ->baseSetup()
+
             ->loadConfigurationAndInitialize(true)
             ->loadTypo3LoadedExtAndExtLocalconf(true)
             ->setFinalCachingFrameworkCacheConfiguration()
