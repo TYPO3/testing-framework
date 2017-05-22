@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -382,7 +383,28 @@ abstract class FunctionalTestCase extends BaseTestCase
             $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 try {
+                    // With mssql, hard setting uid auto-increment primary keys is only allowed if
+                    // the table is prepared for such an operation beforehand
+                    $platform = $connection->getDatabasePlatform();
+                    $sqlServerIdentityDisabled = false;
+                    if ($platform instanceof SQLServerPlatform) {
+                        try {
+                            $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                            $sqlServerIdentityDisabled = true;
+                        } catch (\Doctrine\DBAL\DBALException $e) {
+                            // Some tables like sys_refindex don't have an auto-increment uid field and thus no
+                            // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
+                            // and catch the possible error that occurs.
+                        }
+                    }
+
+                    // Insert the row
                     $connection->insert($tableName, $element);
+
+                    if ($sqlServerIdentityDisabled) {
+                        // Reset identity if it has been changed
+                        $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+                    }
                 } catch (DBALException $e) {
                     $this->fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
                 }

@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -643,10 +644,30 @@ class Testbase
 
             $tableName = $table->getName();
             $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
-            $connection->insert(
-                $tableName,
-                $insertArray
-            );
+
+            // With mssql, hard setting uid auto-increment primary keys is only allowed if
+            // the table is prepared for such an operation beforehand
+            $platform = $connection->getDatabasePlatform();
+            $sqlServerIdentityDisabled = false;
+            if ($platform instanceof SQLServerPlatform) {
+                try {
+                    $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                    $sqlServerIdentityDisabled = true;
+                } catch (\Doctrine\DBAL\DBALException $e) {
+                    // Some tables like sys_refindex don't have an auto-increment uid field and thus no
+                    // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
+                    // and catch the possible error that occurs.
+                }
+            }
+
+            // Insert the row
+            $connection->insert($tableName, $insertArray);
+
+            if ($sqlServerIdentityDisabled) {
+                // Reset identity if it has been changed
+                $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+            }
+
             static::resetTableSequences($connection, $tableName);
 
             if (isset($table['id'])) {
