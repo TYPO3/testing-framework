@@ -1,5 +1,5 @@
 {
-  "name": "typo3/testing-framework",
+  "name": "t3g/testing-framework",
   "description": "The TYPO3 testing framework provides base classes for unit, functional and acceptance testing.",
   "keywords": [
     "typo3",
@@ -48,5 +48,8 @@
       "TYPO3\\CMS\\Core\\Tests\\": "compat/core/",
       "TYPO3\\CMS\\Fluid\\Tests\\": "compat/fluid/"
     }
+  },
+  "replace": {
+    "typo3/testing-framework": "*"
   }
 }
