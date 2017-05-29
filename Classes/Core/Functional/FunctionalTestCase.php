@@ -398,8 +398,14 @@ abstract class FunctionalTestCase extends BaseTestCase
                         }
                     }
 
+                    $types = [];
+                    $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+                    foreach ($element as $columnName => $columnValue) {
+                        $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+                    }
+
                     // Insert the row
-                    $connection->insert($tableName, $element);
+                    $connection->insert($tableName, $element, $types);
 
                     if ($sqlServerIdentityDisabled) {
                         // Reset identity if it has been changed

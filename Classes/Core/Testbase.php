@@ -660,8 +660,14 @@ class Testbase
                 }
             }
 
+            $types = [];
+            $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+            foreach ($insertArray as $columnName => $columnValue) {
+                $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+            }
+
             // Insert the row
-            $connection->insert($tableName, $insertArray);
+            $connection->insert($tableName, $insertArray, $types);
 
             if ($sqlServerIdentityDisabled) {
                 // Reset identity if it has been changed
