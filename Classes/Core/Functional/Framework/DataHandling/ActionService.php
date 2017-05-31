@@ -421,6 +421,18 @@ class ActionService
     }
 
     /**
+     * @param array $dataMap
+     * @param array $commandMap
+     */
+    public function invoke(array $dataMap, array $commandMap)
+    {
+        $this->createDataHandler();
+        $this->dataHandler->start($dataMap, $commandMap);
+        $this->dataHandler->process_datamap();
+        $this->dataHandler->process_cmdmap();
+    }
+
+    /**
      * @param array $recordData
      * @param NULL|string|int $previousUid
      * @return array
