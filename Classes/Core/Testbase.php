@@ -664,6 +664,8 @@ class Testbase
                 }
             }
 
+            // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
+            // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
             $types = [];
             $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
             foreach ($insertArray as $columnName => $columnValue) {
