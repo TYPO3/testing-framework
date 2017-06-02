@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -60,20 +61,6 @@ use TYPO3\TestingFramework\Core\Testbase;
  */
 abstract class FunctionalTestCase extends BaseTestCase
 {
-    const DATABASE_PLATFORM_MYSQL = 'MySQL';
-    const DATABASE_PLATFORM_PDO = 'PDO';
-
-    /**
-     * Path to a XML fixture dependent on the current database.
-     * @var string
-     */
-    protected $fixturePath = '';
-
-    /**
-     * @var string
-     */
-    protected $databasePlatform;
-
     /**
      * An unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
@@ -278,16 +265,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();
         }
-
-        $databasePlatform = $this->getConnectionPool()
-            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME)
-            ->getDatabasePlatform();
-
-        if ($databasePlatform instanceof MySqlPlatform) {
-            $this->setDatabasePlatform(static::DATABASE_PLATFORM_MYSQL);
-        } else {
-            $this->setDatabasePlatform(static::DATABASE_PLATFORM_PDO);
-        }
     }
 
     /**
@@ -382,7 +359,36 @@ abstract class FunctionalTestCase extends BaseTestCase
             $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 try {
-                    $connection->insert($tableName, $element);
+                    // With mssql, hard setting uid auto-increment primary keys is only allowed if
+                    // the table is prepared for such an operation beforehand
+                    $platform = $connection->getDatabasePlatform();
+                    $sqlServerIdentityDisabled = false;
+                    if ($platform instanceof SQLServerPlatform) {
+                        try {
+                            $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                            $sqlServerIdentityDisabled = true;
+                        } catch (\Doctrine\DBAL\DBALException $e) {
+                            // Some tables like sys_refindex don't have an auto-increment uid field and thus no
+                            // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
+                            // and catch the possible error that occurs.
+                        }
+                    }
+
+                    // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
+                    // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
+                    $types = [];
+                    $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+                    foreach ($element as $columnName => $columnValue) {
+                        $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+                    }
+
+                    // Insert the row
+                    $connection->insert($tableName, $element, $types);
+
+                    if ($sqlServerIdentityDisabled) {
+                        // Reset identity if it has been changed
+                        $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+                    }
                 } catch (DBALException $e) {
                     $this->fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
                 }
@@ -707,66 +713,5 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         $response = new Response($result['status'], $result['content'], $result['error']);
         return $response;
-    }
-
-    /**
-     * Return the path to a XML fixture dependent on the current database platform that tests are run against.
-     *
-     * @param string $fileName
-     *
-     * @return string
-     * @throws \Exception
-     */
-    protected function getXmlFilePath(string $fileName): string
-    {
-        $baseDir = $this->fixturePath . $this->databasePlatform . '/';
-        $xmlFilePath = $baseDir . $fileName;
-
-        if (!file_exists($xmlFilePath)) {
-            throw new \Exception(
-                'XML fixture file "' . $xmlFilePath . '" not found for database platform: ' . $this->databasePlatform,
-                1487620903
-            );
-        }
-
-        return $xmlFilePath;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDatabasePlatform(): string
-    {
-        return $this->databasePlatform;
-    }
-
-    /**
-     * @param string $databasePlatform
-     *
-     * @return $this
-     */
-    public function setDatabasePlatform(string $databasePlatform)
-    {
-        $this->databasePlatform = $databasePlatform;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFixturePath(): string
-    {
-        return $this->fixturePath;
-    }
-
-    /**
-     * @param string $fixturePath
-     *
-     * @return $this
-     */
-    public function setFixturePath(string $fixturePath)
-    {
-        $this->fixturePath = $fixturePath;
-        return $this;
     }
 }

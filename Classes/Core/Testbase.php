@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -326,7 +327,8 @@ class Testbase
         $databasePort = trim(getenv('typo3DatabasePort'));
         $databaseSocket = trim(getenv('typo3DatabaseSocket'));
         $databaseDriver = trim(getenv('typo3DatabaseDriver'));
-        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket) {
+        $databaseCharset = trim(getenv('typo3DatabaseCharset'));
+        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseCharset) {
             // Try to get database credentials from environment variables first
             $originalConfigurationArray = [
                 'DB' => [
@@ -357,6 +359,9 @@ class Testbase
             }
             if ($databaseDriver) {
                 $originalConfigurationArray['DB']['Connections']['Default']['driver'] = $databaseDriver;
+            }
+            if ($databaseCharset) {
+                $originalConfigurationArray['DB']['Connections']['Default']['charset'] = $databaseCharset;
             }
         } elseif (file_exists(ORIGINAL_ROOT . 'typo3conf/LocalConfiguration.php')) {
             // See if a LocalConfiguration file exists in "parent" instance to get db credentials from
@@ -643,10 +648,38 @@ class Testbase
 
             $tableName = $table->getName();
             $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
-            $connection->insert(
-                $tableName,
-                $insertArray
-            );
+
+            // With mssql, hard setting uid auto-increment primary keys is only allowed if
+            // the table is prepared for such an operation beforehand
+            $platform = $connection->getDatabasePlatform();
+            $sqlServerIdentityDisabled = false;
+            if ($platform instanceof SQLServerPlatform) {
+                try {
+                    $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                    $sqlServerIdentityDisabled = true;
+                } catch (\Doctrine\DBAL\DBALException $e) {
+                    // Some tables like sys_refindex don't have an auto-increment uid field and thus no
+                    // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
+                    // and catch the possible error that occurs.
+                }
+            }
+
+            // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
+            // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
+            $types = [];
+            $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+            foreach ($insertArray as $columnName => $columnValue) {
+                $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+            }
+
+            // Insert the row
+            $connection->insert($tableName, $insertArray, $types);
+
+            if ($sqlServerIdentityDisabled) {
+                // Reset identity if it has been changed
+                $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+            }
+
             static::resetTableSequences($connection, $tableName);
 
             if (isset($table['id'])) {
