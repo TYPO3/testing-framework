@@ -206,6 +206,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         // Use a 7 char long hash of class name as identifier
         $this->identifier = substr(sha1(get_class($this)), 0, 7);
         $this->instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $this->identifier;
+        putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
 
         $testbase = new Testbase();
         $testbase->defineTypo3ModeBe();
