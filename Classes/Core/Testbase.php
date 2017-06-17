@@ -773,7 +773,7 @@ class Testbase
      */
     protected function exitWithMessage($message)
     {
-        echo $message . LF;
+        echo $message . chr(10);
         exit(1);
     }
 
