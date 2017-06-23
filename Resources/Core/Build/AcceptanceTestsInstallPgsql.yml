@@ -1,0 +1,15 @@
+actor: Tester
+paths:
+  tests: ../../../../../../typo3/sysext/core/Tests
+  log: ../../../../../../typo3temp/var/tests/AcceptanceReportsInstallPgsql
+  data: Configuration/Acceptance/Data
+  support: Configuration/Acceptance/Support
+  envs: Configuration/Acceptance/Envs
+settings:
+  colors: true
+  memory_limit: 1024M
+extensions:
+  enabled:
+    - Codeception\Extension\RunFailed
+    - Codeception\Extension\Recorder
+    - TYPO3\TestingFramework\Core\Acceptance\AcceptanceInstallPgsqlCoreEnvironment
