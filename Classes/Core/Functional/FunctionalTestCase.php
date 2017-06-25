@@ -15,9 +15,9 @@ namespace TYPO3\TestingFramework\Core\Functional;
  */
 
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Util\PHP\AbstractPhpProcess;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -562,7 +562,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                     if ($columnIndex === 'assertion') {
                         try {
                             $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
-                        } catch (\PHPUnit_Framework_ExpectationFailedException $e) {
+                        } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
                             $linesFromXmlValues[] = 'Diff for field "' . $columns['fields'][$valueIndex] . '":' . PHP_EOL . $e->getComparisonFailure()->getDiff();
                         }
                     }
@@ -601,7 +601,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             } elseif (strpos($value, '<?xml') === 0) {
                 try {
                     $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
-                } catch (\PHPUnit_Framework_ExpectationFailedException $e) {
+                } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
                     $differentFields[] = $field;
                 }
             } elseif ($value === null && $record[$field] !== $value) {
@@ -700,7 +700,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             ]
         );
 
-        $php = \PHPUnit_Util_PHP::factory();
+        $php = AbstractPhpProcess::factory();
         $response = $php->runJob($template->render());
         $result = json_decode($response['stdout'], true);
 

@@ -19,7 +19,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseSection;
 /**
  * Model of frontend response
  */
-abstract class AbstractRecordConstraint extends \PHPUnit_Framework_Constraint
+abstract class AbstractRecordConstraint extends \PHPUnit\Framework\Constraint\Constraint
 {
     /**
      * @var array
