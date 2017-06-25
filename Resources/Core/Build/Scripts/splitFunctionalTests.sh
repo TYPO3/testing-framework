@@ -63,6 +63,7 @@ for (( i=0; i<${numberOfFunctionalTestJobs}; i++)); do
 	echo '	stopOnIncomplete="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	stopOnSkipped="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	verbose="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
+	echo '	beStrictAboutTestsThatDoNotTestAnything="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	<testsuites>' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '		<testsuite name="Core tests">' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml

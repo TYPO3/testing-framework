@@ -67,7 +67,7 @@ abstract class UnitTestCase extends BaseTestCase
                 !$property->isStatic()
                 && $declaringClass !== \TYPO3\TestingFramework\Core\Unit\UnitTestCase::class
                 && $declaringClass !== \TYPO3\TestingFramework\Core\BaseTestCase::class
-                && strpos($property->getDeclaringClass()->getName(), 'PHPUnit_') !== 0
+                && strpos($property->getDeclaringClass()->getName(), 'PHPUnit') !== 0
             ) {
                 $propertyName = $property->getName();
                 unset($this->$propertyName);
