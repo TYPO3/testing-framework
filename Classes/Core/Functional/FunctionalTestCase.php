@@ -691,7 +691,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             'requestUrl' => 'http://localhost/?id=' . $pageId . '&L=' . $languageId . $additionalParameter,
         ];
 
-        $template = new \Text_Template(ORIGINAL_ROOT . 'typo3/sysext/core/Tests/Functional/Fixtures/Frontend/request.tpl');
+        $template = new \Text_Template(TYPO3_PATH_PACKAGES . 'typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
         $template->setVar(
             [
                 'arguments' => var_export($arguments, true),
