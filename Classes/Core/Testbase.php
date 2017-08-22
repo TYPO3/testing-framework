@@ -545,7 +545,6 @@ class Testbase
             ->loadConfigurationAndInitialize(true)
             ->loadTypo3LoadedExtAndExtLocalconf(true)
             ->setFinalCachingFrameworkCacheConfiguration()
-            ->defineLoggingAndExceptionConstants()
             ->unsetReservedGlobalVariables();
     }
 
