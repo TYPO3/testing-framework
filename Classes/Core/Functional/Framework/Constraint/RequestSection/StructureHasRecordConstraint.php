@@ -30,7 +30,8 @@ class StructureHasRecordConstraint extends AbstractStructureRecordConstraint
         $nonMatchingVariants = [];
         $remainingRecordVariants = [];
 
-        foreach ($responseSection->findStructures($this->recordIdentifier, $this->recordField) as $path => $structure) {
+        $structures = $responseSection->findStructures($this->recordIdentifier, $this->recordField);
+        foreach ($structures as $path => $structure) {
             if (empty($structure) || !is_array($structure)) {
                 $this->sectionFailures[$responseSection->getIdentifier()] = 'No records found in "' . $path . '"';
                 return false;
@@ -56,6 +57,10 @@ class StructureHasRecordConstraint extends AbstractStructureRecordConstraint
         }
 
         $failureMessage = '';
+
+        if (empty($structures)) {
+            $failureMessage .= 'Could not assert all values for "' . $this->recordIdentifier . '.' . $this->recordField . '.' . $this->table . '.' . $this->field .'"' . LF;
+        }
 
         if (!empty($nonMatchingVariants)) {
             $failureMessage .= 'Could not assert all values for "' . $this->table . '.' . $this->field . '"' . LF;
