@@ -17,8 +17,7 @@ use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Extbase\Error\Result;
 use TYPO3\CMS\Extbase\Reflection\ReflectionService;
-use TYPO3\CMS\Fluid\Core\Variables\CmsVariableProvider;
-use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperVariableContainer;
@@ -34,7 +33,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
     protected $viewHelperVariableContainer;
 
     /**
-     * @var CmsVariableProvider
+     * @var StandardVariableProvider
      */
     protected $templateVariableContainer;
 
@@ -79,7 +78,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
     protected function setUp()
     {
         $this->viewHelperVariableContainer = $this->prophesize(ViewHelperVariableContainer::class);
-        $this->templateVariableContainer = $this->createMock(CmsVariableProvider::class);
+        $this->templateVariableContainer = $this->createMock(StandardVariableProvider::class);
         $this->uriBuilder = $this->createMock(\TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder::class);
         $this->uriBuilder->expects($this->any())->method('reset')->will($this->returnValue($this->uriBuilder));
         $this->uriBuilder->expects($this->any())->method('setArguments')->will($this->returnValue($this->uriBuilder));
