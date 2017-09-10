@@ -5,6 +5,7 @@
 	colors="true"
 	convertErrorsToExceptions="true"
 	convertWarningsToExceptions="true"
+	convertDeprecationsToExceptions="false"
 	forceCoversAnnotation="false"
 	processIsolation="false"
 	stopOnError="false"
@@ -16,10 +17,7 @@
 >
 	<testsuites>
 		<testsuite name="Core tests">
-			<directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
-		</testsuite>
-		<testsuite name="Suite integrity tests">
-			<directory>../../../../../../typo3/sysext/core/Tests/Integrity/</directory>
+			<directory>../../../../../../typo3/sysext/*/Tests/UnitDeprecated/</directory>
 		</testsuite>
 	</testsuites>
     <filter>
