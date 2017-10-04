@@ -19,6 +19,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
@@ -542,10 +543,24 @@ class Testbase
             ->initializeClassLoader($classLoader)
             ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
             ->baseSetup()
-            ->loadConfigurationAndInitialize(true)
-            ->loadTypo3LoadedExtAndExtLocalconf(true)
+            ->loadConfigurationAndInitialize(true);
+        $this->dumpClassLoadingInformation();
+        Bootstrap::getInstance()->loadTypo3LoadedExtAndExtLocalconf(true)
             ->setFinalCachingFrameworkCacheConfiguration()
             ->unsetReservedGlobalVariables();
+    }
+
+    /**
+     * Dump class loading information
+     *
+     * @return void
+     */
+    public function dumpClassLoadingInformation()
+    {
+        if (!ClassLoadingInformation::isClassLoadingInformationAvailable()) {
+            ClassLoadingInformation::dumpClassLoadingInformation();
+            ClassLoadingInformation::registerClassLoadingInformation();
+        }
     }
 
     /**
