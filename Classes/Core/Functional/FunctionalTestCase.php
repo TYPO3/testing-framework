@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Install\Configuration\FeatureManager;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
@@ -215,6 +216,10 @@ abstract class FunctionalTestCase extends BaseTestCase
         if ($testbase->recentTestInstanceExists($this->instancePath)) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
+            define('PATH_site', $this->instancePath . '/');
+            define('PATH_thisScript', PATH_site . 'index.php');
+            $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
+
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
             Bootstrap::getInstance()->initializeBackendRouter();
@@ -233,8 +238,33 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->createLastRunTextfile($this->instancePath);
             $testbase->setUpInstanceCoreLinks($this->instancePath);
+            define('PATH_site', $this->instancePath . '/');
+            define('PATH_thisScript', PATH_site . 'index.php');
+            $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
+            $defaultCoreExtensionsToLoad = [
+                'core',
+                'backend',
+                'frontend',
+                'lang',
+                'extbase',
+                'install',
+            ];
+            $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
+
+            $_SERVER['PWD'] = $this->instancePath;
+            $_SERVER['argv'][0] = 'index.php';
+
+            $classLoader = require rtrim(realpath($this->instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
+            $bootstrap = Bootstrap::getInstance()
+                ->initializeClassLoader($classLoader)
+                ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
+                ->baseSetup();
+            $featureManager = GeneralUtility::makeInstance(FeatureManager::class);
+            $testbase->setUpLocalConfiguration($this->instancePath, [], []);
+            $localConfiguration = $featureManager->getBestMatchingConfigurationForAllFeatures();
+
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
             $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
             // Append the unique identifier to the base database name to end up with a single database per test case
@@ -252,16 +282,15 @@ abstract class FunctionalTestCase extends BaseTestCase
             $localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
-            $defaultCoreExtensionsToLoad = [
-                'core',
-                'backend',
-                'frontend',
-                'lang',
-                'extbase',
-                'install',
-            ];
-            $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
-            $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+
+            // $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+            $bootstrap
+                ->loadConfigurationAndInitialize(true)
+                ->loadTypo3LoadedExtAndExtLocalconf(true)
+                ->setFinalCachingFrameworkCacheConfiguration()
+                ->defineLoggingAndExceptionConstants()
+                ->unsetReservedGlobalVariables();
+
             $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
             Bootstrap::getInstance()->initializeBackendRouter();
             $testbase->loadExtensionTables();
