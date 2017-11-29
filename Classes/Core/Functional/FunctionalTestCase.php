@@ -149,6 +149,15 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $pathsToLinkInTestInstance = [];
 
     /**
+     * Similar to $pathsToLinkInTestInstance, with the difference that given
+     * paths are really duplicated and provided in the instance - instead of
+     * using symbolic links.
+     *
+     * @var string[]
+     */
+    protected $pathsToProvideInTestInstance = [];
+
+    /**
      * This configuration array is merged with TYPO3_CONF_VARS
      * that are set in default configuration and factory configuration
      *
@@ -235,6 +244,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->setUpInstanceCoreLinks($this->instancePath);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
+            $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
             $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
             // Append the unique identifier to the base database name to end up with a single database per test case

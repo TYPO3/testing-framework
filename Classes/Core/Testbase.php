@@ -309,6 +309,39 @@ class Testbase
     }
 
     /**
+     * Copies paths inside the test instance, e.g. from a fixture fileadmin
+     * sub-folder to the test instance fileadmin folder. This method should
+     * be used in case the references paths shall be modified inside the
+     * testing instance which might not be possible with symbolic links.
+     *
+     * For functional and acceptance tests.
+     *
+     * @param string $instancePath
+     * @param array $pathsToProvideInTestInstance
+     * @throws Exception
+     */
+    public function providePathsInTestInstance(string $instancePath, array $pathsToProvideInTestInstance)
+    {
+        foreach ($pathsToProvideInTestInstance as $sourceIdentifier => $designationIdentifier) {
+            $sourcePath = $instancePath . '/' . ltrim($sourceIdentifier, '/');
+            if (!file_exists($sourcePath)) {
+                throw new Exception(
+                    'Path ' . $sourcePath . ' not found',
+                    1511956084
+                );
+            }
+            $destinationPath = $instancePath . '/' . ltrim($designationIdentifier, '/');
+            $success = copy($sourcePath, $destinationPath);
+            if (!$success) {
+                throw new Exception(
+                    'Can not copy the path ' . $sourcePath . ' to ' . $destinationPath,
+                    1511956085
+                );
+            }
+        }
+    }
+
+    /**
      * Database settings for functional and acceptance tests can be either set by
      * environment variables (recommended), or from an existing LocalConfiguration as fallback.
      * The method fetches these.
