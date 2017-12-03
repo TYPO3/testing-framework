@@ -118,6 +118,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
         // as well as support for testing on core source before/after https://review.typo3.org/#/c/52796/
         if (method_exists($viewHelper, 'injectReflectionService')) {
             $reflectionServiceProphecy = $this->prophesize(ReflectionService::class);
+            $reflectionServiceProphecy->getMethodParameters(Argument::cetera())->willReturn([]);
             $viewHelper->injectReflectionService($reflectionServiceProphecy->reveal());
         }
     }
