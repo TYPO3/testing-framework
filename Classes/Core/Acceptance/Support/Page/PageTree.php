@@ -26,8 +26,8 @@ class PageTree
     // Selectors
     public static $pageTreeFrameSelector = '#typo3-pagetree';
     public static $pageTreeSelector = '#typo3-pagetree-treeContainer';
-    public static $treeItemSelector = 'g.nodes > .node';
-    public static $treeItemAnchorSelector = 'text.node-name';
+    public static $treeItemSelector = '.x-tree-node-ct > .x-tree-node';
+    public static $treeItemAnchorSelector = '.x-tree-node-anchor';
 
     /**
      * @var AcceptanceTester
@@ -45,7 +45,7 @@ class PageTree
     /**
      * Open the given hierarchical path in the pagetree and click the last page.
      *
-     * Example to open "styleguide -> elements basic" page:
+     * Example to open "styleuide -> elements basic" page:
      * [
      *    'styleguide TCA demo',
      *    'elements basic',
@@ -91,11 +91,13 @@ class PageTree
         /** @var RemoteWebElement $context */
         $context = $I->executeInSelenium(function () use ($nodeText, $context
         ) {
-            return $context->findElement(\WebDriverBy::xpath('//*[text()=\'' . $nodeText . '\']/..'));
+            return $context->findElement(\WebDriverBy::linkText($nodeText))->findElement(
+                WebDriverBy::xpath('ancestor::li[@class="x-tree-node"][1]')
+            );
         });
 
         try {
-            $context->findElement(\WebDriverBy::cssSelector('.chevron.collapsed'))->click();
+            $context->findElement(\WebDriverBy::cssSelector('.x-tree-elbow-end-plus'))->click();
         } catch (\Facebook\WebDriver\Exception\NoSuchElementException $e) {
             // element not found so it may be already opened...
         }
