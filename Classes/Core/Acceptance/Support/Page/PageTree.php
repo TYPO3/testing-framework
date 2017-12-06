@@ -98,6 +98,8 @@ class PageTree
             $context->findElement(\WebDriverBy::cssSelector('.chevron.collapsed'))->click();
         } catch (\Facebook\WebDriver\Exception\NoSuchElementException $e) {
             // element not found so it may be already opened...
+        } catch (\Facebook\WebDriver\Exception\ElementNotVisibleException $e) {
+            // element not found so it may be already opened...
         }
 
         return $context;
