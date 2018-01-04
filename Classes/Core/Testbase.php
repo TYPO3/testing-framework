@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Install\Service\ExtensionConfigurationService;
 
 /**
  * This is a helper class used by unit, functional and acceptance test
@@ -577,6 +578,13 @@ class Testbase
             ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
             ->baseSetup()
             ->loadConfigurationAndInitialize(true);
+
+        if (class_exists(ExtensionConfigurationService::class)) {
+            $extensionConfigurationService = new ExtensionConfigurationService();
+            $extensionConfigurationService->synchronizeExtConfTemplateWithLocalConfigurationOfAllExtensions();
+            Bootstrap::getInstance()->populateLocalConfiguration();
+        }
+
         $this->dumpClassLoadingInformation();
         Bootstrap::getInstance()->loadTypo3LoadedExtAndExtLocalconf(true)
             ->setFinalCachingFrameworkCacheConfiguration()
