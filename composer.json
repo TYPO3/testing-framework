@@ -38,7 +38,6 @@
   },
   "suggest": {
     "codeception/codeception": "^2.2",
-    "se/selenium-server-standalone": "~2.53",
     "typo3/cms-saltedpasswords": "^8.5",
     "typo3/cms-styleguide": "~8.0.8"
   },
