@@ -98,7 +98,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
         $this->controllerContext->expects($this->any())->method('getUriBuilder')->will($this->returnValue($this->uriBuilder));
         $this->controllerContext->expects($this->any())->method('getRequest')->will($this->returnValue($this->request->reveal()));
         $this->arguments = [];
-        $this->renderingContext = $this->getAccessibleMock(\TYPO3\CMS\Fluid\Tests\Unit\Core\Rendering\RenderingContextFixture::class, ['getControllerContext']);
+        $this->renderingContext = $this->getAccessibleMock(\TYPO3Fluid\Fluid\Tests\Unit\Core\Rendering\RenderingContextFixture::class, ['getControllerContext']);
         $this->renderingContext->expects($this->any())->method('getControllerContext')->willReturn($this->controllerContext);
         $this->renderingContext->setVariableProvider($this->templateVariableContainer);
         $this->renderingContext->_set('viewHelperVariableContainer', $this->viewHelperVariableContainer->reveal());
