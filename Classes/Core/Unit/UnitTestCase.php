@@ -46,6 +46,42 @@ abstract class UnitTestCase extends BaseTestCase
     protected $testFilesToDelete = [];
 
     /**
+     * This variable can be set to true if unit tests execute
+     * code that is not E_NOTICE free to not let the test fail.
+     *
+     * @deprecated This setting will be removed if TYPO3 core does not need it any longer.
+     *
+     * @var bool
+     */
+    protected static $suppressNotices = false;
+
+    /**
+     * @var int Backup variable of current error reporting
+     */
+    private static $backupErrorReporting;
+
+    /**
+     * Set error reporting to trigger or suppress E_NOTICE
+     */
+    public static function setUpBeforeClass()
+    {
+        $errorReporting = self::$backupErrorReporting = error_reporting();
+        if (static::$suppressNotices === false) {
+            error_reporting($errorReporting | E_NOTICE);
+        } else {
+            error_reporting($errorReporting & ~E_NOTICE);
+        }
+    }
+
+    /**
+     * Reset error reporting to original state
+     */
+    public static function tearDownAfterClass()
+    {
+        error_reporting(self::$backupErrorReporting);
+    }
+
+    /**
      * Unset all additional properties of test classes to help PHP
      * garbage collection. This reduces memory footprint with lots
      * of tests.
