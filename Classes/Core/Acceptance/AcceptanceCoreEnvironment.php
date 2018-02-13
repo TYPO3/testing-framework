@@ -201,8 +201,6 @@ class AcceptanceCoreEnvironment extends Extension
         $localConfiguration['BE']['lockHashKeyWords'] = '';
         $localConfiguration['BE']['installToolPassword'] = $this->getInstallToolPassword();
         $localConfiguration['BE']['loginSecurityLevel'] = 'rsa';
-        $localConfiguration['SYS']['isInitialInstallationInProgress'] = false;
-        $localConfiguration['SYS']['isInitialDatabaseImportDone'] = true;
         $localConfiguration['SYS']['displayErrors'] = false;
         $localConfiguration['SYS']['debugExceptionHandler'] = '';
         $localConfiguration['SYS']['trustedHostsPattern'] = 'localhost:8000';

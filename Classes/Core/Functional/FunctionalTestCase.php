@@ -252,8 +252,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
             // Set some hard coded base settings for the instance. Those could be overruled by
             // $this->configurationToUseInTestInstance if needed again.
-            $localConfiguration['SYS']['isInitialInstallationInProgress'] = false;
-            $localConfiguration['SYS']['isInitialDatabaseImportDone'] = true;
             $localConfiguration['SYS']['displayErrors'] = '1';
             $localConfiguration['SYS']['debugExceptionHandler'] = '';
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
