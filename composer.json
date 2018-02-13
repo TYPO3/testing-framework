@@ -30,15 +30,15 @@
     "phpunit/phpunit": "^6.2",
     "mikey179/vfsStream": "~1.6.0",
     "typo3fluid/fluid": "^2.2",
-    "typo3/cms-core": "^8.5 || ^9",
-    "typo3/cms-backend": "^8.5 || ^9",
-    "typo3/cms-frontend": "^8.5 || ^9",
-    "typo3/cms-extbase": "^8.5 || ^9",
-    "typo3/cms-fluid": "^8.5 || ^9"
+    "typo3/cms-core": "^9",
+    "typo3/cms-backend": "^9",
+    "typo3/cms-frontend": "^9",
+    "typo3/cms-extbase": "^9",
+    "typo3/cms-fluid": "^9"
   },
   "suggest": {
     "codeception/codeception": "^2.2",
-    "typo3/cms-saltedpasswords": "^8.5",
+    "typo3/cms-saltedpasswords": "^9",
     "typo3/cms-styleguide": "~8.0.8"
   },
   "autoload": {
