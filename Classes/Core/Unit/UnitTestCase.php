@@ -133,5 +133,25 @@ abstract class UnitTestCase extends BaseTestCase
             }
         }
         $this->testFilesToDelete = [];
+
+        // Verify all instances a test may have added using addInstance() have
+        // been consumed from the GeneralUtility::makeInstance() instance stack.
+        // This integrity check is to avoid side effects on tests run afterwards.
+        $instanceObjectsArray = GeneralUtility::getInstances();
+        $notCleanInstances = [];
+        foreach ($instanceObjectsArray as $instanceObjectArray) {
+            if (!empty($instanceObjectArray)) {
+                foreach($instanceObjectArray as $instance) {
+                    $notCleanInstances[] = $instance;
+                }
+            }
+        }
+        // Let the test fail if there were instances left and give some message on why it fails
+        self::assertEquals(
+            [],
+            $notCleanInstances,
+            'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance stack.'
+            . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
+        );
     }
 }
