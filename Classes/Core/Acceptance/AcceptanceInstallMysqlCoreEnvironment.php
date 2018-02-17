@@ -40,7 +40,6 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
      *
      * Create a full standalone TYPO3 instance within typo3temp/var/tests/acceptance,
      * create a database and create database schema.
-     *
      */
     public function bootstrapTypo3Environment()
     {
