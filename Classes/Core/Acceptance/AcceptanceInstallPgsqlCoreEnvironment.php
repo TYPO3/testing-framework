@@ -32,7 +32,7 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
      * Events to listen to
      */
     public static $events = [
-        Events::SUITE_BEFORE => 'bootstrapTypo3Environment',
+        Events::TEST_BEFORE => 'bootstrapTypo3Environment',
     ];
 
     /**
@@ -41,9 +41,8 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
      * Create a full standalone TYPO3 instance within typo3temp/var/tests/acceptance,
      * create a database and create database schema.
      *
-     * @param SuiteEvent $suiteEvent
      */
-    public function bootstrapTypo3Environment(SuiteEvent $suiteEvent)
+    public function bootstrapTypo3Environment()
     {
         $testbase = new Testbase();
         $testbase->enableDisplayErrors();
