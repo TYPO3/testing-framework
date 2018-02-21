@@ -68,4 +68,6 @@ call_user_func(function () {
         \TYPO3\CMS\Core\Core\ClassLoadingInformation::dumpClassLoadingInformation();
         \TYPO3\CMS\Core\Core\ClassLoadingInformation::registerClassLoadingInformation();
     }
+
+    \TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
 });
