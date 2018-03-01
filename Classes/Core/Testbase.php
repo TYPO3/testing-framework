@@ -21,6 +21,7 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
@@ -573,11 +574,14 @@ class Testbase
         $_SERVER['argv'][0] = 'index.php';
 
         $classLoader = require rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
-        Bootstrap::getInstance()
-            ->initializeClassLoader($classLoader)
-            ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
-            ->baseSetup()
-            ->loadConfigurationAndInitialize(true);
+        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+        $applicationContext = Bootstrap::createApplicationContext();
+        SystemEnvironmentBuilder::initializeEnvironment($applicationContext);
+        GeneralUtility::presetApplicationContext($applicationContext);
+        Bootstrap::initializeClassLoader($classLoader);
+
+        Bootstrap::baseSetup();
+        Bootstrap::loadConfigurationAndInitialize(true);
 
         if (class_exists(ExtensionConfiguration::class)) {
             $extensionConfigurationService = new ExtensionConfiguration();
@@ -585,9 +589,9 @@ class Testbase
         }
 
         $this->dumpClassLoadingInformation();
-        Bootstrap::getInstance()->loadTypo3LoadedExtAndExtLocalconf(true)
-            ->setFinalCachingFrameworkCacheConfiguration()
-            ->unsetReservedGlobalVariables();
+        Bootstrap::loadTypo3LoadedExtAndExtLocalconf(true);
+        Bootstrap::setFinalCachingFrameworkCacheConfiguration();
+        Bootstrap::unsetReservedGlobalVariables();
     }
 
     /**
@@ -630,7 +634,8 @@ class Testbase
      */
     public function loadExtensionTables()
     {
-        Bootstrap::getInstance()->loadBaseTca()->loadExtTables();
+        Bootstrap::loadBaseTca();
+        Bootstrap::loadExtTables();
     }
 
     /**
