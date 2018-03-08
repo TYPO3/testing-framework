@@ -226,7 +226,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             // in a test case, so environment is set up only once per test case.
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
-            Bootstrap::getInstance()->initializeBackendRouter();
+            Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
         } else {
             $testbase->removeOldInstanceIfExists($this->instancePath);
@@ -271,7 +271,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
-            Bootstrap::getInstance()->initializeBackendRouter();
+            Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();
         }
