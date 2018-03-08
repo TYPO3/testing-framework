@@ -18,7 +18,6 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\Connection;
@@ -578,11 +577,6 @@ class Testbase
             ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
             ->baseSetup()
             ->loadConfigurationAndInitialize(true);
-
-        if (class_exists(ExtensionConfiguration::class)) {
-            $extensionConfigurationService = new ExtensionConfiguration();
-            $extensionConfigurationService->synchronizeExtConfTemplateWithLocalConfigurationOfAllExtensions();
-        }
 
         $this->dumpClassLoadingInformation();
         Bootstrap::getInstance()->loadTypo3LoadedExtAndExtLocalconf(true)
