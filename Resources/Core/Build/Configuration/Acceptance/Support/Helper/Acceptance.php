@@ -42,7 +42,7 @@ class Acceptance extends \Codeception\Module
         if (empty($messages)) {
             return;
         }
-        $messages = ['Found following JavaScript errors in the browser console:'] + $messages;
+        $messages = array_merge(['Found following JavaScript errors in the browser console:'], $messages);
         $message = implode(PHP_EOL, $messages);
         $this->fail($message);
     }
