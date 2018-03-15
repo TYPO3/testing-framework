@@ -25,12 +25,9 @@ class Acceptance extends \Codeception\Module
         $webDriver = $this->getModule('WebDriver');
         $browserLogEntries = $webDriver->webDriver->manage()->getLog('browser');
 
-        if (empty($browserLogEntries)) {
-            return;
-        }
-
-        $messages = ['Found following JavaScript errors in the browser console:'];
+        $messages = [];
         foreach ($browserLogEntries as $logEntry) {
+            // We fail only on errors. Warnings and info messages are OK.
             if (true === isset($logEntry['level'])
                 && true === isset($logEntry['message'])
                 && $this->isJSError($logEntry['level'], $logEntry['message'])
@@ -42,6 +39,10 @@ class Acceptance extends \Codeception\Module
                 $messages[] = "{$time} {$logEntry['level']} - {$logEntry['message']}";
             }
         }
+        if (empty($messages)) {
+            return;
+        }
+        $messages = ['Found following JavaScript errors in the browser console:'] + $messages;
         $message = implode(PHP_EOL, $messages);
         $this->fail($message);
     }
