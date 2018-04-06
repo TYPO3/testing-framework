@@ -69,7 +69,7 @@ abstract class UnitTestCase extends BaseTestCase
      *
      * @var array
      */
-    private $backupedEnvironment = [];
+    private $backedUpEnvironment = [];
 
     /**
      * Set error reporting to trigger or suppress E_NOTICE
