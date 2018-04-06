@@ -182,15 +182,15 @@ abstract class UnitTestCase extends BaseTestCase
      * before using Environment::initialize() in tests, backup the current data to be able to restore it afterwards
      */
     protected function backupEnvironment() {
-        $this->backupedEnvironment['context'] = TYPO3\CMS\Core\Core\Environment::getContext();
-        $this->backupedEnvironment['isCli'] = TYPO3\CMS\Core\Core\Environment::isCli();
-        $this->backupedEnvironment['composerMode'] = TYPO3\CMS\Core\Core\Environment::isComposerMode();
-        $this->backupedEnvironment['projectPath'] = TYPO3\CMS\Core\Core\Environment::getProjectPath();
-        $this->backupedEnvironment['publicPath'] = TYPO3\CMS\Core\Core\Environment::getPublicPath();
-        $this->backupedEnvironment['varPath'] = TYPO3\CMS\Core\Core\Environment::getVarPath();
-        $this->backupedEnvironment['configPath'] = TYPO3\CMS\Core\Core\Environment::getConfigPath();
-        $this->backupedEnvironment['currentScript'] = TYPO3\CMS\Core\Core\Environment::getCurrentScript();
-        $this->backupedEnvironment['isOsWindows'] = TYPO3\CMS\Core\Core\Environment::isWindows();
+        $this->backedUpEnvironment['context'] = TYPO3\CMS\Core\Core\Environment::getContext();
+        $this->backedUpEnvironment['isCli'] = TYPO3\CMS\Core\Core\Environment::isCli();
+        $this->backedUpEnvironment['composerMode'] = TYPO3\CMS\Core\Core\Environment::isComposerMode();
+        $this->backedUpEnvironment['projectPath'] = TYPO3\CMS\Core\Core\Environment::getProjectPath();
+        $this->backedUpEnvironment['publicPath'] = TYPO3\CMS\Core\Core\Environment::getPublicPath();
+        $this->backedUpEnvironment['varPath'] = TYPO3\CMS\Core\Core\Environment::getVarPath();
+        $this->backedUpEnvironment['configPath'] = TYPO3\CMS\Core\Core\Environment::getConfigPath();
+        $this->backedUpEnvironment['currentScript'] = TYPO3\CMS\Core\Core\Environment::getCurrentScript();
+        $this->backedUpEnvironment['isOsWindows'] = TYPO3\CMS\Core\Core\Environment::isWindows();
     }
 
     /**
@@ -198,15 +198,15 @@ abstract class UnitTestCase extends BaseTestCase
      */
     protected function restoreEnvironment() {
         TYPO3\CMS\Core\Core\Environment::initialize(
-            $this->backupedEnvironment['context'],
-            $this->backupedEnvironment['isCli'],
-            $this->backupedEnvironment['composerMode'],
-            $this->backupedEnvironment['projectPath'],
-            $this->backupedEnvironment['publicPath'],
-            $this->backupedEnvironment['varPath'],
-            $this->backupedEnvironment['configPath'],
-            $this->backupedEnvironment['currentScript'],
-            $this->backupedEnvironment['isOsWindows'] ? 'WINDOWS' : 'UNIX'
+            $this->backedUpEnvironment['context'],
+            $this->backedUpEnvironment['isCli'],
+            $this->backedUpEnvironment['composerMode'],
+            $this->backedUpEnvironment['projectPath'],
+            $this->backedUpEnvironment['publicPath'],
+            $this->backedUpEnvironment['varPath'],
+            $this->backedUpEnvironment['configPath'],
+            $this->backedUpEnvironment['currentScript'],
+            $this->backedUpEnvironment['isOsWindows'] ? 'WINDOWS' : 'UNIX'
         );
     }
 }
