@@ -39,6 +39,12 @@ abstract class BaseTestCase extends TestCase
     protected $backupStaticAttributes = false;
 
     /**
+     * restore Environment after each test
+     * @var bool
+     */
+    protected $backupEnvironment = false;
+
+    /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
      * @param string $originalClassName name of class to create the mock object of, must not be empty
