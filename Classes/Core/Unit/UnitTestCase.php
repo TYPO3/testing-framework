@@ -61,6 +61,17 @@ abstract class UnitTestCase extends BaseTestCase
     private static $backupErrorReporting;
 
     /**
+     * The Environment object is used in TYPO3 to pass immutable settings
+     * like paths and system info around.
+     * It may be created in tests, but needs to be restored afterwards
+     * The array holds the original data to reset the Environment object
+     * after test run.
+     *
+     * @var array
+     */
+    private $backupedEnvironment = [];
+
+    /**
      * Set error reporting to trigger or suppress E_NOTICE
      */
     public static function setUpBeforeClass()
@@ -152,6 +163,38 @@ abstract class UnitTestCase extends BaseTestCase
             $notCleanInstances,
             'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance stack.'
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
+        );
+    }
+
+    /**
+     * before using Environment::initialize() in tests, backup the current data to be able to restore it afterwards
+     */
+    protected function backupEnvironment() {
+        $this->backupedEnvironment['context'] = TYPO3\CMS\Core\Core\Environment::getContext();
+        $this->backupedEnvironment['isCli'] = TYPO3\CMS\Core\Core\Environment::isCli();
+        $this->backupedEnvironment['composerMode'] = TYPO3\CMS\Core\Core\Environment::isComposerMode();
+        $this->backupedEnvironment['projectPath'] = TYPO3\CMS\Core\Core\Environment::getProjectPath();
+        $this->backupedEnvironment['publicPath'] = TYPO3\CMS\Core\Core\Environment::getPublicPath();
+        $this->backupedEnvironment['varPath'] = TYPO3\CMS\Core\Core\Environment::getVarPath();
+        $this->backupedEnvironment['configPath'] = TYPO3\CMS\Core\Core\Environment::getConfigPath();
+        $this->backupedEnvironment['currentScript'] = TYPO3\CMS\Core\Core\Environment::getCurrentScript();
+        $this->backupedEnvironment['isOsWindows'] = TYPO3\CMS\Core\Core\Environment::isWindows();
+    }
+
+    /**
+     * restore the Environment object after usage
+     */
+    protected function restoreEnvironment() {
+        TYPO3\CMS\Core\Core\Environment::initialize(
+            $this->backupedEnvironment['context'],
+            $this->backupedEnvironment['isCli'],
+            $this->backupedEnvironment['composerMode'],
+            $this->backupedEnvironment['projectPath'],
+            $this->backupedEnvironment['publicPath'],
+            $this->backupedEnvironment['varPath'],
+            $this->backupedEnvironment['configPath'],
+            $this->backupedEnvironment['currentScript'],
+            $this->backupedEnvironment['isOsWindows'] ? 'WINDOWS' : 'UNIX'
         );
     }
 }
