@@ -92,6 +92,14 @@ abstract class UnitTestCase extends BaseTestCase
         error_reporting(self::$backupErrorReporting);
     }
 
+    protected function setUp()
+    {
+        if ($this->backupEnvironment === true) {
+            $this->backupEnvironment();
+        }
+        parent::setUp();
+    }
+
     /**
      * Unset all additional properties of test classes to help PHP
      * garbage collection. This reduces memory footprint with lots
@@ -164,6 +172,10 @@ abstract class UnitTestCase extends BaseTestCase
             'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance stack.'
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
         );
+
+        if ($this->backupEnvironment === true) {
+            $this->restoreEnvironment();
+        }
     }
 
     /**
