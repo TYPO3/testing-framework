@@ -264,7 +264,6 @@ abstract class FunctionalTestCase extends BaseTestCase
                 'core',
                 'backend',
                 'frontend',
-                'lang',
                 'extbase',
                 'install',
             ];
