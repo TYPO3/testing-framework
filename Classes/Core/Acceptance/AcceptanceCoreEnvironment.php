@@ -216,7 +216,6 @@ class AcceptanceCoreEnvironment extends Extension
             'fluid',
             'filelist',
             'extensionmanager',
-            'lang',
             'setup',
             'rsaauth',
             'saltedpasswords',
