@@ -14,6 +14,7 @@ namespace TYPO3\TestingFramework\Core\Unit;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
@@ -114,6 +115,11 @@ abstract class UnitTestCase extends BaseTestCase
      */
     protected function tearDown()
     {
+        // execute before unsetting the class properties!
+        if ($this->backupEnvironment === true) {
+            $this->restoreEnvironment();
+        }
+
         // Unset properties of test classes to safe memory
         $reflection = new \ReflectionObject($this);
         foreach ($reflection->getProperties() as $property) {
@@ -173,31 +179,28 @@ abstract class UnitTestCase extends BaseTestCase
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
         );
 
-        if ($this->backupEnvironment === true) {
-            $this->restoreEnvironment();
-        }
     }
 
     /**
      * before using Environment::initialize() in tests, backup the current data to be able to restore it afterwards
      */
     protected function backupEnvironment() {
-        $this->backedUpEnvironment['context'] = TYPO3\CMS\Core\Core\Environment::getContext();
-        $this->backedUpEnvironment['isCli'] = TYPO3\CMS\Core\Core\Environment::isCli();
-        $this->backedUpEnvironment['composerMode'] = TYPO3\CMS\Core\Core\Environment::isComposerMode();
-        $this->backedUpEnvironment['projectPath'] = TYPO3\CMS\Core\Core\Environment::getProjectPath();
-        $this->backedUpEnvironment['publicPath'] = TYPO3\CMS\Core\Core\Environment::getPublicPath();
-        $this->backedUpEnvironment['varPath'] = TYPO3\CMS\Core\Core\Environment::getVarPath();
-        $this->backedUpEnvironment['configPath'] = TYPO3\CMS\Core\Core\Environment::getConfigPath();
-        $this->backedUpEnvironment['currentScript'] = TYPO3\CMS\Core\Core\Environment::getCurrentScript();
-        $this->backedUpEnvironment['isOsWindows'] = TYPO3\CMS\Core\Core\Environment::isWindows();
+        $this->backedUpEnvironment['context'] = Environment::getContext();
+        $this->backedUpEnvironment['isCli'] = Environment::isCli();
+        $this->backedUpEnvironment['composerMode'] = Environment::isComposerMode();
+        $this->backedUpEnvironment['projectPath'] = Environment::getProjectPath();
+        $this->backedUpEnvironment['publicPath'] = Environment::getPublicPath();
+        $this->backedUpEnvironment['varPath'] = Environment::getVarPath();
+        $this->backedUpEnvironment['configPath'] = Environment::getConfigPath();
+        $this->backedUpEnvironment['currentScript'] = Environment::getCurrentScript();
+        $this->backedUpEnvironment['isOsWindows'] = Environment::isWindows();
     }
 
     /**
      * restore the Environment object after usage
      */
     protected function restoreEnvironment() {
-        TYPO3\CMS\Core\Core\Environment::initialize(
+        Environment::initialize(
             $this->backedUpEnvironment['context'],
             $this->backedUpEnvironment['isCli'],
             $this->backedUpEnvironment['composerMode'],
