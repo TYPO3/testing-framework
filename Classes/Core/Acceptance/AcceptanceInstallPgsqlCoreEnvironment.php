@@ -59,6 +59,9 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
             'password' => getenv('typo3DatabasePassword'),
             'user' => getenv('typo3DatabaseUsername'),
         ];
+        if (!empty(getenv('typo3DatabasePort'))) {
+            $connectionParameters['port'] = getenv('typo3DatabasePort');
+        }
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
         $databaseName = getenv('typo3DatabaseName') . '_atipgsql';
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
