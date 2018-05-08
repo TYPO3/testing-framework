@@ -54,4 +54,19 @@ class AcceptanceTester extends \Codeception\Actor
         // reload the page to have a logged in backend
         $I->amOnPage('/typo3/index.php');
     }
+
+    /**
+     * overrides generated function at _generated\AcceptanceTesterActions
+     *
+     * put a wait state for the progress bar being finished _before_ switching to another frame
+     *
+     * @param string $name
+     * @return mixed|null
+     * @throws Exception
+     */
+    public function switchToIFrame($name = null) {
+        $this->getScenario()->runStep(new \Codeception\Step\Action('waitForElementNotVisible', ['div#nprogress']));
+        return $this->getScenario()->runStep(new \Codeception\Step\Action('switchToIFrame', func_get_args()));
+    }
+    
 }
