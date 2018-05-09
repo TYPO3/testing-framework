@@ -29,17 +29,17 @@
   "require": {
     "phpunit/phpunit": "^7.1",
     "mikey179/vfsStream": "~1.6.0",
-    "typo3fluid/fluid": "^2.2",
-    "typo3/cms-core": "^9.1",
-    "typo3/cms-backend": "^9.1",
-    "typo3/cms-frontend": "^9.1",
-    "typo3/cms-extbase": "^9.1",
-    "typo3/cms-fluid": "^9.1"
+    "typo3fluid/fluid": "^2.5",
+    "typo3/cms-core": "^9.2",
+    "typo3/cms-backend": "^9.2",
+    "typo3/cms-frontend": "^9.2",
+    "typo3/cms-extbase": "^9.2",
+    "typo3/cms-fluid": "^9.2"
   },
   "suggest": {
-    "codeception/codeception": "^2.2",
-    "typo3/cms-saltedpasswords": "^9.1",
-    "typo3/cms-styleguide": "~8.0.8"
+    "codeception/codeception": "^2.4",
+    "typo3/cms-saltedpasswords": "^9.2",
+    "typo3/cms-styleguide": "^9.0"
   },
   "autoload": {
     "psr-4": {
