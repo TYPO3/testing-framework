@@ -50,7 +50,7 @@ class DoesNotHaveRecordConstraint extends AbstractRecordConstraint
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return 'response does not have record';
     }

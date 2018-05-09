@@ -85,7 +85,7 @@ class StructureHasRecordConstraint extends AbstractStructureRecordConstraint
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return 'structure has record';
     }

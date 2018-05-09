@@ -61,7 +61,7 @@ class StructureDoesNotHaveRecordConstraint extends AbstractStructureRecordConstr
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return 'structure does not have record';
     }

@@ -77,7 +77,7 @@ abstract class AbstractRecordConstraint extends \PHPUnit\Framework\Constraint\Co
      * @param array|ResponseSection|ResponseSection[] $other ResponseSections to evaluate
      * @return bool
      */
-    protected function matches($other)
+    protected function matches($other): bool
     {
         if (is_array($other)) {
             $success = null;
@@ -150,7 +150,7 @@ abstract class AbstractRecordConstraint extends \PHPUnit\Framework\Constraint\Co
      * @param mixed $other Evaluated value or object.
      * @return string
      */
-    protected function failureDescription($other)
+    protected function failureDescription($other): string
     {
         return $this->toString();
     }
@@ -164,7 +164,7 @@ abstract class AbstractRecordConstraint extends \PHPUnit\Framework\Constraint\Co
      * @param mixed $other Evaluated value or object.
      * @return string
      */
-    protected function additionalFailureDescription($other)
+    protected function additionalFailureDescription($other): string
     {
         $failureDescription = '';
         foreach ($this->sectionFailures as $sectionIdentifier => $sectionFailure) {

@@ -49,7 +49,7 @@ class HasRecordConstraint extends AbstractRecordConstraint
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return 'response has records';
     }
