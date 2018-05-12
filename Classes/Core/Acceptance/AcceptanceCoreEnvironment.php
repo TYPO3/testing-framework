@@ -228,6 +228,7 @@ class AcceptanceCoreEnvironment extends Extension
             'recordlist',
             'reports',
             'sv',
+            'sys_note',
             'scheduler',
             'tstemplate',
         ];
