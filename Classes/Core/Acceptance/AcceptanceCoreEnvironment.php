@@ -226,6 +226,7 @@ class AcceptanceCoreEnvironment extends Extension
             't3skin',
             'frontend',
             'recordlist',
+            'redirects',
             'reports',
             'sv',
             'sys_note',
