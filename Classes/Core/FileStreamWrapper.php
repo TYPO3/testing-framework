@@ -416,7 +416,11 @@ class FileStreamWrapper
         $path = self::overlayPath($path);
         switch ($options) {
             case STREAM_META_TOUCH:
-                $success = touch($path, $value[0], $value[1]);
+                if (!empty($value)) {
+                    $success = touch($path, $value[0], $value[1]);
+                } else {
+                    $success = touch($path);
+                }
                 break;
             case STREAM_META_OWNER_NAME:
                 // Fall through
