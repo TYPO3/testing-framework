@@ -237,8 +237,9 @@ class Testbase
             'typo3_src/typo3' => $instancePath . '/typo3',
             'typo3_src/index.php' => $instancePath . '/index.php',
         ];
+        chdir($instancePath);
         foreach ($linksToSet as $from => $to) {
-            $success = symlink($from, $to);
+            $success = symlink(realpath($from), $to);
             if (!$success) {
                 throw new Exception(
                     'Creating link failed: from ' . $from . ' to: ' . $to,
@@ -363,7 +364,8 @@ class Testbase
         $databaseSocket = trim(getenv('typo3DatabaseSocket'));
         $databaseDriver = trim(getenv('typo3DatabaseDriver'));
         $databaseCharset = trim(getenv('typo3DatabaseCharset'));
-        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseCharset) {
+        $databasePath = trim(getenv('typo3DatabasePath'));
+        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseCharset || $databasePath) {
             // Try to get database credentials from environment variables first
             $originalConfigurationArray = [
                 'DB' => [
@@ -397,6 +399,9 @@ class Testbase
             }
             if ($databaseCharset) {
                 $originalConfigurationArray['DB']['Connections']['Default']['charset'] = $databaseCharset;
+            }
+            if ($databasePath) {
+                $originalConfigurationArray['DB']['Connections']['Default']['path'] = $databasePath;
             }
         } elseif (file_exists(ORIGINAL_ROOT . 'typo3conf/LocalConfiguration.php')) {
             // See if a LocalConfiguration file exists in "parent" instance to get db credentials from
@@ -541,10 +546,9 @@ class Testbase
         unset($connectionParameters['dbname']);
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
 
-        if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
+        if ($schemaManager->getDatabasePlatform()->getName() !== 'sqlite' && in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $schemaManager->dropDatabase($databaseName);
         }
-
         try {
             $schemaManager->createDatabase($databaseName);
         } catch (DBALException $e) {
