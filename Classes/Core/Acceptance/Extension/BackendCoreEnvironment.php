@@ -244,7 +244,6 @@ class BackendCoreEnvironment extends Extension
         foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
-        $testbase->createLastRunTextfile($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
         // ext:styleguide is always loaded
         $testExtensionsToLoad = array_merge(

@@ -199,6 +199,17 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
+     * This internal variable tracks if the given test is the first test of
+     * that test case. This variable is set to current calling test case class.
+     * Consecutive tests then optimize and do not create a full
+     * database structure again but instead just truncate all tables which
+     * is much quicker.
+     *
+     * @var string
+     */
+    private static $currestTestCaseClass;
+
+    /**
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
@@ -221,9 +232,18 @@ abstract class FunctionalTestCase extends BaseTestCase
         $testbase->defineTypo3ModeBe();
         $testbase->definePackagesPath();
         $testbase->setTypo3TestingContext();
-        if ($testbase->recentTestInstanceExists($this->instancePath)) {
+
+        $isFirstTest = false;
+        $currentTestCaseClass = get_called_class();
+        if (self::$currestTestCaseClass !== $currentTestCaseClass) {
+            $isFirstTest = true;
+            self::$currestTestCaseClass = $currentTestCaseClass;
+        }
+
+        if (!$isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
+            GeneralUtility::purgeInstances();
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
             Bootstrap::initializeBackendRouter();
@@ -240,7 +260,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             foreach ($this->additionalFoldersToCreate as $directory) {
                 $testbase->createDirectory($this->instancePath . '/' . $directory);
             }
-            $testbase->createLastRunTextfile($this->instancePath);
             $testbase->setUpInstanceCoreLinks($this->instancePath);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);

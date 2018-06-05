@@ -16,10 +16,12 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -172,23 +174,6 @@ class Testbase
     }
 
     /**
-     * Checks whether given test instance exists in path and is younger than some minutes.
-     * Used in functional tests
-     *
-     * @param string $instancePath Absolute path to test instance
-     * @return bool
-     */
-    public function recentTestInstanceExists($instancePath)
-    {
-        if (@file_get_contents($instancePath . '/last_run.txt') <= (time() - 300)) {
-            return false;
-        } else {
-            // Test instance exists and is pretty young -> re-use
-            return true;
-        }
-    }
-
-    /**
      * Remove test instance folder structure if it exists.
      * This may happen if a functional test before threw a fatal or is too old
      *
@@ -214,19 +199,6 @@ class Testbase
                 );
             }
         }
-    }
-
-    /**
-     * Create last_run.txt file within instance path containing timestamp of "now".
-     * Used in functional tests to reuse an instance for multiple tests in one test case.
-     *
-     * @param string $instancePath Absolute path to test instance
-     * @return void
-     */
-    public function createLastRunTextfile($instancePath)
-    {
-        // Store the time instance was created
-        file_put_contents($instancePath . '/last_run.txt', time());
     }
 
     /**
@@ -544,8 +516,16 @@ class Testbase
      */
     public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
+        // First close existing connections from a possible previous test case and
+        // tell our ConnectionPool there are no current connections anymore.
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+        $connection->close();
+        $connectionPool->resetConnections();
+
         // Drop database if exists. Directly using the Doctrine DriverManager to
-        // work around connection caching in ConnectionPool
+        // work around connection caching in ConnectionPool.
+        // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
@@ -585,20 +565,18 @@ class Testbase
         $_SERVER['PWD'] = $instancePath;
         $_SERVER['argv'][0] = 'index.php';
 
+        // Reset state from a possible previous run
+        GeneralUtility::purgeInstances();
+        GeneralUtility::resetApplicationContext();
+
         $classLoader = require rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-        $applicationContext = Bootstrap::createApplicationContext();
-        SystemEnvironmentBuilder::initializeEnvironment($applicationContext);
-        GeneralUtility::presetApplicationContext($applicationContext);
-        Bootstrap::initializeClassLoader($classLoader);
-
-        Bootstrap::baseSetup();
-        Bootstrap::loadConfigurationAndInitialize(true);
+        Bootstrap::init($classLoader);
+        // Make sure output is not buffered, so command-line output can take place and
+        // phpunit does not whine about changed output bufferings in tests.
+        ob_end_clean();
 
         $this->dumpClassLoadingInformation();
-        Bootstrap::loadTypo3LoadedExtAndExtLocalconf(true);
-        Bootstrap::setFinalCachingFrameworkCacheConfiguration();
-        Bootstrap::unsetReservedGlobalVariables();
     }
 
     /**
@@ -626,7 +604,6 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $schemaManager = $connection->getSchemaManager();
-
         foreach ($schemaManager->listTables() as $table) {
             $connection->truncate($table->getName());
             self::resetTableSequences($connection, $table->getName());
@@ -641,7 +618,6 @@ class Testbase
      */
     public function loadExtensionTables()
     {
-        Bootstrap::loadBaseTca();
         Bootstrap::loadExtTables();
     }
 

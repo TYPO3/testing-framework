@@ -188,7 +188,6 @@ EOF;
     convertErrorsToExceptions="true"
     convertWarningsToExceptions="true"
     forceCoversAnnotation="false"
-    processIsolation="true"
     stopOnError="false"
     stopOnFailure="false"
     stopOnIncomplete="false"
