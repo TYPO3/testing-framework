@@ -701,6 +701,42 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function getFrontendResponse($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $failOnFailure = true, $frontendUserId = 0)
     {
+        $result = $this->getFrontendResult(
+            $pageId,
+            $languageId,
+            $backendUserId,
+            $workspaceId,
+            $failOnFailure,
+            $frontendUserId
+        );
+        $data = json_decode($result['stdout'], true);
+
+        if ($data === null) {
+            $this->fail('Frontend Response is empty');
+        }
+
+        if ($failOnFailure && $data['status'] === Response::STATUS_Failure) {
+            $this->fail('Frontend Response has failure:' . LF . $data['error']);
+        }
+
+        $response = new Response($data['status'], $data['content'], $data['error']);
+        return $response;
+    }
+
+    /**
+     * Retrieves raw HTTP result by simulation a PHP frontend request
+     * using an internal PHP sub process.
+     *
+     * @param int $pageId
+     * @param int $languageId
+     * @param int $backendUserId
+     * @param int $workspaceId
+     * @param bool $failOnFailure
+     * @param int $frontendUserId
+     * @return array containing keys 'stdout' and 'stderr'
+     */
+    protected function getFrontendResult($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $failOnFailure = true, $frontendUserId = 0)
+    {
         $pageId = (int)$pageId;
         $languageId = (int)$languageId;
 
@@ -731,18 +767,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         );
 
         $php = AbstractPhpProcess::factory();
-        $response = $php->runJob($template->render());
-        $result = json_decode($response['stdout'], true);
-
-        if ($result === null) {
-            $this->fail('Frontend Response is empty');
-        }
-
-        if ($failOnFailure && $result['status'] === Response::STATUS_Failure) {
-            $this->fail('Frontend Response has failure:' . LF . $result['error']);
-        }
-
-        $response = new Response($result['status'], $result['content'], $result['error']);
-        return $response;
+        $result = $php->runJob($template->render());
+        return $result;
     }
 }
