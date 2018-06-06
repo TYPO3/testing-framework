@@ -167,6 +167,7 @@ class AcceptanceCoreEnvironment extends Extension
         $testbase->createDirectory(ORIGINAL_ROOT . 'typo3temp/var/transient');
 
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
+        putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         $testbase->defineTypo3ModeBe();
         $testbase->setTypo3TestingContext();
