@@ -51,6 +51,7 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
 
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptanceinstallmysql';
         $testbase->removeOldInstanceIfExists($instancePath);
+        putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [

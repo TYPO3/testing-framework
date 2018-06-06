@@ -51,6 +51,7 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
 
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptanceinstallpgsql';
         $testbase->removeOldInstanceIfExists($instancePath);
+        putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [
