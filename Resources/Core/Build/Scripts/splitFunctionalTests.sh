@@ -15,6 +15,14 @@
 #
 #########################
 
+#
+# @deprecated!
+#
+# This script has been superseded by the PHP based "splitFunctionalTests.php"
+# and will be removed any time soon.
+#
+echo "Deprecated script. Use splitFunctionalTests.php instead"
+
 numberOfFunctionalTestJobs=${1}
 numberOfFunctionalTestJobsMinusOne=$(( numberOfFunctionalTestJobs - 1 ))
 
