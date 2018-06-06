@@ -38,6 +38,19 @@ abstract class UnitTestCase extends BaseTestCase
     protected $backupGlobalsBlacklist = ['TYPO3_LOADED_EXT'];
 
     /**
+     * If set to true, setUp() will back up the state of the
+     * TYPO3\CMS\Core\Core\Environment class and restore it
+     * in tearDown().
+     *
+     * This is needed for tests that reset state of Environment
+     * by calling Environment::init() to for instance fake paths
+     * or force windows environment.
+     *
+     * @var bool
+     */
+    protected $backupEnvironment = false;
+
+    /**
      * Absolute path to files that should be removed after a test.
      * Handled in tearDown. Tests can register here to get any files
      * within typo3temp/ or typo3conf/ext cleaned up again.
@@ -62,11 +75,8 @@ abstract class UnitTestCase extends BaseTestCase
     private static $backupErrorReporting;
 
     /**
-     * The Environment object is used in TYPO3 to pass immutable settings
-     * like paths and system info around.
-     * It may be created in tests, but needs to be restored afterwards
-     * The array holds the original data to reset the Environment object
-     * after test run.
+     * Holds state of TYPO3\CMS\Core\Core\Environment if
+     * $this->backupEnvironment has been set to true in a test case
      *
      * @var array
      */
@@ -93,6 +103,9 @@ abstract class UnitTestCase extends BaseTestCase
         error_reporting(self::$backupErrorReporting);
     }
 
+    /**
+     * Generic setUp()
+     */
     protected function setUp()
     {
         if ($this->backupEnvironment === true) {
@@ -182,9 +195,11 @@ abstract class UnitTestCase extends BaseTestCase
     }
 
     /**
-     * before using Environment::initialize() in tests, backup the current data to be able to restore it afterwards
+     * Helper method used in setUp() if $this->backupEnvironment is true
+     * to back up current state of the Environment::class
      */
-    protected function backupEnvironment() {
+    private function backupEnvironment(): void
+    {
         $this->backedUpEnvironment['context'] = Environment::getContext();
         $this->backedUpEnvironment['isCli'] = Environment::isCli();
         $this->backedUpEnvironment['composerMode'] = Environment::isComposerMode();
@@ -197,9 +212,11 @@ abstract class UnitTestCase extends BaseTestCase
     }
 
     /**
-     * restore the Environment object after usage
+     * Helper method used in tearDown() if $this->backupEnvironment is true
+     * to reset state of Environment::class
      */
-    protected function restoreEnvironment() {
+    private function restoreEnvironment(): void
+    {
         Environment::initialize(
             $this->backedUpEnvironment['context'],
             $this->backedUpEnvironment['isCli'],
