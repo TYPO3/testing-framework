@@ -1,6 +1,5 @@
 actor: Tester
 paths:
-# @todo clean up here: https://forge.typo3.org/issues/79097 
   tests: ../../../../../../typo3/sysext/core/Tests
   log: ../../../../../../typo3temp/var/tests/AcceptanceReports
   data: Configuration/Acceptance/Data
