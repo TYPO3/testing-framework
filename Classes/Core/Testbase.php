@@ -354,7 +354,7 @@ class Testbase
      */
     public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration()
     {
-        $databaseName = trim(getenv('typo3DatabaseName'));
+        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName')));
         $databaseHost = trim(getenv('typo3DatabaseHost'));
         $databaseUsername = trim(getenv('typo3DatabaseUsername'));
         $databasePassword = getenv('typo3DatabasePassword');

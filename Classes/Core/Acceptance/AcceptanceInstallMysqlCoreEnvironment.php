@@ -62,7 +62,7 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
             'user' => getenv('typo3DatabaseUsername'),
         ];
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = getenv('typo3DatabaseName') . '_atimysql';
+        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName'))) . '_atimysql';
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $schemaManager->dropDatabase($databaseName);
         }

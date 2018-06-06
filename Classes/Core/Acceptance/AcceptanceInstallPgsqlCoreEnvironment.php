@@ -64,7 +64,7 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
             $connectionParameters['port'] = getenv('typo3DatabasePort');
         }
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = getenv('typo3DatabaseName') . '_atipgsql';
+        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName'))) . '_atipgsql';
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $schemaManager->dropDatabase($databaseName);
         }
