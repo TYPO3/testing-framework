@@ -9,7 +9,6 @@
 -->
 <phpunit
 	backupGlobals="true"
-	backupStaticAttributes="false"
 	bootstrap="FunctionalTestsBootstrap.php"
 	colors="true"
 	convertErrorsToExceptions="true"

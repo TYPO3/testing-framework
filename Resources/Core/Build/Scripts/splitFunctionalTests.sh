@@ -51,7 +51,6 @@ for (( i=0; i<${numberOfFunctionalTestJobs}; i++)); do
 	fi
 	echo '<phpunit' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	backupGlobals="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
-	echo '	backupStaticAttributes="false"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	bootstrap="FunctionalTestsBootstrap.php"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	colors="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml
 	echo '	convertErrorsToExceptions="true"' >> vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests-Job-${i}.xml

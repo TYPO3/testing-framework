@@ -32,13 +32,6 @@ abstract class BaseTestCase extends TestCase
     protected $backupGlobals = true;
 
     /**
-     * Whether static attributes should be backed up
-     *
-     * @var bool
-     */
-    protected $backupStaticAttributes = false;
-
-    /**
      * restore Environment after each test
      * @var bool
      */
