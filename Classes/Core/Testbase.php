@@ -237,8 +237,9 @@ class Testbase
             'typo3_src/typo3' => $instancePath . '/typo3',
             'typo3_src/index.php' => $instancePath . '/index.php',
         ];
+        chdir($instancePath);
         foreach ($linksToSet as $from => $to) {
-            $success = symlink($from, $to);
+            $success = symlink(realpath($from), $to);
             if (!$success) {
                 throw new Exception(
                     'Creating link failed: from ' . $from . ' to: ' . $to,
