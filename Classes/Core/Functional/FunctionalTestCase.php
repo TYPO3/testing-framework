@@ -246,11 +246,23 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
-            $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
-            // Append the unique identifier to the base database name to end up with a single database per test case
-            $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_ft' . $this->identifier;
-            $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
-            // Set some hard coded base settings for the instance. Those could be overruled by
+
+            $originalDatabaseName = '';
+            $dbPath = '';
+            $dbName = '';
+            $dbDriver = $localConfiguration['DB']['Connections']['Default']['driver'];
+            if ($dbDriver !== 'pdo_sqlite') {
+                $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
+                // Append the unique identifier to the base database name to end up with a single database per test case
+                $dbName = $originalDatabaseName . '_ft' . $this->identifier;
+                $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
+                $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
+            } else {
+                $dbPath = $this->instancePath . '/test.sqlite';
+                $localConfiguration['DB']['Connections']['Default']['path'] = $dbPath;
+            }
+
+                // Set some hard coded base settings for the instance. Those could be overruled by
             // $this->configurationToUseInTestInstance if needed again.
             $localConfiguration['SYS']['displayErrors'] = '1';
             $localConfiguration['SYS']['debugExceptionHandler'] = '';
@@ -269,7 +281,11 @@ abstract class FunctionalTestCase extends BaseTestCase
             ];
             $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
-            $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
+            if ($dbDriver !== 'pdo_sqlite') {
+                $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
+            } else {
+                $testbase->setUpTestDatabase($dbPath, $originalDatabaseName);
+            }
             Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();

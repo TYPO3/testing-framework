@@ -364,7 +364,7 @@ class Testbase
         $databaseSocket = trim(getenv('typo3DatabaseSocket'));
         $databaseDriver = trim(getenv('typo3DatabaseDriver'));
         $databaseCharset = trim(getenv('typo3DatabaseCharset'));
-        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseCharset) {
+        if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseDriver || $databaseCharset) {
             // Try to get database credentials from environment variables first
             $originalConfigurationArray = [
                 'DB' => [
@@ -534,7 +534,7 @@ class Testbase
      * @throws \TYPO3\TestingFramework\Core\Exception
      * @return void
      */
-    public function setUpTestDatabase($databaseName, $originalDatabaseName)
+    public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
         // Drop database if exists. Directly using the Doctrine DriverManager to
         // work around connection caching in ConnectionPool
@@ -542,10 +542,14 @@ class Testbase
         unset($connectionParameters['dbname']);
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
 
-        if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
+        if ($schemaManager->getDatabasePlatform()->getName() === 'sqlite') {
+            // This is the "path" option in sqlite: one file = one db
+            $schemaManager->dropDatabase($databaseName);
+        } elseif (in_array($databaseName, $schemaManager->listDatabases(), true)) {
+            // Suppress listDatabases() call on sqlite which is not implemented there, but
+            // check db existence on all other platforms before drop call
             $schemaManager->dropDatabase($databaseName);
         }
-
         try {
             $schemaManager->createDatabase($databaseName);
         } catch (DBALException $e) {
