@@ -41,6 +41,10 @@
     "typo3/cms-saltedpasswords": "^9.2",
     "typo3/cms-styleguide": "^9.0"
   },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin"
+  },
   "autoload": {
     "psr-4": {
       "TYPO3\\TestingFramework\\": "Classes/",
