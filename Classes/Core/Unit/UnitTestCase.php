@@ -52,6 +52,22 @@ abstract class UnitTestCase extends BaseTestCase
     protected $backupEnvironment = false;
 
     /**
+     * If set to true, tearDown() will purge singleton instances created by the test.
+     *
+     * Unit tests that trigger singleton creation via makeInstance() should set this
+     * to true to reset the framework internal singleton state after test execution.
+     *
+     * A test having this property set to true declares that the system under test
+     * includes functionality that does change global framework state. This bit of
+     * information is the reason why tearDown() does not reset singletons automatically.
+     * tearDown() will make the test fail if that property has not been set to true
+     * and if there are remaining singletons after test execution.
+     *
+     * @var bool
+     */
+    protected $resetSingletonInstances = false;
+
+    /**
      * Absolute path to files that should be removed after a test.
      * Handled in tearDown. Tests can register here to get any files
      * within typo3temp/ or typo3conf/ext cleaned up again.
@@ -129,9 +145,26 @@ abstract class UnitTestCase extends BaseTestCase
      */
     protected function tearDown()
     {
-        // execute before unsetting the class properties!
+        // Restore Environment::class is asked for
         if ($this->backupEnvironment === true) {
             $this->restoreEnvironment();
+        }
+
+        // GeneralUtility::makeInstance() singleton handling
+        if ($this->resetSingletonInstances === true) {
+            // Reset singletons if asked for by test setup
+            GeneralUtility::resetSingletonInstances([]);
+        } else {
+            // But fail if there are instances left and the test did not ask for reset
+            $singletonInstances = GeneralUtility::getSingletonInstances();
+            // Reset singletons anyway to not let all futher tests fail
+            GeneralUtility::resetSingletonInstances([]);
+            self::assertEmpty(
+                $singletonInstances,
+                'tearDown() integrity check found left over singleton instances in GeneralUtilily::makeInstance()'
+                . ' instance list. The test should probably set \'$this->resetSingletonInstances = true;\' to'
+                . ' reset this framework state change. Found singletons: ' . implode(', ', array_keys($singletonInstances))
+            );
         }
 
         // Unset properties of test classes to safe memory
@@ -189,7 +222,7 @@ abstract class UnitTestCase extends BaseTestCase
         self::assertEquals(
             [],
             $notCleanInstances,
-            'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance stack.'
+            'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance list.'
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
         );
 
@@ -197,7 +230,7 @@ abstract class UnitTestCase extends BaseTestCase
         $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
         $property = $reflectionClass->getProperty('configurationManager');
         $property->setAccessible(true);
-        $this->assertNull($property->getValue());
+        self::assertNull($property->getValue());
     }
 
     /**
