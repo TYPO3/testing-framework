@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Unit;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 
 /**
@@ -192,6 +193,11 @@ abstract class UnitTestCase extends BaseTestCase
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
         );
 
+        // Verify LocalizationUtility class internal state has been reset properly if a test fiddled with it
+        $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
+        $property = $reflectionClass->getProperty('configurationManager');
+        $property->setAccessible(true);
+        $this->assertNull($property->getValue());
     }
 
     /**
