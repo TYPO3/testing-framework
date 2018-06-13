@@ -65,7 +65,7 @@ class AcceptanceTester extends \Codeception\Actor
      * @throws Exception
      */
     public function switchToIFrame($name = null) {
-        $this->getScenario()->runStep(new \Codeception\Step\Action('waitForElementNotVisible', ['div#nprogress']));
+        $this->getScenario()->runStep(new \Codeception\Step\Action('waitForElementNotVisible', ['div#nprogress', 120]));
         return $this->getScenario()->runStep(new \Codeception\Step\Action('switchToIFrame', func_get_args()));
     }
     
