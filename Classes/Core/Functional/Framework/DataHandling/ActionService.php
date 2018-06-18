@@ -266,24 +266,26 @@ class ActionService
 
     /**
      * @param string $tableName
-     * @param int $uid
-     * @param int $pageId
+     * @param int $uid uid of the record you want to move
+     * @param int $targetUid target uid of a page or record. if positive, means it's PID where the record will be moved into,
+     * negative means record will be placed after record with this uid. In this case it's uid of the record from
+     * the same table, and not a PID.
      * @param array $recordData
      * @return array
      */
-    public function moveRecord(string $tableName, int $uid, int $pageId, array $recordData = null): array
+    public function moveRecord(string $tableName, int $uid, int $targetUid, array $recordData = null): array
     {
         $commandMap = [
             $tableName => [
                 $uid => [
-                    'move' => $pageId,
+                    'move' => $targetUid,
                 ],
             ],
         ];
         if ($recordData !== null) {
             $commandMap[$tableName][$uid]['move'] = [
                 'action' => 'paste',
-                'target' => $pageId,
+                'target' => $targetUid,
                 'update' => $recordData,
             ];
         }
