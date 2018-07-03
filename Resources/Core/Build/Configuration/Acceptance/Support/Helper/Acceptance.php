@@ -3,6 +3,16 @@ namespace Helper;
 
 class Acceptance extends \Codeception\Module
 {
+
+    public function _beforeStep(\Codeception\Step $step)
+    {
+        if ($step->getAction() === 'click') {
+            $this->debug('Waiting for nprogress to hide...');
+            $this->getModule('WebDriver')->waitForElementNotVisible('#nprogress', 10);
+        }
+    }
+
+
     /**
      * Check for browser console errors after each step
      * There is also an option to use _after() instead, but it causes Codeception to stop execution
