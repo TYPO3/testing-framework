@@ -53,6 +53,10 @@ class AcceptanceTester extends \Codeception\Actor
 
         // reload the page to have a logged in backend
         $I->amOnPage('/typo3/index.php');
+        
+        // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
+        $I->switchToIFrame('list_frame');
+        $I->waitForText('Web Content Management System');
     }
 
     /**
