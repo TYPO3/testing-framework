@@ -55,24 +55,30 @@ class AcceptanceTester extends \Codeception\Actor
         $I->amOnPage('/typo3/index.php');
         
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
-        $I->switchToIFrame('list_frame');
+        $I->switchToContentFrame();
         $I->waitForText('Web Content Management System');
         // And switch back to main frame preparing a click to main module for the following main test case
+        $I->switchToMainFrame();
+    }
+
+    /**
+     * Helper method switching to main content frame, the one with main module and top bar
+     */
+    public function switchToMainFrame(): void
+    {
+        $I = $this;
+        $I->waitForElementNotVisible('#nprogress', 120);
         $I->switchToIFrame();
     }
 
     /**
-     * overrides generated function at _generated\AcceptanceTesterActions
-     *
-     * put a wait state for the progress bar being finished _before_ switching to another frame
-     *
-     * @param string $name
-     * @return mixed|null
-     * @throws Exception
+     * Helper method switching to main content frame, the one with main module and top bar
      */
-    public function switchToIFrame($name = null) {
-        $this->getScenario()->runStep(new \Codeception\Step\Action('waitForElementNotVisible', ['div#nprogress', 120]));
-        return $this->getScenario()->runStep(new \Codeception\Step\Action('switchToIFrame', func_get_args()));
+    public function switchToContentFrame(): void
+    {
+        $I = $this;
+        $I->waitForElementNotVisible('#nprogress', 120);
+        $I->switchToIFrame('list_frame');
+        $I->waitForElementNotVisible('#nprogress', 120);
     }
-    
 }
