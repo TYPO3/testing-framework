@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance;
+namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -31,114 +31,138 @@ use TYPO3\TestingFramework\Core\Testbase;
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
  */
-class AcceptanceCoreEnvironment extends Extension
+class CoreEnvironment extends Extension
 {
-    /**
-     * Additional core extensions to load.
-     *
-     * To be used in own acceptance test suites.
-     *
-     * If a test suite needs additional core extensions, for instance as a dependency of
-     * an extension that is tested, those core extension names can be noted here and will
-     * be loaded.
-     *
-     * @var array
-     */
-    protected $coreExtensionsToLoad = [];
 
     /**
-     * Array of test/fixture extensions paths that should be loaded for a test.
-     *
-     * To be used in own acceptance test suites.
-     *
-     * Given path is expected to be relative to your document root, example:
-     *
-     * array(
-     *   'typo3conf/ext/some_extension/Tests/Functional/Fixtures/Extensions/test_extension',
-     *   'typo3conf/ext/base_extension',
-     * );
-     *
-     * Extensions in this array are linked to the test instance, loaded
-     * and their ext_tables.sql will be applied.
+     * Can be overridden by the same name environment variables
      *
      * @var array
      */
-    protected $testExtensionsToLoad = [];
+    protected $config = [
+        'setup'                 => true,
+        'cleanup'               => true,
 
-    /**
-     * Array of test/fixture folder or file paths that should be linked for a test.
-     *
-     * To be used in own acceptance test suites.
-     *
-     * array(
-     *   'link-source' => 'link-destination'
-     * );
-     *
-     * Given paths are expected to be relative to the test instance root.
-     * The array keys are the source paths and the array values are the destination
-     * paths, example:
-     *
-     * array(
-     *   'typo3/sysext/impext/Tests/Functional/Fixtures/Folders/fileadmin/user_upload' =>
-     *   'fileadmin/user_upload',
-     *   'typo3conf/ext/my_own_ext/Tests/Functional/Fixtures/Folders/uploads/tx_myownext' =>
-     *   'uploads/tx_myownext'
-     * );
-     *
-     * To be able to link from my_own_ext the extension path needs also to be registered in
-     * property $testExtensionsToLoad
-     *
-     * @var array
-     */
-    protected $pathsToLinkInTestInstance = [];
+        // config / environment variables
+        'typo3InstallToolPassword' => null,
+        'typo3InstallToolHashedPassword' => '$P$notnotnotnotnotnot.validvalidva',
+        'typo3DatabaseHost' => null,
+        'typo3DatabaseUsername' => null,
+        'typo3DatabasePassword' => null,
+        'typo3DatabasePort' => null,
+        'typo3DatabaseSocket' => null,
+        'typo3DatabaseDriver' => null,
+        'typo3DatabaseCharset' => null,
 
-    /**
-     * This configuration array is merged with TYPO3_CONF_VARS
-     * that are set in default configuration and factory configuration
-     *
-     * To be used in own acceptance test suites.
-     *
-     * @var array
-     */
-    protected $configurationToUseInTestInstance = [];
+        // CUSTOM CONFIG:
+        /**
+         * Additional core extensions to load.
+         *
+         * To be used in own acceptance test suites.
+         *
+         * If a test suite needs additional core extensions, for instance as a dependency of
+         * an extension that is tested, those core extension names can be noted here and will
+         * be loaded.
+         *
+         * @var array
+         */
+        'coreExtensionsToLoad' => [],
 
-    /**
-     * Array of folders that should be created inside the test instance document root.
-     *
-     * To be used in own acceptance test suites.
-     *
-     * Per default the following folder are created
-     * /fileadmin
-     * /typo3temp
-     * /typo3conf
-     * /typo3conf/ext
-     * /uploads
-     *
-     * To create additional folders add the paths to this array. Given paths are expected to be
-     * relative to the test instance root and have to begin with a slash. Example:
-     *
-     * array(
-     *   'fileadmin/user_upload'
-     * );
-     *
-     * @var array
-     */
-    protected $additionalFoldersToCreate = [];
+        /**
+         * Array of test/fixture extensions paths that should be loaded for a test.
+         *
+         * To be used in own acceptance test suites.
+         *
+         * Given path is expected to be relative to your document root, example:
+         *
+         * array(
+         *   'typo3conf/ext/some_extension/Tests/Functional/Fixtures/Extensions/test_extension',
+         *   'typo3conf/ext/base_extension',
+         * );
+         *
+         * Extensions in this array are linked to the test instance, loaded
+         * and their ext_tables.sql will be applied.
+         *
+         * @var array
+         */
+        'testExtensionsToLoad' => [],
 
-    /**
-     * XML database fixtures to be loaded into database.
-     *
-     * Given paths are expected to be relative to your document root.
-     *
-     * @var array
-     */
-    protected $xmlDatabaseFixtures = [
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/sys_category.xml',
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
-        'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
+
+        /**
+         * Array of test/fixture folder or file paths that should be linked for a test.
+         *
+         * To be used in own acceptance test suites.
+         *
+         * array(
+         *   'link-source' => 'link-destination'
+         * );
+         *
+         * Given paths are expected to be relative to the test instance root.
+         * The array keys are the source paths and the array values are the destination
+         * paths, example:
+         *
+         * array(
+         *   'typo3/sysext/impext/Tests/Functional/Fixtures/Folders/fileadmin/user_upload' =>
+         *   'fileadmin/user_upload',
+         *   'typo3conf/ext/my_own_ext/Tests/Functional/Fixtures/Folders/uploads/tx_myownext' =>
+         *   'uploads/tx_myownext'
+         * );
+         *
+         * To be able to link from my_own_ext the extension path needs also to be registered in
+         * property $testExtensionsToLoad
+         *
+         * @var array
+         */
+        'pathsToLinkInTestInstance' => [],
+
+        /**
+         * This configuration array is merged with TYPO3_CONF_VARS
+         * that are set in default configuration and factory configuration
+         *
+         * To be used in own acceptance test suites.
+         *
+         * @var array
+         */
+        'configurationToUseInTestInstance' => [],
+
+        /**
+         * Array of folders that should be created inside the test instance document root.
+         *
+         * To be used in own acceptance test suites.
+         *
+         * Per default the following folder are created
+         * /fileadmin
+         * /typo3temp
+         * /typo3conf
+         * /typo3conf/ext
+         * /uploads
+         *
+         * To create additional folders add the paths to this array. Given paths are expected to be
+         * relative to the test instance root and have to begin with a slash. Example:
+         *
+         * array(
+         *   'fileadmin/user_upload'
+         * );
+         *
+         * @var array
+         */
+        'additionalFoldersToCreate' => [],
+
+        /**
+         * XML database fixtures to be loaded into database.
+         *
+         * Given paths are expected to be relative to your document root.
+         *
+         * @var array
+         */
+        'xmlDatabaseFixtures' => [
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/sys_category.xml',
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_extension.xml',
+            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/tx_extensionmanager_domain_model_repository.xml',
+        ],
     ];
 
     /**
@@ -159,6 +183,9 @@ class AcceptanceCoreEnvironment extends Extension
      */
     public function bootstrapTypo3Environment(SuiteEvent $suiteEvent)
     {
+        if (!$this->config['setup']) {
+            return;
+        }
         $testbase = new Testbase();
         $testbase->enableDisplayErrors();
         $testbase->defineBaseConstants();
@@ -179,7 +206,7 @@ class AcceptanceCoreEnvironment extends Extension
         $testbase->createDirectory($instancePath . '/typo3conf/ext');
         $testbase->createDirectory($instancePath . '/uploads');
         // Additionally requested directories
-        foreach ($this->additionalFoldersToCreate as $directory) {
+        foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
         $testbase->createLastRunTextfile($instancePath);
@@ -187,17 +214,19 @@ class AcceptanceCoreEnvironment extends Extension
         // ext:styleguide is always loaded
         $testExtensionsToLoad = array_merge(
             [ 'typo3conf/ext/styleguide' ],
-            $this->testExtensionsToLoad
+            $this->config['testExtensionsToLoad']
         );
         $testbase->linkTestExtensionsToInstance($instancePath, $testExtensionsToLoad);
-        $testbase->linkPathsInTestInstance($instancePath, $this->pathsToLinkInTestInstance);
-        $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
+        $testbase->linkPathsInTestInstance($instancePath, $this->config['pathsToLinkInTestInstance']);
+        $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration($this->config);
         $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
         // Append the unique identifier to the base database name to end up with a single database per test case
         $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_at';
+        
+        $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
         $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
         // Set some hard coded base settings for the instance. Those could be overruled by
-        // $this->configurationToUseInTestInstance if needed again.
+        // $this->config['configurationToUseInTestInstance ']if needed again.
         $localConfiguration['BE']['debug'] = true;
         $localConfiguration['BE']['lockHashKeyWords'] = '';
         $localConfiguration['BE']['installToolPassword'] = $this->getInstallToolPassword();
@@ -210,7 +239,7 @@ class AcceptanceCoreEnvironment extends Extension
         // @todo: This sql_mode should be enabled as soon as styleguide and dataHandler can cope with it
         //$localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
         $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
-        $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
+        $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->config['configurationToUseInTestInstance']);
         $defaultCoreExtensionsToLoad = [
             'core',
             'beuser',
@@ -235,7 +264,8 @@ class AcceptanceCoreEnvironment extends Extension
             'scheduler',
             'tstemplate',
         ];
-        $testbase->setUpPackageStates($instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $testExtensionsToLoad);
+        $testbase->setUpPackageStates($instancePath, $defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad);
+        $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad)));
         $testbase->setUpBasicTypo3Bootstrap($instancePath);
         $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
         $testbase->loadExtensionTables();
@@ -247,7 +277,7 @@ class AcceptanceCoreEnvironment extends Extension
         $suite = $suiteEvent->getSuite();
         $suite->setBackupGlobals(false);
 
-        foreach ($this->xmlDatabaseFixtures as $fixture) {
+        foreach ($this->config['xmlDatabaseFixtures'] as $fixture) {
             $testbase->importXmlDatabaseFixture($fixture);
         }
 
@@ -273,6 +303,9 @@ class AcceptanceCoreEnvironment extends Extension
      */
     public function cleanupTypo3Environment()
     {
+        if (!$this->config['cleanup']) {
+            return;
+        }
         // Reset uc db field of be_user "admin" to null to reduce
         // possible side effects between single tests.
         GeneralUtility::makeInstance(ConnectionPool::class)
@@ -289,12 +322,11 @@ class AcceptanceCoreEnvironment extends Extension
      */
     protected function getInstallToolPassword(): string
     {
-        $password = getenv('typo3InstallToolPassword');
+        $password = $this->config['typo3InstallToolPassword'];
         if (!empty($password)) {
             $saltFactory = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance(null, 'BE');
             return $saltFactory->getHashedPassword($password);
-        } else {
-            return '$P$notnotnotnotnotnot.validvalidva';
-        }
+        } 
+        return $this->config['typo3InstallToolHashedPassword'];
     }
 }

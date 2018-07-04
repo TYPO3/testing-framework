@@ -1,9 +1,8 @@
 <?php
-namespace Helper;
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 class Acceptance extends \Codeception\Module
 {
-
     public function _beforeStep(\Codeception\Step $step)
     {
         if ($step->getAction() === 'click') {
@@ -11,7 +10,6 @@ class Acceptance extends \Codeception\Module
             $this->getModule('WebDriver')->waitForElementNotVisible('#nprogress', 10);
         }
     }
-
 
     /**
      * Check for browser console errors after each step

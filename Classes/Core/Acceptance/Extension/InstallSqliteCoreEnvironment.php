@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance;
+namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -15,10 +15,8 @@ namespace TYPO3\TestingFramework\Core\Acceptance;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Codeception\Event\SuiteEvent;
 use Codeception\Events;
 use Codeception\Extension;
-use Doctrine\DBAL\DriverManager;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -26,8 +24,12 @@ use TYPO3\TestingFramework\Core\Testbase;
  * typo3temp. It is used as a basic acceptance test that clicks through
  * the TYPO3 installation steps.
  */
-class AcceptanceInstallMysqlCoreEnvironment extends Extension
+class InstallSqliteCoreEnvironment extends Extension
 {
+    protected $config = [
+        'path' => null,
+    ];
+
     /**
      * Events to listen to
      */
@@ -49,23 +51,9 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptanceinstallmysql';
+        $instancePath = ORIGINAL_ROOT . $this->config['path'];
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
-
-        // Drop db from a previous run if exists
-        $connectionParameters = [
-            'driver' => 'mysqli',
-            'host' => '127.0.0.1',
-            'password' => getenv('typo3DatabasePassword'),
-            'port' => 3306,
-            'user' => getenv('typo3DatabaseUsername'),
-        ];
-        $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName'))) . '_atimysql';
-        if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
-            $schemaManager->dropDatabase($databaseName);
-        }
 
         $testbase->createDirectory($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);

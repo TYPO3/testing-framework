@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\TestingFramework\Core\Acceptance\Support\Helper;
+namespace TYPO3\TestingFramework\Core\Acceptance\Page;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -14,7 +14,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Support\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
-use AcceptanceTester;
 
 /**
  * Helper to interact with modal dialogs that appear for example when
@@ -26,7 +25,7 @@ use AcceptanceTester;
  * |            [no] [maybe] [yeah] |
  *  --------------------------------
  */
-class ModalDialog
+abstract class ModalDialog
 {
     /**
      * Selector for a visible modal window
@@ -46,14 +45,6 @@ class ModalDialog
      * @var AcceptanceTester
      */
     protected $tester;
-
-    /**
-     * @param AcceptanceTester $I
-     */
-    public function __construct(\AcceptanceTester $I)
-    {
-        $this->tester = $I;
-    }
 
     /**
      * Perform a click on a link or a button, given by a locator.

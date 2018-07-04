@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance;
+namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -26,8 +26,16 @@ use TYPO3\TestingFramework\Core\Testbase;
  * typo3temp. It is used as a basic acceptance test that clicks through
  * the TYPO3 installation steps.
  */
-class AcceptanceInstallPgsqlCoreEnvironment extends Extension
+class InstallMysqlCoreEnvironment extends Extension
 {
+    protected $config = [
+        'path' => null,
+        'typo3DatabaseHost' => '127.0.0.1',
+        'typo3DatabasePassword' => null,
+        'typo3DatabaseUsername' => null,
+        'typo3DatabaseName' => null,
+    ];
+
     /**
      * Events to listen to
      */
@@ -49,26 +57,28 @@ class AcceptanceInstallPgsqlCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptanceinstallpgsql';
+        $instancePath = ORIGINAL_ROOT . $this->config['path'];
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [
-            'driver' => 'pdo_pgsql',
-            'host' => '127.0.0.1',
-            'password' => getenv('typo3DatabasePassword'),
-            'user' => getenv('typo3DatabaseUsername'),
+            'driver' => 'mysqli',
+            'host' => $this->config['typo3DatabaseHost'],
+            'password' => $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword'),
+            'port' => 3306,
+            'user' => $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername'),
         ];
-        if (!empty(getenv('typo3DatabasePort'))) {
-            $connectionParameters['port'] = getenv('typo3DatabasePort');
-        }
+        $this->output->debug("Connecting to MySQL: " . json_encode($connectionParameters));
+
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName'))) . '_atipgsql';
+        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName'))) . '_atimysql';
+
+        $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
+            $this->output->debug("Dropping database $databaseName");
             $schemaManager->dropDatabase($databaseName);
         }
-        $schemaManager->createDatabase($databaseName);
 
         $testbase->createDirectory($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
