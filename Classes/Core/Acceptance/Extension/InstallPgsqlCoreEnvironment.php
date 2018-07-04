@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
  */
 
 use Codeception\Event\SuiteEvent;
+use Codeception\Event\TestEvent;
 use Codeception\Events;
 use Codeception\Extension;
 use Doctrine\DBAL\DriverManager;
@@ -36,6 +37,14 @@ class InstallPgsqlCoreEnvironment extends Extension
         'typo3DatabaseName' => null,
     ];
 
+    public function _initialize()
+    {
+        $this->config['typo3DatabasePassword'] = $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword');
+        $this->config['typo3DatabaseUsername'] = $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername');
+        $this->config['typo3DatabasePort'] = $this->config['typo3DatabasePort'] ?? getenv('typo3DatabasePort');
+        $this->config['typo3DatabaseName'] = $this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName');
+    }
+
 
     /**
      * Events to listen to
@@ -50,7 +59,7 @@ class InstallPgsqlCoreEnvironment extends Extension
      * Create a full standalone TYPO3 instance within typo3temp/var/tests/acceptance,
      * create a database and create database schema.
      */
-    public function bootstrapTypo3Environment()
+    public function bootstrapTypo3Environment(TestEvent $event)
     {
         $testbase = new Testbase();
         $testbase->enableDisplayErrors();
@@ -66,16 +75,16 @@ class InstallPgsqlCoreEnvironment extends Extension
         $connectionParameters = [
             'driver' => 'pdo_pgsql',
             'host' => $this->config['typo3DatabaseHost'],
-            'password' => $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword'),
-            'user' => $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername'),
+            'password' => $this->config['typo3DatabasePassword'],
+            'user' => $this->config['typo3DatabaseUsername'],
         ];
-        $port = $this->config['typo3DatabasePort'] ?? getenv('typo3DatabasePort');
+        $port = $this->config['typo3DatabasePort'];
         if (!empty($port)) {
             $connectionParameters['port'] = $port;
         }
         $this->output->debug("Connecting to PgSQL: " . json_encode($connectionParameters));
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName'))) . '_atipgsql';
+        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'])) . '_atipgsql';
 
         $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
@@ -87,5 +96,7 @@ class InstallPgsqlCoreEnvironment extends Extension
         $testbase->createDirectory($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
         touch($instancePath . '/FIRST_INSTALL');
+
+        $event->getTest()->getMetadata()->setCurrent($this->config);
     }
 }
