@@ -57,6 +57,8 @@ class AcceptanceTester extends \Codeception\Actor
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
         $I->switchToIFrame('list_frame');
         $I->waitForText('Web Content Management System');
+        // And switch back to main frame preparing a click to main module for the following main test case
+        $I->switchToIFrame();
     }
 
     /**
