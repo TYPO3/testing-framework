@@ -1,5 +1,6 @@
 <?php
-namespace TYPO3\TestingFramework\Core\Acceptance\Page;
+declare(strict_types=1);
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -21,7 +22,7 @@ use Facebook\WebDriver\WebDriverBy;
 /**
  * Helper class to interact with the page tree
  */
-abstract class PageTree
+abstract class AbstractPageTree
 {
     // Selectors
     public static $pageTreeFrameSelector = '#typo3-pagetree';

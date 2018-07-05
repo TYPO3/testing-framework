@@ -1,9 +1,34 @@
 <?php
+declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
-class Acceptance extends \Codeception\Module
+/*
+ * This file is part of the TYPO3 CMS project.
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
+use Codeception\Module;
+use Codeception\Step;
+
+/**
+ * Helper class to verify javascript browser console does not throw errors.
+ */
+class Acceptance extends Module
 {
-    public function _beforeStep(\Codeception\Step $step)
+    /**
+     * Wait for backend progress bar to finish / disappear before "click" steps are performed.
+     *
+     * @param Step $step
+     */
+    public function _beforeStep(Step $step)
     {
         if ($step->getAction() === 'click') {
             $this->debug('Waiting for nprogress to hide...');
@@ -18,7 +43,7 @@ class Acceptance extends \Codeception\Module
      *
      * @param \Codeception\Step $step
      */
-    public function _afterStep(\Codeception\Step $step)
+    public function _afterStep(Step $step)
     {
         $this->assertEmptyBrowserConsole();
     }

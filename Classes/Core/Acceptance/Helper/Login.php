@@ -1,15 +1,41 @@
 <?php
-
+declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
-use Codeception\Exception\ConfigurationException;
+/*
+ * This file is part of the TYPO3 CMS project.
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
 
-class Login extends \Codeception\Module
+use Codeception\Exception\ConfigurationException;
+use Codeception\Module;
+
+/**
+ * Helper class to log in backend users and load backend
+ */
+class Login extends Module
 {
+    /**
+     * @var array Filled by .yml config with valid sessions per role
+     */
     protected $config = [
         'sessions' => []
     ];
 
+    /**
+     * Set a session cookie and load backend index.php
+     *
+     * @param string $role
+     * @throws ConfigurationException
+     */
     public function useExistingSession($role = '')
     {
         $wd = $this->getModule('WebDriver');

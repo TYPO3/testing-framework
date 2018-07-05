@@ -1,5 +1,6 @@
 <?php
-namespace TYPO3\TestingFramework\Core\Acceptance\Page;
+declare(strict_types=1);
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -14,7 +15,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Page;
  * The TYPO3 project - inspiring people to share!
  */
 
-
 /**
  * Helper to interact with modal dialogs that appear for example when
  * you delete a record or have to confirm something.
@@ -25,7 +25,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Page;
  * |            [no] [maybe] [yeah] |
  *  --------------------------------
  */
-abstract class ModalDialog
+abstract class AbstractModalDialog
 {
     /**
      * Selector for a visible modal window

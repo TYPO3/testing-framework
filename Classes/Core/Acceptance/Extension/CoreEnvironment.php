@@ -33,19 +33,15 @@ use TYPO3\TestingFramework\Core\Testbase;
  */
 class CoreEnvironment extends Extension
 {
-
     /**
-     * Can be overridden by the same name environment variables
+     * Some settings can be overridden by the same name environment variables, see _initialize()
      *
      * @var array
      */
     protected $config = [
-        'setup'                 => true,
-        'cleanup'               => true,
-
         // config / environment variables
-        'typo3InstallToolPassword' => null,
-        'typo3InstallToolHashedPassword' => '$P$notnotnotnotnotnot.validvalidva',
+        'typo3Setup' => true,
+        'typo3Cleanup' => true,
         'typo3DatabaseHost' => null,
         'typo3DatabaseUsername' => null,
         'typo3DatabasePassword' => null,
@@ -86,7 +82,6 @@ class CoreEnvironment extends Extension
          * @var array
          */
         'testExtensionsToLoad' => [],
-
 
         /**
          * Array of test/fixture folder or file paths that should be linked for a test.
@@ -174,6 +169,47 @@ class CoreEnvironment extends Extension
     ];
 
     /**
+     * Initialize config array, called before events.
+     *
+     * Config options can be overridden via .yml config, example:
+     *
+     * extensions:
+     *   enabled:
+     *     - TYPO3\TestingFramework\Core\Acceptance\Extension\CoreEnvironment:
+     *       typo3DatabaseHost: 127.0.0.1
+     *
+     * Some config options can also be set via environment variables, which then
+     * take precedence:
+     *
+     * typo3DatabaseHost=127.0.0.1 ./bin/codecept run ...
+     */
+    public function _initialize()
+    {
+        $env = getenv('typo3Setup');
+        $this->config['typo3Setup'] = is_string($env)
+            ? (trim($env) === 'false' ? false : (bool)$env)
+            : $this->config['typo3Setup'];
+        $env = getenv('typoCleanup');
+        $this->config['typo3Cleanup'] = is_string($env)
+            ? (trim($env) === 'false' ? false : (bool)$env)
+            : $this->config['typo3Cleanup'];
+        $env = getenv('typo3DatabaseHost');
+        $this->config['typo3DatabaseHost'] = is_string($env) ? trim($env) : $this->config['typo3DatabaseHost'];
+        $env = getenv('typo3DatabaseUsername');
+        $this->config['typo3DatabaseUsername'] = is_string($env) ? trim($env) : $this->config['typo3DatabaseUsername'];
+        $env = getenv('typo3DatabasePassword');
+        $this->config['typo3DatabasePassword'] = is_string($env) ? $env : $this->config['typo3DatabasePassword'];
+        $env = getenv('typo3DatabasePort');
+        $this->config['typo3DatabasePort'] = is_string($env) ? (int)$env : (int)$this->config['typo3DatabasePort'];
+        $env = getenv('typo3DatabaseSocket');
+        $this->config['typo3DatabaseSocket'] = is_string($env) ? trim($env) : $this->config['typo3DatabaseSocket'];
+        $env = getenv('typo3DatabaseDriver');
+        $this->config['typo3DatabaseDriver'] = is_string($env) ? trim($env) : $this->config['typo3DatabaseDriver'];
+        $env = getenv('typo3DatabaseCharset');
+        $this->config['typo3DatabaseCharset'] = is_string($env) ? trim($env) : $this->config['typo3DatabaseCharset'];
+    }
+
+    /**
      * Handle SUITE_BEFORE event.
      *
      * Create a full standalone TYPO3 instance within typo3temp/var/tests/acceptance,
@@ -183,7 +219,7 @@ class CoreEnvironment extends Extension
      */
     public function bootstrapTypo3Environment(SuiteEvent $suiteEvent)
     {
-        if (!$this->config['setup']) {
+        if (!$this->config['typo3Setup']) {
             return;
         }
         $testbase = new Testbase();
@@ -229,11 +265,11 @@ class CoreEnvironment extends Extension
         // $this->config['configurationToUseInTestInstance ']if needed again.
         $localConfiguration['BE']['debug'] = true;
         $localConfiguration['BE']['lockHashKeyWords'] = '';
-        $localConfiguration['BE']['installToolPassword'] = $this->getInstallToolPassword();
+        $localConfiguration['BE']['installToolPassword'] = '$P$notnotnotnotnotnot.validvalidva';
         $localConfiguration['BE']['loginSecurityLevel'] = 'rsa';
         $localConfiguration['SYS']['displayErrors'] = false;
         $localConfiguration['SYS']['debugExceptionHandler'] = '';
-        $localConfiguration['SYS']['trustedHostsPattern'] = 'localhost:8000';
+        $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
         $localConfiguration['SYS']['encryptionKey'] = 'iAmInvalid';
         $localConfiguration['SYS']['features']['redirects.hitCount'] = true;
         // @todo: This sql_mode should be enabled as soon as styleguide and dataHandler can cope with it
@@ -303,7 +339,7 @@ class CoreEnvironment extends Extension
      */
     public function cleanupTypo3Environment()
     {
-        if (!$this->config['cleanup']) {
+        if (!$this->config['typo3Cleanup']) {
             return;
         }
         // Reset uc db field of be_user "admin" to null to reduce
@@ -311,22 +347,5 @@ class CoreEnvironment extends Extension
         GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
             ->update('be_users', ['uc' => null], ['uid' => 1]);
-    }
-
-    /**
-     * Set install tool password. This is either a salted password
-     * of a given typo3InstallToolPassword environment variable, or
-     * a hardcoded value that does not allow login.
-     *
-     * @return string
-     */
-    protected function getInstallToolPassword(): string
-    {
-        $password = $this->config['typo3InstallToolPassword'];
-        if (!empty($password)) {
-            $saltFactory = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance(null, 'BE');
-            return $saltFactory->getHashedPassword($password);
-        } 
-        return $this->config['typo3InstallToolHashedPassword'];
     }
 }

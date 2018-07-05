@@ -350,10 +350,11 @@ class Testbase
      *
      * An unique name will be added to the database name later.
      *
+     * @param array $config Incoming config arguments, used especially in acceptance test setups
      * @throws Exception
      * @return array [DB][host], [DB][username], ...
      */
-    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration($config = [])
+    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = [])
     {
         $databaseName = mb_strtolower(trim($config['typo3DatabaseName'] ?? getenv('typo3DatabaseName')));
         $databaseHost = trim($config['typo3DatabaseHost'] ?? getenv('typo3DatabaseHost'));
