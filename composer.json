@@ -47,9 +47,7 @@
   },
   "autoload": {
     "psr-4": {
-      "TYPO3\\TestingFramework\\": "Classes/",
-      "TYPO3\\CMS\\Core\\Tests\\": "compat/core/",
-      "TYPO3\\CMS\\Fluid\\Tests\\": "compat/fluid/"
+      "TYPO3\\TestingFramework\\": "Classes/"
     }
   }
 }
