@@ -27,24 +27,53 @@ use TYPO3\TestingFramework\Core\Testbase;
  * typo3temp. It is used as a basic acceptance test that clicks through
  * the TYPO3 installation steps.
  */
-class InstallPgsqlCoreEnvironment extends Extension
+class InstallPostgresqlCoreEnvironment extends Extension
 {
+    /**
+     * @var array Default configuration values
+     */
     protected $config = [
-        'path' => null,
-        'typo3DatabaseHost' => '127.0.0.1',
-        'typo3DatabasePassword' => null,
-        'typo3DatabaseUsername' => null,
-        'typo3DatabaseName' => null,
+        'typo3InstallPostgresqlDatabaseHost' => '127.0.0.1',
+        'typo3InstallPostgresqlDatabasePort' => 5432,
+        'typo3InstallPostgresqlDatabasePassword' => '',
+        'typo3InstallPostgresqlDatabaseUsername' => '',
+        'typo3InstallPostgresqlDatabaseName' => 'core_install',
     ];
 
+    /**
+     * Override configuration from ENV if needed
+     */
     public function _initialize()
     {
-        $this->config['typo3DatabasePassword'] = $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword');
-        $this->config['typo3DatabaseUsername'] = $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername');
-        $this->config['typo3DatabasePort'] = $this->config['typo3DatabasePort'] ?? getenv('typo3DatabasePort');
-        $this->config['typo3DatabaseName'] = $this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName');
-    }
+        $env = getenv('typo3InstallPostgresqlDatabaseHost');
+        $this->config['typo3InstallPostgresqlDatabaseHost'] = is_string($env)
+            ? trim($env)
+            : trim($this->config['typo3InstallPostgresqlDatabaseHost']);
 
+        $env = getenv('typo3InstallPostgresqlDatabasePort');
+        $this->config['typo3InstallPostgresqlDatabasePort'] = is_string($env)
+            ? (int)$env
+            : (int)$this->config['typo3InstallPostgresqlDatabasePort'];
+
+        $env = getenv('typo3InstallPostgresqlDatabasePassword');
+        $this->config['typo3InstallPostgresqlDatabasePassword'] = is_string($env)
+            ? trim($env)
+            : trim($this->config['typo3InstallPostgresqlDatabasePassword']);
+
+        $env = getenv('typo3InstallPostgresqlDatabaseUsername');
+        $this->config['typo3InstallPostgresqlDatabaseUsername'] = is_string($env)
+            ? trim($env)
+            : $this->config['typo3InstallPostgresqlDatabaseUsername'];
+
+        $env = getenv('typo3InstallPostgresqlDatabaseName');
+        $this->config['typo3InstallPostgresqlDatabaseName'] = (is_string($env) && !empty($env))
+            ? mb_strtolower(trim($env))
+            : mb_strtolower(trim($this->config['typo3InstallPostgresqlDatabaseName']));
+
+        if (empty($this->config['typo3InstallPostgresqlDatabaseName'])) {
+            throw new \RuntimeException('No database name given', 1530827194);
+        }
+    }
 
     /**
      * Events to listen to
@@ -67,25 +96,21 @@ class InstallPgsqlCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . $this->config['path'];
+        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [
             'driver' => 'pdo_pgsql',
-            'host' => $this->config['typo3DatabaseHost'],
-            'password' => $this->config['typo3DatabasePassword'],
-            'user' => $this->config['typo3DatabaseUsername'],
+            'host' => $this->config['typo3InstallPostgresqlDatabaseHost'],
+            'port' => $this->config['typo3InstallPostgresqlDatabasePort'],
+            'password' => $this->config['typo3InstallPostgresqlDatabasePassword'],
+            'user' => $this->config['typo3InstallPostgresqlDatabaseUsername'],
         ];
-        $port = $this->config['typo3DatabasePort'];
-        if (!empty($port)) {
-            $connectionParameters['port'] = $port;
-        }
         $this->output->debug("Connecting to PgSQL: " . json_encode($connectionParameters));
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'])) . '_atipgsql';
-
+        $databaseName = $this->config['typo3InstallPostgresqlDatabaseName'];
         $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $this->output->debug("Dropping database $databaseName");
@@ -97,6 +122,7 @@ class InstallPgsqlCoreEnvironment extends Extension
         $testbase->setUpInstanceCoreLinks($instancePath);
         touch($instancePath . '/FIRST_INSTALL');
 
+        // Have config available in test
         $event->getTest()->getMetadata()->setCurrent($this->config);
     }
 }

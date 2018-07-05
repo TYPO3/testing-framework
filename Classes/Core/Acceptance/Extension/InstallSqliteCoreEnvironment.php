@@ -26,10 +26,6 @@ use TYPO3\TestingFramework\Core\Testbase;
  */
 class InstallSqliteCoreEnvironment extends Extension
 {
-    protected $config = [
-        'path' => null,
-    ];
-
     /**
      * Events to listen to
      */
@@ -51,7 +47,7 @@ class InstallSqliteCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . $this->config['path'];
+        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
 

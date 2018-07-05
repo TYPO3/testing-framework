@@ -29,23 +29,45 @@ use TYPO3\TestingFramework\Core\Testbase;
  */
 class InstallMysqlCoreEnvironment extends Extension
 {
+    /**
+     * @var array Default configuration values
+     */
     protected $config = [
-        'path' => null,
-        'typo3DatabaseHost' => '127.0.0.1',
-        'typo3DatabasePassword' => null,
-        'typo3DatabaseUsername' => null,
-        'typo3DatabaseName' => null,
+        'typo3InstallMysqlDatabaseHost' => '127.0.0.1',
+        'typo3InstallMysqlDatabasePassword' => '',
+        'typo3InstallMysqlDatabaseUsername' => 'root',
+        'typo3InstallMysqlDatabaseName' => 'core_install',
     ];
 
-
+    /**
+     * Override configuration from ENV if needed
+     */
     public function _initialize()
     {
-        $this->config['typo3DatabasePassword'] = $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword');
-        $this->config['typo3DatabaseUsername'] = $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername');
-        $this->config['typo3DatabasePort'] = $this->config['typo3DatabasePort'] ?? getenv('typo3DatabasePort');
-        $this->config['typo3DatabaseName'] = $this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName');
-    }
+        $env = getenv('typo3InstallMysqlDatabaseHost');
+        $this->config['typo3InstallMysqlDatabaseHost'] = is_string($env)
+            ? trim($env)
+            : trim($this->config['typo3InstallMysqlDatabaseHost']);
 
+        $env = getenv('typo3InstallMysqlDatabasePassword');
+        $this->config['typo3InstallMysqlDatabasePassword'] = is_string($env)
+            ? trim($env)
+            : trim($this->config['typo3InstallMysqlDatabasePassword']);
+
+        $env = getenv('typo3InstallMysqlDatabaseUsername');
+        $this->config['typo3InstallMysqlDatabaseUsername'] = is_string($env)
+            ? trim($env)
+            : $this->config['typo3InstallMysqlDatabaseUsername'];
+
+        $env = getenv('typo3InstallMysqlDatabaseName');
+        $this->config['typo3InstallMysqlDatabaseName'] = (is_string($env) && !empty($env))
+            ? mb_strtolower(trim($env))
+            : mb_strtolower(trim($this->config['typo3InstallMysqlDatabaseName']));
+
+        if (empty($this->config['typo3InstallMysqlDatabaseName'])) {
+            throw new \RuntimeException('No database name given', 1530827194);
+        }
+    }
 
     /**
      * Events to listen to
@@ -68,23 +90,21 @@ class InstallMysqlCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . $this->config['path'];
+        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [
             'driver' => 'mysqli',
-            'host' => $this->config['typo3DatabaseHost'],
-            'password' => $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword'),
+            'host' => $this->config['typo3InstallMysqlDatabaseHost'],
             'port' => 3306,
-            'user' => $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername'),
+            'password' => $this->config['typo3InstallMysqlDatabasePassword'],
+            'user' => $this->config['typo3InstallMysqlDatabaseUsername'],
         ];
         $this->output->debug("Connecting to MySQL: " . json_encode($connectionParameters));
-
+        $databaseName = $this->config['typo3InstallMysqlDatabaseName'];
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName'))) . '_atimysql';
-
         $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $this->output->debug("Dropping database $databaseName");
@@ -95,6 +115,7 @@ class InstallMysqlCoreEnvironment extends Extension
         $testbase->setUpInstanceCoreLinks($instancePath);
         touch($instancePath . '/FIRST_INSTALL');
 
+        // Have config available in test
         $event->getTest()->getMetadata()->setCurrent($this->config);
     }
 }

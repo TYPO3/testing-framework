@@ -54,7 +54,6 @@ class Testbase
     }
 
     /**
-     * Makes sure error messages during the tests get displayed no matter what is set in php.ini.
      *
      * @return void
      */
@@ -199,6 +198,13 @@ class Testbase
     public function removeOldInstanceIfExists($instancePath)
     {
         if (is_dir($instancePath)) {
+            if (strpos($instancePath, 'typo3temp') === false) {
+                // Simple safe guard to not delete something else - test instance must contain at least typo3temp
+                throw new \RuntimeException(
+                    'Test instance to delete must be within typo3temp',
+                    1530825517
+                );
+            }
             $success = GeneralUtility::rmdir($instancePath, true);
             if (!$success) {
                 throw new Exception(

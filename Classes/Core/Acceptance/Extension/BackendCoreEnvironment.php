@@ -31,7 +31,7 @@ use TYPO3\TestingFramework\Core\Testbase;
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
  */
-class CoreEnvironment extends Extension
+class BackendCoreEnvironment extends Extension
 {
     /**
      * Some settings can be overridden by the same name environment variables, see _initialize()
