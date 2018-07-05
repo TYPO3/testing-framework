@@ -1,5 +1,6 @@
 <?php
-namespace TYPO3\TestingFramework\Core\Acceptance\Support\Helper;
+declare(strict_types=1);
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.

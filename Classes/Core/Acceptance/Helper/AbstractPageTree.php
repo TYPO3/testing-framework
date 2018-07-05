@@ -1,5 +1,6 @@
 <?php
-namespace TYPO3\TestingFramework\Core\Acceptance\Support\Page;
+declare(strict_types=1);
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -21,7 +22,7 @@ use Facebook\WebDriver\WebDriverBy;
 /**
  * Helper class to interact with the page tree
  */
-class PageTree
+abstract class AbstractPageTree
 {
     // Selectors
     public static $pageTreeFrameSelector = '#typo3-pagetree';
@@ -33,14 +34,6 @@ class PageTree
      * @var AcceptanceTester
      */
     protected $tester;
-
-    /**
-     * @param AcceptanceTester $I
-     */
-    public function __construct(\AcceptanceTester $I)
-    {
-        $this->tester = $I;
-    }
 
     /**
      * Open the given hierarchical path in the pagetree and click the last page.

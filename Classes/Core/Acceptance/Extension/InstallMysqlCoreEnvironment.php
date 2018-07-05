@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance;
+namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance;
  */
 
 use Codeception\Event\SuiteEvent;
+use Codeception\Event\TestEvent;
 use Codeception\Events;
 use Codeception\Extension;
 use Doctrine\DBAL\DriverManager;
@@ -26,8 +27,26 @@ use TYPO3\TestingFramework\Core\Testbase;
  * typo3temp. It is used as a basic acceptance test that clicks through
  * the TYPO3 installation steps.
  */
-class AcceptanceInstallMysqlCoreEnvironment extends Extension
+class InstallMysqlCoreEnvironment extends Extension
 {
+    protected $config = [
+        'path' => null,
+        'typo3DatabaseHost' => '127.0.0.1',
+        'typo3DatabasePassword' => null,
+        'typo3DatabaseUsername' => null,
+        'typo3DatabaseName' => null,
+    ];
+
+
+    public function _initialize()
+    {
+        $this->config['typo3DatabasePassword'] = $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword');
+        $this->config['typo3DatabaseUsername'] = $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername');
+        $this->config['typo3DatabasePort'] = $this->config['typo3DatabasePort'] ?? getenv('typo3DatabasePort');
+        $this->config['typo3DatabaseName'] = $this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName');
+    }
+
+
     /**
      * Events to listen to
      */
@@ -41,7 +60,7 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
      * Create a full standalone TYPO3 instance within typo3temp/var/tests/acceptance,
      * create a database and create database schema.
      */
-    public function bootstrapTypo3Environment()
+    public function bootstrapTypo3Environment(TestEvent $event)
     {
         $testbase = new Testbase();
         $testbase->enableDisplayErrors();
@@ -49,26 +68,33 @@ class AcceptanceInstallMysqlCoreEnvironment extends Extension
         $testbase->defineOriginalRootPath();
         $testbase->setTypo3TestingContext();
 
-        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptanceinstallmysql';
+        $instancePath = ORIGINAL_ROOT . $this->config['path'];
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
 
         // Drop db from a previous run if exists
         $connectionParameters = [
             'driver' => 'mysqli',
-            'host' => '127.0.0.1',
-            'password' => getenv('typo3DatabasePassword'),
+            'host' => $this->config['typo3DatabaseHost'],
+            'password' => $this->config['typo3DatabasePassword'] ?? getenv( 'typo3DatabasePassword'),
             'port' => 3306,
-            'user' => getenv('typo3DatabaseUsername'),
+            'user' => $this->config['typo3DatabaseUsername'] ?? getenv( 'typo3DatabaseUsername'),
         ];
+        $this->output->debug("Connecting to MySQL: " . json_encode($connectionParameters));
+
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
-        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName'))) . '_atimysql';
+        $databaseName = mb_strtolower(trim($this->config['typo3DatabaseName'] ?? getenv( 'typo3DatabaseName'))) . '_atimysql';
+
+        $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
+            $this->output->debug("Dropping database $databaseName");
             $schemaManager->dropDatabase($databaseName);
         }
 
         $testbase->createDirectory($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
         touch($instancePath . '/FIRST_INSTALL');
+
+        $event->getTest()->getMetadata()->setCurrent($this->config);
     }
 }

@@ -350,20 +350,21 @@ class Testbase
      *
      * An unique name will be added to the database name later.
      *
+     * @param array $config Incoming config arguments, used especially in acceptance test setups
      * @throws Exception
      * @return array [DB][host], [DB][username], ...
      */
-    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration()
+    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = [])
     {
-        $databaseName = mb_strtolower(trim(getenv('typo3DatabaseName')));
-        $databaseHost = trim(getenv('typo3DatabaseHost'));
-        $databaseUsername = trim(getenv('typo3DatabaseUsername'));
-        $databasePassword = getenv('typo3DatabasePassword');
+        $databaseName = mb_strtolower(trim($config['typo3DatabaseName'] ?? getenv('typo3DatabaseName')));
+        $databaseHost = trim($config['typo3DatabaseHost'] ?? getenv('typo3DatabaseHost'));
+        $databaseUsername = trim($config['typo3DatabaseUsername'] ?? getenv('typo3DatabaseUsername'));
+        $databasePassword = $config['typo3DatabasePassword'] ?? getenv('typo3DatabasePassword');
         $databasePasswordTrimmed = trim($databasePassword);
-        $databasePort = trim(getenv('typo3DatabasePort'));
-        $databaseSocket = trim(getenv('typo3DatabaseSocket'));
-        $databaseDriver = trim(getenv('typo3DatabaseDriver'));
-        $databaseCharset = trim(getenv('typo3DatabaseCharset'));
+        $databasePort = trim($config['typo3DatabasePort'] ?? getenv('typo3DatabasePort'));
+        $databaseSocket = trim($config['typo3DatabaseSocket'] ?? getenv('typo3DatabaseSocket'));
+        $databaseDriver = trim($config['typo3DatabaseDriver'] ?? getenv('typo3DatabaseDriver'));
+        $databaseCharset = trim($config['typo3DatabaseCharset'] ?? getenv('typo3DatabaseCharset'));
         if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseDriver || $databaseCharset) {
             // Try to get database credentials from environment variables first
             $originalConfigurationArray = [
