@@ -54,6 +54,7 @@ class Testbase
     }
 
     /**
+     *  Makes sure error messages during the tests get displayed no matter what is set in php.ini
      *
      * @return void
      */
