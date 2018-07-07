@@ -50,7 +50,6 @@ class BackendCoreEnvironment extends Extension
         'typo3DatabaseDriver' => null,
         'typo3DatabaseCharset' => null,
 
-        // CUSTOM CONFIG:
         /**
          * Additional core extensions to load.
          *
