@@ -36,7 +36,7 @@ if [ -f buildTemp/testFilesWeighted.txt ]; then
 fi
 
 # A list of all acceptance test files
-find . -name \*Cest.php -path \*typo3/sysext/*/Tests/Acceptance* > buildTemp/testFiles.txt
+find . -name \*Cest.php -path \*typo3/sysext/*/Tests/Acceptance/Backend* > buildTemp/testFiles.txt
 
 # File with test files of format "42 ./path/to/file"
 while read testFile; do
@@ -47,7 +47,7 @@ done < buildTemp/testFiles.txt
 # Sort list of files numeric
 cat buildTemp/testFilesWithNumberOfTestFiles.txt | sort -n -r > buildTemp/testFilesWeighted.txt
 
-groupFilePath="vendor/typo3/testing-framework/Resources/Core/Build/Configuration/Acceptance"
+groupFilePath="typo3temp/var/tests"
 # Config file boilerplate per job
 for (( i=1; i<=${numberOfAcceptanceTestJobs}; i++)); do
 	if [ -f ${groupFilePath}/AcceptanceTests-Job-${i} ]; then
@@ -84,7 +84,7 @@ while read testFileWeighted; do
 			direction=descending
 		fi
 	fi
-	echo "../../../../../../${testFile}" >> ${groupFilePath}/AcceptanceTests-Job-$(( targetJobNumberForFile + 1 ))
+	echo "../../../${testFile}" >> ${groupFilePath}/AcceptanceTests-Job-$(( targetJobNumberForFile + 1 ))
 	(( counter ++ ))
 done < buildTemp/testFilesWeighted.txt
 
