@@ -66,10 +66,10 @@ class Acceptance extends Module
                 && $this->isJSError($logEntry['level'], $logEntry['message'])
             ) {
                 // Timestamp is in milliseconds, but date() requires seconds.
-                $time = date('H:i:s', $logEntry['timestamp'] / 1000) .
-                    // Append the milliseconds to the end of the time string
-                    '.' . ($logEntry['timestamp'] % 1000);
-                $messages[] = "{$time} {$logEntry['level']} - {$logEntry['message']}";
+                $time = date('H:i:s', (int)($logEntry['timestamp'] / 1000));
+                // Append the milliseconds to the end of the time string
+                $ms = $logEntry['timestamp'] % 1000;
+                $messages[] = "{$time}.{$ms} {$logEntry['level']} - {$logEntry['message']}";
             }
         }
         if (empty($messages)) {
