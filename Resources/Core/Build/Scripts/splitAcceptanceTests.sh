@@ -19,6 +19,14 @@
 #
 #########################
 
+#
+# @deprecated!
+#
+# This script has been superseded by the PHP based "splitAcceptanceTests.php"
+# and will be removed any time soon.
+#
+echo "Deprecated script. Use splitAcceptanceTests.php instead"
+
 numberOfAcceptanceTestJobs=${1}
 
 # Have a dir for temp files and clean up possibly existing stuff
