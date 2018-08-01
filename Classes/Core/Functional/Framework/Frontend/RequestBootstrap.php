@@ -81,6 +81,8 @@ class RequestBootstrap
         if (!is_file($_SERVER['SCRIPT_FILENAME'])) {
             die('Script file "' . $_SERVER['SCRIPT_FILENAME'] . '" does not exist');
         }
+
+        putenv('TYPO3_CONTEXT=Testing/Frontend');
     }
 
     /**
