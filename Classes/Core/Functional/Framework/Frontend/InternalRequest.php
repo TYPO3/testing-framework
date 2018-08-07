@@ -77,10 +77,54 @@ class InternalRequest extends Request implements \JsonSerializable
 
     /**
      * @param string $parameterName
-     * @param int|float|string $value
+     * @param null|int|float|string $value
      * @return InternalRequest
      */
     public function withQueryParameter(string $parameterName, $value): InternalRequest
+    {
+        $query = $this->modifyQueryParameter(
+            $this->uri->getQuery() ?? '',
+            $parameterName,
+            $value
+        );
+
+        $target = clone $this;
+        $target->uri = $target->uri->withQuery($query);
+        return $target;
+    }
+
+    /**
+     * @param array $parameters
+     * @return InternalRequest
+     */
+    public function withQueryParameters(array $parameters): InternalRequest
+    {
+        if (empty($parameters)) {
+            return $this;
+        }
+
+        $query = $this->uri->getQuery() ?? '';
+
+        foreach ($parameters as $parameterName => $value) {
+            $query = $this->modifyQueryParameter(
+                $query,
+                $parameterName,
+                $value
+            );
+        }
+
+        $target = clone $this;
+        $target->uri = $target->uri->withQuery($query);
+        return $target;
+    }
+
+    /**
+     * @param string $query
+     * @param string $parameterName
+     * @param null|int|float|string $value
+     * @return string
+     */
+    private function modifyQueryParameter(string $query, string $parameterName, $value): string
     {
         if (!is_float($value) && !is_int($value) && !is_string($value) && $value !== null) {
             throw new \RuntimeException(
@@ -89,13 +133,8 @@ class InternalRequest extends Request implements \JsonSerializable
             );
         }
 
-        $parameters = \GuzzleHttp\Psr7\parse_query($this->uri->getQuery());
+        $parameters = \GuzzleHttp\Psr7\parse_query($query);
         $parameters[$parameterName] = $value;
-
-        $target = clone $this;
-        $target->uri = $target->uri->withQuery(
-            \GuzzleHttp\Psr7\build_query($parameters)
-        );
-        return $target;
+        return \GuzzleHttp\Psr7\build_query($parameters);
     }
 }
