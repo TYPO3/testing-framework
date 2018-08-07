@@ -20,21 +20,62 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 class RequestBootstrap
 {
     /**
+     * @var string
+     */
+    private $documentRoot;
+
+    /**
+     * @var array
+     */
+    private $requestArguments;
+
+    /**
+     * @var \Composer\Autoload\ClassLoader
+     */
+    private $classLoader;
+
+    /**
+     * @param string $documentRoot
+     * @param array|null $this->requestArguments
+     */
+    public function __construct(string $documentRoot, array $requestArguments = null)
+    {
+        $this->documentRoot = $documentRoot;
+        $this->requestArguments = $requestArguments;
+        $this->initialize();
+        $this->setGlobalVariables();
+    }
+
+    private function initialize()
+    {
+        $directory = dirname(realpath($this->documentRoot . '/index.php'));
+        $this->classLoader = require_once $directory . '/vendor/autoload.php';
+    }
+
+    /**
      * @return void
      */
-    public static function setGlobalVariables(array $requestArguments = null)
+    private function setGlobalVariables()
     {
-        if (empty($requestArguments)) {
+        if (empty($this->requestArguments)) {
             die('No JSON encoded arguments given');
         }
 
-        if (empty($requestArguments['documentRoot'])) {
+        if (empty($this->requestArguments['documentRoot'])) {
             die('No documentRoot given');
         }
 
-        if (empty($requestArguments['requestUrl']) || ($requestUrlParts = parse_url($requestArguments['requestUrl'])) === false) {
-            die('No valid request URL given');
+        if (!empty($this->requestArguments['requestUrl'])) {
+            die('Using request URL has been removed, use request object instead');
         }
+
+        if (empty($this->requestArguments['request'])) {
+            die('No request object given');
+        }
+
+        $context = InternalRequestContext::fromArray(json_decode($this->requestArguments['context'], true));
+        $request = InternalRequest::fromArray(json_decode($this->requestArguments['request'], true));
+        $requestUrlParts = parse_url($request->getUri());
 
         // Populating $_GET and $_REQUEST is query part is set:
         if (isset($requestUrlParts['query'])) {
@@ -49,12 +90,17 @@ class RequestBootstrap
 
         // Setting up the server environment
         $_SERVER = [];
-        $_SERVER['DOCUMENT_ROOT'] = $requestArguments['documentRoot'];
+        $_SERVER['X_TYPO3_TESTING_FRAMEWORK'] = [
+            'context' => $context,
+            'request' => $request,
+            'withJsonResponse' => $this->requestArguments['withJsonResponse'] ?? true,
+        ];
+        $_SERVER['DOCUMENT_ROOT'] = $this->requestArguments['documentRoot'];
         $_SERVER['HTTP_USER_AGENT'] = 'TYPO3 Functional Test Request';
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
         $_SERVER['SERVER_ADDR'] = $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/index.php';
-        $_SERVER['SCRIPT_FILENAME'] = $_SERVER['_'] = $_SERVER['PATH_TRANSLATED'] = $requestArguments['documentRoot'] . '/index.php';
+        $_SERVER['SCRIPT_FILENAME'] = $_SERVER['_'] = $_SERVER['PATH_TRANSLATED'] = $this->requestArguments['documentRoot'] . '/index.php';
         $_SERVER['QUERY_STRING'] = (isset($requestUrlParts['query']) ? $requestUrlParts['query'] : '');
         $_SERVER['REQUEST_URI'] = $requestUrlParts['path'] . (isset($requestUrlParts['query']) ? '?' . $requestUrlParts['query'] : '');
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -88,7 +134,7 @@ class RequestBootstrap
     /**
      * @return void
      */
-    public static function executeAndOutput()
+    public function executeAndOutput()
     {
         global $TT, $TSFE, $TYPO3_CONF_VARS, $BE_USER, $TYPO3_MISC;
 
@@ -97,14 +143,57 @@ class RequestBootstrap
         ob_start();
         try {
             chdir($_SERVER['DOCUMENT_ROOT']);
-            include($_SERVER['SCRIPT_FILENAME']);
+            \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(
+                0,
+                \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_FE
+            );
+            \TYPO3\CMS\Core\Core\Bootstrap::init($this->classLoader)
+                ->get(\TYPO3\CMS\Frontend\Http\Application::class)
+                ->run();
             $result['status'] = 'success';
-            $result['content'] = ob_get_contents();
+            $result['content'] = static::getContent();
         } catch (\Exception $exception) {
             $result['error'] = $exception->__toString();
         }
         ob_end_clean();
 
         echo json_encode($result);
+    }
+
+    /**
+     * @return null|InternalRequest
+     */
+    public static function getInternalRequest(): ?InternalRequest
+    {
+        return $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] ?? null;
+    }
+
+    /**
+     * @return null|InternalRequestContext
+     */
+    public static function getInternalRequestContext(): ?InternalRequestContext
+    {
+        return $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] ?? null;
+    }
+
+    /**
+     * @return bool
+     * @deprecated since TYPO3 v9.4, will be removed in TYPO3 v10.0
+     */
+    public static function shallUseWithJsonResponse(): bool
+    {
+        return $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['withJsonResponse'] ?? true;
+    }
+
+    /**
+     * @return null|string|array
+     */
+    private static function getContent()
+    {
+        $content = ob_get_contents();
+        if (static::shallUseWithJsonResponse()) {
+            $content = json_decode($content, true);
+        }
+        return $content;
     }
 }

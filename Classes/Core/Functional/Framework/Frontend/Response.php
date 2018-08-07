@@ -80,11 +80,12 @@ class Response
 
     /**
      * @return ResponseContent
+     * @deprecated use ResponseContent::fromString() instead
      */
     public function getResponseContent()
     {
         if (!isset($this->responseContent)) {
-            $this->responseContent = new ResponseContent($this);
+            $this->responseContent = ResponseContent::fromString($this->getContent());
         }
         return $this->responseContent;
     }
@@ -92,18 +93,10 @@ class Response
     /**
      * @param mixed $sectionIdentifiers
      * @return NULL|array|ResponseSection[]
+     * @deprecated use ResponseContent::getSections() instead
      */
     public function getResponseSections(...$sectionIdentifiers)
     {
-        if (empty($sectionIdentifiers)) {
-            $sectionIdentifiers = ['Default'];
-        }
-
-        $sections = [];
-        foreach ($sectionIdentifiers as $sectionIdentifier) {
-            $sections[] = $this->getResponseContent()->getSection($sectionIdentifier);
-        }
-
-        return $sections;
+        return $this->getResponseContent()->getSections(...$sectionIdentifiers);
     }
 }
