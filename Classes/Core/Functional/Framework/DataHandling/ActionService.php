@@ -426,9 +426,10 @@ class ActionService
      * @param array $dataMap
      * @param array $commandMap
      */
-    public function invoke(array $dataMap, array $commandMap)
+    public function invoke(array $dataMap, array $commandMap, array $suggestedIds = [])
     {
         $this->createDataHandler();
+        $this->dataHandler->suggestedInsertUids = $suggestedIds;
         $this->dataHandler->start($dataMap, $commandMap);
         $this->dataHandler->process_datamap();
         $this->dataHandler->process_cmdmap();

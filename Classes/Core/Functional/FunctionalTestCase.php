@@ -680,7 +680,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param int $pageId
      * @param array $typoScriptFiles
      */
-    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = [])
+    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = [], array $templateValues = [])
     {
         $pageId = (int)$pageId;
 
@@ -702,15 +702,22 @@ abstract class FunctionalTestCase extends BaseTestCase
             ['uid' => $pageId]
         );
 
-        $templateFields = [
-            'pid' => $pageId,
-            'title' => '',
-            'constants' => 'databasePlatform = ' . $databasePlatform . LF,
-            'config' => '',
-            'clear' => 3,
-            'root' => 1,
-        ];
+        $templateFields = array_merge(
+            [
+                'title' => '',
+                'sitetitle' => '',
+                'constants' => '',
+                'config' => '',
+            ],
+            $templateValues,
+            [
+                'pid' => $pageId,
+                'clear' => 3,
+                'root' => 1,
+            ]
+        );
 
+        $templateValues['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
         foreach ($typoScriptFiles as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
@@ -747,10 +754,9 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
-     * @param bool $failOnFailure
      * @return InternalResponse
      */
-    protected function executeFrontendRequest(InternalRequest $request, InternalRequestContext $context = null, $failOnFailure = true): InternalResponse
+    protected function executeFrontendRequest(InternalRequest $request, InternalRequestContext $context = null): InternalResponse
     {
         if ($context === null) {
             $context = new InternalRequestContext();
@@ -763,8 +769,11 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
         }
 
-        if ($failOnFailure && $data['status'] === Response::STATUS_Failure) {
-            $this->fail('Frontend Response has failure:' . LF . $data['error']);
+        if ($data['status'] === Response::STATUS_Failure) {
+            throw new $data['exception']['type'](
+                $data['exception']['message'],
+                $data['exception']['code']
+            );
         }
 
         return InternalResponse::fromArray($data['content']);

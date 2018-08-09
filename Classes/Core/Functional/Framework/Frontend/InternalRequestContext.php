@@ -14,6 +14,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 
 /**
@@ -39,6 +40,11 @@ class InternalRequestContext implements \JsonSerializable
     private $workspaceId;
 
     /**
+     * @var array
+     */
+    private $globalSettings;
+
+    /**
      * @param array $data
      * @return InternalRequestContext
      */
@@ -56,7 +62,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return int
+     * @return null|int
      */
     public function getFrontendUserId(): ?int
     {
@@ -64,7 +70,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return int
+     * @return null|int
      */
     public function getBackendUserId(): ?int
     {
@@ -72,11 +78,19 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return int
+     * @return null|int
      */
     public function getWorkspaceId(): ?int
     {
         return $this->workspaceId;
+    }
+
+    /**
+     * @return null|array
+     */
+    public function getGlobalSettings(): ?array
+    {
+        return $this->globalSettings;
     }
 
     /**
@@ -109,6 +123,38 @@ class InternalRequestContext implements \JsonSerializable
     {
         $target = clone $this;
         $target->workspaceId = $workspaceId;
+        return $target;
+    }
+
+    /**
+     * @param array $globalSettings
+     * @return InternalRequestContext
+     */
+    public function withGlobalSettings(array $globalSettings): InternalRequestContext
+    {
+        if (empty($globalSettings)) {
+            return $this;
+        }
+        $target = clone $this;
+        $target->globalSettings = $globalSettings;
+        return $target;
+    }
+
+    /**
+     * @param array $globalSettings
+     * @return InternalRequestContext
+     */
+    public function withMergedGlobalSettings(array $globalSettings): InternalRequestContext
+    {
+        if (empty($globalSettings)) {
+            return $this;
+        }
+        $target = clone $this;
+        $target->globalSettings = $this->globalSettings ?? [];
+        ArrayUtility::mergeRecursiveWithOverrule(
+            $target->globalSettings,
+            $globalSettings
+        );
         return $target;
     }
 }

@@ -14,6 +14,8 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Utility\ArrayUtility;
+
 /**
  * Bootstrap for direct CLI Request
  */
@@ -33,6 +35,16 @@ class RequestBootstrap
      * @var \Composer\Autoload\ClassLoader
      */
     private $classLoader;
+
+    /**
+     * @var InternalRequestContext
+     */
+    private $context;
+
+    /**
+     * @var InternalRequest
+     */
+    private $request;
 
     /**
      * @param string $documentRoot
@@ -73,9 +85,9 @@ class RequestBootstrap
             die('No request object given');
         }
 
-        $context = InternalRequestContext::fromArray(json_decode($this->requestArguments['context'], true));
-        $request = InternalRequest::fromArray(json_decode($this->requestArguments['request'], true));
-        $requestUrlParts = parse_url($request->getUri());
+        $this->context = InternalRequestContext::fromArray(json_decode($this->requestArguments['context'], true));
+        $this->request = InternalRequest::fromArray(json_decode($this->requestArguments['request'], true));
+        $requestUrlParts = parse_url($this->request->getUri());
 
         // Populating $_GET and $_REQUEST is query part is set:
         if (isset($requestUrlParts['query'])) {
@@ -91,8 +103,8 @@ class RequestBootstrap
         // Setting up the server environment
         $_SERVER = [];
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK'] = [
-            'context' => $context,
-            'request' => $request,
+            'context' => $this->context,
+            'request' => $this->request,
             'withJsonResponse' => $this->requestArguments['withJsonResponse'] ?? true,
         ];
         $_SERVER['DOCUMENT_ROOT'] = $this->requestArguments['documentRoot'];
@@ -147,13 +159,21 @@ class RequestBootstrap
                 0,
                 \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_FE
             );
-            \TYPO3\CMS\Core\Core\Bootstrap::init($this->classLoader)
-                ->get(\TYPO3\CMS\Frontend\Http\Application::class)
-                ->run();
+            $container = \TYPO3\CMS\Core\Core\Bootstrap::init($this->classLoader);
+            ArrayUtility::mergeRecursiveWithOverrule(
+                $GLOBALS,
+                $this->context->getGlobalSettings() ?? []
+            );
+            $container->get(\TYPO3\CMS\Frontend\Http\Application::class)->run();
             $result['status'] = 'success';
             $result['content'] = static::getContent();
         } catch (\Exception $exception) {
             $result['error'] = $exception->__toString();
+            $result['exception'] = [
+                'type' => get_class($exception),
+                'message' => $exception->getMessage(),
+                'code' => $exception->getCode(),
+            ];
         }
         ob_end_clean();
 
