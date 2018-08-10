@@ -259,6 +259,36 @@ class Testbase
     }
 
     /**
+     * Link framework extensions to the typo3conf/ext folder of the instance.
+     * For functional and acceptance tests.
+     *
+     * @param string $instancePath Absolute path to test instance
+     * @param array $extensionPaths Contains paths to extensions relative to document root
+     * @throws Exception
+     * @return void
+     */
+    public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths)
+    {
+        foreach ($extensionPaths as $extensionPath) {
+            $absoluteExtensionPath = TYPO3_PATH_PACKAGES . 'typo3/testing-framework/' . $extensionPath;
+            if (!is_dir($absoluteExtensionPath)) {
+                throw new Exception(
+                    'Framework extension path ' . $absoluteExtensionPath . ' not found',
+                    1533626848
+                );
+            }
+            $destinationPath = $instancePath . '/typo3conf/ext/' . basename($absoluteExtensionPath);
+            $success = symlink($absoluteExtensionPath, $destinationPath);
+            if (!$success) {
+                throw new Exception(
+                    'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
+                    1533626849
+                );
+            }
+        }
+    }
+
+    /**
      * Link paths inside the test instance, e.g. from a fixture fileadmin subfolder to the
      * test instance fileadmin folder.
      * For functional and acceptance tests.
@@ -454,14 +484,16 @@ class Testbase
      * @param string $instancePath Absolute path to test instance
      * @param array $defaultCoreExtensionsToLoad Default list of core extensions to load
      * @param array $additionalCoreExtensionsToLoad Additional core extensions to load
-     * @param array $testExtensionPaths Paths to extensions relative to document root
+     * @param array $testExtensionPaths Paths to test extensions relative to document root
+     * @param array $frameworkExtensionPaths Paths to framework extensions relative to testing framework package
      * @throws Exception
      */
     public function setUpPackageStates(
         $instancePath,
         array $defaultCoreExtensionsToLoad,
         array $additionalCoreExtensionsToLoad,
-        array $testExtensionPaths
+        array $testExtensionPaths,
+        array $frameworkExtensionPaths
     ) {
         $packageStates = [
             'packages' => [],
@@ -484,6 +516,14 @@ class Testbase
 
         // Activate test extensions that have been symlinked before
         foreach ($testExtensionPaths as $extensionPath) {
+            $extensionName = basename($extensionPath);
+            $packageStates['packages'][$extensionName] = [
+                'packagePath' => 'typo3conf/ext/' . $extensionName . '/'
+            ];
+        }
+
+        // Activate framework extensions that have been symlinked before
+        foreach ($frameworkExtensionPaths as $extensionPath) {
             $extensionName = basename($extensionPath);
             $packageStates['packages'][$extensionName] = [
                 'packagePath' => 'typo3conf/ext/' . $extensionName . '/'
