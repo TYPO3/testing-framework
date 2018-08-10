@@ -19,11 +19,12 @@ use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
- * Data scenario data map factory
+ * Factory for DataHandler data map information parsed from a structured array
+ * (or more specifically a scenario definition written in YAML)
  */
 class DataMapFactory
 {
-    const DYNAMIC_ID = 10000;
+    private const DYNAMIC_ID = 10000;
 
     /**
      * @var array
@@ -89,6 +90,11 @@ class DataMapFactory
         return $this->suggestedIds;
     }
 
+    /**
+     * @param array $settings
+     * @param string|null $nodeId
+     * @param string|null $parentId
+     */
     private function processEntities(
         array $settings,
         string $nodeId = null,
@@ -107,6 +113,12 @@ class DataMapFactory
         }
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param array $itemSettings
+     * @param string|null $nodeId
+     * @param string|null $parentId
+     */
     private function processEntityItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
@@ -155,6 +167,12 @@ class DataMapFactory
         $this->setInDataMap($tableName, $newId, $values);
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param array $itemSettings
+     * @param array $ancestorIds
+     * @param string|null $nodeId
+     */
     private function processLanguageVariantItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
@@ -191,6 +209,13 @@ class DataMapFactory
         $this->setInDataMap($tableName, $newId, $values);
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param array $itemSettings
+     * @param string|null $nodeId
+     * @param string|null $parentId
+     * @return array
+     */
     private function processEntityValues(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
@@ -238,6 +263,9 @@ class DataMapFactory
         return $values;
     }
 
+    /**
+     * @param array $settings
+     */
     private function buildEntityConfigurations(array $settings): void
     {
         $defaultSettings = $settings['*'] ?? [];
@@ -269,6 +297,10 @@ class DataMapFactory
         return $this->entityConfigurations[$entityName];
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param int $suggestedId
+     */
     private function addSuggestedId(
         EntityConfiguration $entityConfiguration,
         int $suggestedId
@@ -277,6 +309,11 @@ class DataMapFactory
         $this->suggestedIds[$identifier] = true;
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param int $id
+     * @return bool
+     */
     private function hasStaticId(
         EntityConfiguration $entityConfiguration,
         int $id
@@ -288,6 +325,10 @@ class DataMapFactory
         );
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @param int $id
+     */
     private function addStaticId(
         EntityConfiguration $entityConfiguration,
         int $id
@@ -298,6 +339,10 @@ class DataMapFactory
         $this->staticIdsPerEntity[$entityConfiguration->getName()][] = $id;
     }
 
+    /**
+     * @param EntityConfiguration $entityConfiguration
+     * @return int
+     */
     private function incrementDynamicId(
         EntityConfiguration $entityConfiguration
     ): int {

@@ -37,6 +37,9 @@ class InternalRequest extends Request implements \JsonSerializable
         return $target->with($data);
     }
 
+    /**
+     * @param string|null $uri URI for the request, if any.
+     */
     public function __construct($uri = null) {
         if ($uri === null) {
             $uri = 'http://localhost/';

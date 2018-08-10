@@ -16,7 +16,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario
  */
 
 /**
- * Data scenario import service
+ * Model describing a entity configuration used in a data scenario
  */
 class EntityConfiguration
 {
@@ -65,6 +65,11 @@ class EntityConfiguration
      */
     private $valueInstructions = [];
 
+    /**
+     * @param string $name
+     * @param array $settings
+     * @return EntityConfiguration
+     */
     public static function fromArray(string $name, array $settings)
     {
         $target = new static($name);
@@ -105,6 +110,9 @@ class EntityConfiguration
         return $target;
     }
 
+    /**
+     * @param string $name
+     */
     public function __construct(string $name)
     {
         $this->name = $name;
@@ -176,6 +184,10 @@ class EntityConfiguration
         return $processedValues;
     }
 
+    /**
+     * @param array $ancestorIds
+     * @return array
+     */
     public function processLanguageValues(array $ancestorIds): array
     {
         if (empty($ancestorIds)) {
@@ -206,6 +218,12 @@ class EntityConfiguration
         return $processedValues;
     }
 
+    /**
+     * @param array $values
+     * @param string $name
+     * @param $value
+     * @return array
+     */
     private function assignValueInstructions(array $values, string $name, $value)
     {
         if (empty($this->valueInstructions[$name][$value])) {
@@ -214,7 +232,10 @@ class EntityConfiguration
         return array_merge($values, $this->valueInstructions[$name][$value]);
     }
 
-    private function assertValueInstructions(array $valueInstruction)
+    /**
+     * @param array $valueInstruction
+     */
+    private function assertValueInstructions(array $valueInstruction): void
     {
         foreach ($valueInstruction as $columnName => $valueInstruction) {
             if (empty($valueInstruction) || !is_array($valueInstruction)) {
