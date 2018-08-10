@@ -93,7 +93,7 @@ class DataMapFactory
         array $settings,
         string $nodeId = null,
         string $parentId = null
-    ) {
+    ): void {
         foreach ($settings as $entityName => $entitySettings) {
             $entityConfiguration = $this->provideEntityConfiguration($entityName);
             foreach ($entitySettings as $itemSettings) {
@@ -112,7 +112,7 @@ class DataMapFactory
         array $itemSettings,
         string $nodeId = null,
         string $parentId = null
-    ) {
+    ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
             $itemSettings,
@@ -123,7 +123,7 @@ class DataMapFactory
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
         // Placeholder to preserve creation order
-        $this->dataMap[$tableName][$newId] = [];
+        $this->setInDataMap($tableName, $newId);
 
         foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
             $this->processLanguageVariantItem(
@@ -152,7 +152,7 @@ class DataMapFactory
         }
 
         // Finally assign values
-        $this->dataMap[$tableName][$newId] = $values;
+        $this->setInDataMap($tableName, $newId, $values);
     }
 
     private function processLanguageVariantItem(
@@ -160,8 +160,7 @@ class DataMapFactory
         array $itemSettings,
         array $ancestorIds,
         string $nodeId = null
-    )
-    {
+    ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
             $itemSettings,
@@ -177,7 +176,7 @@ class DataMapFactory
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
         // Placeholder to preserve creation order
-        $this->dataMap[$tableName][$newId] = [];
+        $this->setInDataMap($tableName, $newId);
 
         foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
             $this->processLanguageVariantItem(
@@ -188,7 +187,8 @@ class DataMapFactory
             );
         }
 
-        $this->dataMap[$tableName][$newId] = $values;
+        // Finally assign values
+        $this->setInDataMap($tableName, $newId, $values);
     }
 
     private function processEntityValues(
@@ -260,22 +260,27 @@ class DataMapFactory
      * @param string $entityName
      * @return EntityConfiguration
      */
-    private function provideEntityConfiguration(string $entityName): EntityConfiguration
-    {
+    private function provideEntityConfiguration(
+        string $entityName
+    ): EntityConfiguration {
         if (empty($this->entityConfigurations[$entityName])) {
             $this->entityConfigurations[$entityName] = new EntityConfiguration($entityName);
         }
         return $this->entityConfigurations[$entityName];
     }
 
-    private function addSuggestedId(EntityConfiguration $entityConfiguration, int $suggestedId)
-    {
+    private function addSuggestedId(
+        EntityConfiguration $entityConfiguration,
+        int $suggestedId
+    ): void {
         $identifier = $entityConfiguration->getTableName() . ':' . $suggestedId;
         $this->suggestedIds[$identifier] = true;
     }
 
-    private function hasStaticId(EntityConfiguration $entityConfiguration, int $id): bool
-    {
+    private function hasStaticId(
+        EntityConfiguration $entityConfiguration,
+        int $id
+    ): bool {
         return in_array(
             $id,
             $this->staticIdsPerEntity[$entityConfiguration->getName()] ?? [],
@@ -283,19 +288,76 @@ class DataMapFactory
         );
     }
 
-    private function addStaticId(EntityConfiguration $entityConfiguration, int $id): void
-    {
+    private function addStaticId(
+        EntityConfiguration $entityConfiguration,
+        int $id
+    ): void {
         if (!isset($this->staticIdsPerEntity[$entityConfiguration->getName()])) {
             $this->staticIdsPerEntity[$entityConfiguration->getName()] = [];
         }
         $this->staticIdsPerEntity[$entityConfiguration->getName()][] = $id;
     }
 
-    private function incrementDynamicId(EntityConfiguration $entityConfiguration): int
-    {
+    private function incrementDynamicId(
+        EntityConfiguration $entityConfiguration
+    ): int {
         if (!isset($this->dynamicIdsPerEntity[$entityConfiguration->getName()])) {
             $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = static::DYNAMIC_ID;
         }
         return ++$this->dynamicIdsPerEntity[$entityConfiguration->getName()];
+    }
+
+    /**
+     * Adds values to data map and ensures sorting.
+     * Per default DataHandler inserts records to top on according page
+     * however, this factory shall insert sequentially one after another.
+     *
+     * @param string $tableName
+     * @param string $identifier
+     * @param array $values
+     */
+    private function setInDataMap(
+        string $tableName,
+        string $identifier,
+        array $values = []
+    ): void {
+        if (empty($values)) {
+            $this->dataMap[$tableName][$identifier] = $values;
+            return;
+        }
+
+        $tableDataMap = $this->filterDataMapByPageId($tableName, $values['pid'] ?? null);
+        $identifiers = array_keys($tableDataMap);
+        $currentIndex = array_search($identifier, $identifiers);
+
+        // current item did not have any values in data map, use last identifer
+        if ($currentIndex === false && !empty($identifiers)) {
+            $values['pid'] = '-' . $identifiers[count($identifiers) - 1];
+        // current item does have values in data map, use previous identifier
+        } elseif ($currentIndex > 0) {
+            $previousIndex = $identifiers[$currentIndex - 1];
+            $values['pid'] = '-' . $identifiers[$previousIndex];
+        }
+
+        $this->dataMap[$tableName][$identifier] = $values;
+    }
+
+    /**
+     * @param string $tableName
+     * @param null|int|string $pageId
+     * @return array
+     */
+    private function filterDataMapByPageId(string $tableName, $pageId): array
+    {
+        if ($pageId === null) {
+            return [];
+        }
+
+        return array_filter(
+            $this->dataMap[$tableName] ?? [],
+            function (array $item) use ($pageId) {
+                return ($item['pid'] ?? null) === $pageId;
+            }
+        );
     }
 }
