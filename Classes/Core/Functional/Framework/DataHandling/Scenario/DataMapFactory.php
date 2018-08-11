@@ -134,8 +134,7 @@ class DataMapFactory
 
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        // Placeholder to preserve creation order
-        $this->setInDataMap($tableName, $newId);
+        $this->setInDataMap($tableName, $newId, $values);
 
         foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
             $this->processLanguageVariantItem(
@@ -162,9 +161,6 @@ class DataMapFactory
                 $parentId
             );
         }
-
-        // Finally assign values
-        $this->setInDataMap($tableName, $newId, $values);
     }
 
     /**
@@ -193,8 +189,7 @@ class DataMapFactory
 
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        // Placeholder to preserve creation order
-        $this->setInDataMap($tableName, $newId);
+        $this->setInDataMap($tableName, $newId, $values);
 
         foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
             $this->processLanguageVariantItem(
@@ -204,9 +199,6 @@ class DataMapFactory
                 $nodeId
             );
         }
-
-        // Finally assign values
-        $this->setInDataMap($tableName, $newId, $values);
     }
 
     /**
