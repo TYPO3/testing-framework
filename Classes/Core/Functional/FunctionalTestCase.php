@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
+use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
@@ -288,6 +289,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 // Append the unique identifier to the base database name to end up with a single database per test case
                 $dbName = $originalDatabaseName . '_ft' . $this->identifier;
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
+                $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
             } else {
                 $dbPath = $this->instancePath . '/test.sqlite';
