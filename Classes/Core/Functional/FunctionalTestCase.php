@@ -869,4 +869,26 @@ abstract class FunctionalTestCase extends BaseTestCase
             false
         );
     }
+
+    /**
+     * Whether to allow modification of IDENTITY_INSERT for SQL Server platform.
+     * + null: unspecified, decided later during runtime (based on 'uid' & $TCA)
+     * + true: always allow, e.g. before actually importing data
+     * + false: always deny, e.g. when importing data is finished
+     *
+     * @param bool|null $allowIdentityInsert
+     * @param bool|null $allowIdentityInsert
+     * @throws DBALException
+     */
+    protected function allowIdentityInsert(?bool $allowIdentityInsert)
+    {
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+
+        if (!$connection instanceof DatabaseConnectionWrapper) {
+            return;
+        }
+
+        $connection->allowIdentityInsert($allowIdentityInsert);
+    }
 }

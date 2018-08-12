@@ -15,6 +15,8 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Database\Connection;
 
 /**
@@ -22,6 +24,24 @@ use TYPO3\CMS\Core\Database\Connection;
  */
 class DatabaseConnectionWrapper extends Connection
 {
+    /**
+     * @var null|bool
+     */
+    private $allowIdentityInsert = null;
+
+    /**
+     * Whether to allow modification of IDENTITY_INSERT for SQL Server platform.
+     * + null: unspecified, decided later during runtime (based on 'uid' & $TCA)
+     * + true: always allow, e.g. before actually importing data
+     * + false: always deny, e.g. when importing data is finished
+     *
+     * @param bool|null $allowIdentityInsert
+     */
+    public function allowIdentityInsert(?bool $allowIdentityInsert)
+    {
+        $this->allowIdentityInsert = $allowIdentityInsert;
+    }
+
     /**
      * Wraps insert execution in order to consider SQL Server IDENTITY_INSERT.
      *
@@ -32,17 +52,30 @@ class DatabaseConnectionWrapper extends Connection
      */
     public function insert($tableName, array $data, array $types = []): int
     {
-        $modified = $this->modifyServerIdentity($tableName, true);
+        $modified = $this->shallModifyIdentityInsert($tableName, $data)
+            && $this->modifyIdentityInsert($tableName, true);
 
         $result = parent::insert($tableName, $data, $types);
 
         if ($modified) {
-            $this->modifyServerIdentity($tableName, false);
+            $this->modifyIdentityInsert($tableName, false);
         }
 
         return $result;
     }
 
+    /**
+     * @param string $tableName
+     * @param array $data
+     * @return bool
+     */
+    private function shallModifyIdentityInsert(string $tableName, array $data): bool
+    {
+        if ($this->allowIdentityInsert !== null) {
+            return $this->allowIdentityInsert;
+        }
+        return !empty($GLOBALS['TCA'][$tableName] && isset($data['uid']));
+    }
 
     /**
      * In SQL Server (MSSQL), hard setting uid auto-increment primary keys is
@@ -61,7 +94,7 @@ class DatabaseConnectionWrapper extends Connection
      * @param bool $enable Whether to enable ('ON') or disable ('OFF')
      * @return bool Whether executed statement has be successful
      */
-    private function modifyServerIdentity(string $tableName, bool $enable): bool
+    private function modifyIdentityInsert(string $tableName, bool $enable): bool
     {
         try {
             $platform = $this->getDatabasePlatform();
