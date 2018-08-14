@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Hook;
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
  * Handler for backend user
@@ -28,19 +29,18 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface
      */
     public function initialize(array $parameters, \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController)
     {
-        $backendUserId = (int)GeneralUtility::_GP('backendUserId');
-        $workspaceId = (int)GeneralUtility::_GP('workspaceId');
-
-        if (empty($backendUserId) || empty($workspaceId)) {
+        $context = RequestBootstrap::getInternalRequestContext();
+        if (empty($context) || empty($context->getBackendUserId()) || empty($context->getWorkspaceId())) {
             return;
         }
 
         $backendUser = $this->createBackendUser();
         $backendUser->user = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
-            ->select(['*'], 'be_users', ['uid' => $backendUserId])
+            ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()])
             ->fetch();
-        $backendUser->setTemporaryWorkspace($workspaceId);
+        $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
+        // @todo Deprecated, switch to aspect
         $frontendController->beUserLogin = true;
 
         $parameters['BE_USER'] = $backendUser;

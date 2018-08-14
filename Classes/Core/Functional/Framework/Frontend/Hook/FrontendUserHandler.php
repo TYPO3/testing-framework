@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Hook;
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
  * Handler for frontend user
@@ -30,14 +31,19 @@ class FrontendUserHandler implements \TYPO3\CMS\Core\SingletonInterface
      */
     public function initialize(array $parameters, \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController)
     {
-        $frontendUserId = (int)GeneralUtility::_GP('frontendUserId');
+        $context = RequestBootstrap::getInternalRequestContext();
+        if (empty($context) || empty($context->getFrontendUserId())) {
+            return;
+        }
+
         $frontendController->fe_user->checkPid = 0;
 
         $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('fe_users')
-            ->select(['*'], 'fe_users', ['uid' => $frontendUserId])
+            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
             ->fetch();
         if (is_array($frontendUser)) {
+            // @todo Deprecated, switch to aspect
             $frontendController->loginUser = 1;
             $frontendController->fe_user->createUserSession($frontendUser);
             $frontendController->fe_user->user = $GLOBALS['TSFE']->fe_user->fetchUserSession();

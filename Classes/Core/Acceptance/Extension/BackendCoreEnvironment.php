@@ -256,7 +256,7 @@ class BackendCoreEnvironment extends Extension
         $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
         // Append the unique identifier to the base database name to end up with a single database per test case
         $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_at';
-        
+
         $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
         $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
         // Set some hard coded base settings for the instance. Those could be overruled by
@@ -295,7 +295,8 @@ class BackendCoreEnvironment extends Extension
             'scheduler',
             'tstemplate',
         ];
-        $testbase->setUpPackageStates($instancePath, $defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad);
+        $frameworkExtensionPaths = [];
+        $testbase->setUpPackageStates($instancePath, $defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad, $frameworkExtensionPaths);
         $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad)));
         $testbase->setUpBasicTypo3Bootstrap($instancePath);
         $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);

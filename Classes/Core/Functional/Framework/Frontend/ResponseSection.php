@@ -50,6 +50,16 @@ class ResponseSection
      */
     public function __construct($identifier, array $data)
     {
+        if (!isset($data['structure'])
+            && !isset($data['structurePaths'])
+            && !isset($data['records'])
+        ) {
+            throw new \RuntimeException(
+                'Empty structure results',
+                1533666273
+            );
+        }
+
         $this->identifier = (string)$identifier;
         $this->structure = $data['structure'];
         $this->structurePaths = $data['structurePaths'];

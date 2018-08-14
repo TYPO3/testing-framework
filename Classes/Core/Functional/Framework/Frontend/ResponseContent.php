@@ -14,6 +14,9 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
+
 /**
  * Model of frontend response content
  */
@@ -42,26 +45,40 @@ class ResponseContent
     /**
      * @var array
      */
-    protected $queries;
+    protected $scope = [];
 
-    /**
-     * @param Response $response
-     */
-    public function __construct(Response $response)
+    public static function fromString(string $data, ResponseContent $target = null): ResponseContent
     {
-        $content = json_decode($response->getContent(), true);
+        $target = $target ?? new static();
+        $content = json_decode($data, true);
 
         if ($content !== null && is_array($content)) {
             foreach ($content as $sectionIdentifier => $sectionData) {
-                $section = new ResponseSection($sectionIdentifier, $sectionData);
-                $this->sections[$sectionIdentifier] = $section;
+                try {
+                    $section = new ResponseSection($sectionIdentifier, $sectionData);
+                    $target->sections[$sectionIdentifier] = $section;
+                } catch (\RuntimeException $exception) {
+                }
             }
+            $target->scope = $content['Scope'] ?? [];
+        }
+
+        return $target;
+    }
+
+    /**
+     * @param Response $response (deprecated)
+     */
+    public function __construct(Response $response = null)
+    {
+        if ($response instanceof Response) {
+            static::fromString($response->getContent(), $this);
         }
     }
 
     /**
      * @param string $sectionIdentifier
-     * @return NULL|ResponseSection
+     * @return null|ResponseSection
      * @throws \RuntimeException
      */
     public function getSection($sectionIdentifier)
@@ -71,5 +88,44 @@ class ResponseContent
         }
 
         throw new \RuntimeException('ResponseSection "' . $sectionIdentifier . '" does not exist', 1476122151);
+    }
+
+    /**
+     * @param string ...$sectionIdentifiers
+     * @return ResponseSection[]
+     */
+    public function getSections(string ...$sectionIdentifiers): array
+    {
+        if (empty($sectionIdentifiers)) {
+            $sectionIdentifiers = ['Default'];
+        }
+
+        return array_map(
+            function (string $sectionIdentifier) {
+                return $this->getSection($sectionIdentifier);
+            },
+            $sectionIdentifiers
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getScope(): array
+    {
+        return $this->scope;
+    }
+
+    /**
+     * @param string $path
+     * @return mixed|null
+     */
+    public function getScopePath(string $path)
+    {
+        try {
+            return ArrayUtility::getValueByPath($this->scope, $path, '/');
+        } catch (MissingArrayPathException $exception) {
+            return null;
+        }
     }
 }

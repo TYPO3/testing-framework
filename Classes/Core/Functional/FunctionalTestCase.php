@@ -24,8 +24,12 @@ use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
+use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -114,9 +118,18 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Extensions in this array are linked to the test instance, loaded
      * and their ext_tables.sql will be applied.
      *
-     * @var array
+     * @var string[]
      */
     protected $testExtensionsToLoad = [];
+
+    /**
+     * Same as $testExtensionsToLoad, but included per default from the testing framework.
+     *
+     * @var string[]
+     */
+    protected $frameworkExtensionsToLoad = [
+        'Resources/Core/Functional/Extensions/json_response',
+    ];
 
     /**
      * Array of test/fixture folder or file paths that should be linked for a test.
@@ -262,6 +275,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->setUpInstanceCoreLinks($this->instancePath);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
+            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $this->frameworkExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
@@ -275,6 +289,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 // Append the unique identifier to the base database name to end up with a single database per test case
                 $dbName = $originalDatabaseName . '_ft' . $this->identifier;
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
+                $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
             } else {
                 $dbPath = $this->instancePath . '/test.sqlite';
@@ -298,7 +313,13 @@ abstract class FunctionalTestCase extends BaseTestCase
                 'extbase',
                 'install',
             ];
-            $testbase->setUpPackageStates($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad, $this->testExtensionsToLoad);
+            $testbase->setUpPackageStates(
+                $this->instancePath,
+                $defaultCoreExtensionsToLoad,
+                $this->coreExtensionsToLoad,
+                $this->testExtensionsToLoad,
+                $this->frameworkExtensionsToLoad
+            );
             $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($dbDriver !== 'pdo_sqlite') {
                 $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
@@ -661,7 +682,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param int $pageId
      * @param array $typoScriptFiles
      */
-    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = [])
+    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = [], array $templateValues = [])
     {
         $pageId = (int)$pageId;
 
@@ -683,15 +704,22 @@ abstract class FunctionalTestCase extends BaseTestCase
             ['uid' => $pageId]
         );
 
-        $templateFields = [
-            'pid' => $pageId,
-            'title' => '',
-            'constants' => 'databasePlatform = ' . $databasePlatform . LF,
-            'config' => '',
-            'clear' => 3,
-            'root' => 1,
-        ];
+        $templateFields = array_merge(
+            [
+                'title' => '',
+                'sitetitle' => '',
+                'constants' => '',
+                'config' => '',
+            ],
+            $templateValues,
+            [
+                'pid' => $pageId,
+                'clear' => 3,
+                'root' => 1,
+            ]
+        );
 
+        $templateValues['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
         foreach ($typoScriptFiles as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
@@ -726,6 +754,64 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+     * @param InternalRequest $request
+     * @param InternalRequestContext|null $context
+     * @return InternalResponse
+     */
+    protected function executeFrontendRequest(InternalRequest $request, InternalRequestContext $context = null): InternalResponse
+    {
+        if ($context === null) {
+            $context = new InternalRequestContext();
+        }
+
+        $result = $this->retrieveFrontendRequestResult($request, $context);
+        $data = json_decode($result['stdout'], true);
+
+        if ($data === null) {
+            $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
+        }
+
+        if ($data['status'] === Response::STATUS_Failure) {
+            throw new $data['exception']['type'](
+                $data['exception']['message'],
+                $data['exception']['code']
+            );
+        }
+
+        return InternalResponse::fromArray($data['content']);
+    }
+
+    /**
+     * @param InternalRequest $request
+     * @param InternalRequestContext $context
+     * @param bool $legacyMode
+     * @return array
+     */
+    protected function retrieveFrontendRequestResult(InternalRequest $request, InternalRequestContext $context, bool $withJsonResponse = true): array
+    {
+        $arguments = [
+            'withJsonResponse' => $withJsonResponse,
+            'documentRoot' => $this->instancePath,
+            'request' => json_encode($request),
+            'context' => json_encode($context),
+        ];
+
+        $template = new \Text_Template(TYPO3_PATH_PACKAGES . 'typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
+        $template->setVar(
+            [
+                'arguments' => var_export($arguments, true),
+                'documentRoot' => $this->instancePath,
+                'originalRoot' => ORIGINAL_ROOT,
+                'vendorPath' => TYPO3_PATH_PACKAGES
+            ]
+        );
+
+        $php = AbstractPhpProcess::factory();
+        $result = $php->runJob($template->render());
+        return $result;
+    }
+
+    /**
      * @param int $pageId
      * @param int $languageId
      * @param int $backendUserId
@@ -733,6 +819,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param bool $failOnFailure
      * @param int $frontendUserId
      * @return Response
+     * @deprecated Use retrieveFrontendRequestResult() instead
      */
     protected function getFrontendResponse($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $failOnFailure = true, $frontendUserId = 0)
     {
@@ -741,7 +828,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $languageId,
             $backendUserId,
             $workspaceId,
-            $failOnFailure,
             $frontendUserId
         );
         $data = json_decode($result['stdout'], true);
@@ -766,43 +852,43 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param int $languageId
      * @param int $backendUserId
      * @param int $workspaceId
-     * @param bool $failOnFailure
      * @param int $frontendUserId
      * @return array containing keys 'stdout' and 'stderr'
+     * @deprecated Use retrieveFrontendRequestResult() instead
      */
-    protected function getFrontendResult($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $failOnFailure = true, $frontendUserId = 0)
+    protected function getFrontendResult($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $frontendUserId = 0)
     {
-        $pageId = (int)$pageId;
-        $languageId = (int)$languageId;
-
-        $additionalParameter = '';
-
-        if (!empty($frontendUserId)) {
-            $additionalParameter .= '&frontendUserId=' . (int)$frontendUserId;
-        }
-        if (!empty($backendUserId)) {
-            $additionalParameter .= '&backendUserId=' . (int)$backendUserId;
-        }
-        if (!empty($workspaceId)) {
-            $additionalParameter .= '&workspaceId=' . (int)$workspaceId;
-        }
-
-        $arguments = [
-            'documentRoot' => $this->instancePath,
-            'requestUrl' => 'http://localhost/?id=' . $pageId . '&L=' . $languageId . $additionalParameter,
-        ];
-
-        $template = new \Text_Template(TYPO3_PATH_PACKAGES . 'typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
-        $template->setVar(
-            [
-                'arguments' => var_export($arguments, true),
-                'originalRoot' => ORIGINAL_ROOT,
-                'vendorPath' => TYPO3_PATH_PACKAGES
-            ]
+        return $this->retrieveFrontendRequestResult(
+            (new InternalRequest())
+                ->withPageId($pageId)
+                ->withLanguageId($languageId),
+            (new InternalRequestContext())
+                ->withBackendUserId($backendUserId)
+                ->withWorkspaceId($workspaceId)
+                ->withFrontendUserId($frontendUserId),
+            false
         );
+    }
 
-        $php = AbstractPhpProcess::factory();
-        $result = $php->runJob($template->render());
-        return $result;
+    /**
+     * Whether to allow modification of IDENTITY_INSERT for SQL Server platform.
+     * + null: unspecified, decided later during runtime (based on 'uid' & $TCA)
+     * + true: always allow, e.g. before actually importing data
+     * + false: always deny, e.g. when importing data is finished
+     *
+     * @param bool|null $allowIdentityInsert
+     * @param bool|null $allowIdentityInsert
+     * @throws DBALException
+     */
+    protected function allowIdentityInsert(?bool $allowIdentityInsert)
+    {
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+
+        if (!$connection instanceof DatabaseConnectionWrapper) {
+            return;
+        }
+
+        $connection->allowIdentityInsert($allowIdentityInsert);
     }
 }
