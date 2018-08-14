@@ -283,7 +283,6 @@ class BackendCoreEnvironment extends Extension
             'extensionmanager',
             'setup',
             'rsaauth',
-            'saltedpasswords',
             'backend',
             'about',
             'belog',

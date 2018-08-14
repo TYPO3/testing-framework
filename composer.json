@@ -38,7 +38,6 @@
   },
   "suggest": {
     "codeception/codeception": "^2.4",
-    "typo3/cms-saltedpasswords": "^9.3",
     "typo3/cms-styleguide": "^9.0"
   },
   "config": {
