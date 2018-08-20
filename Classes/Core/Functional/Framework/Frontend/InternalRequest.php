@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\Http\Request;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractInstruction;
 
 /**
  * Model of internal frontend request context
@@ -27,6 +28,11 @@ class InternalRequest extends Request implements \JsonSerializable
     use AssignablePropertyTrait;
 
     /**
+     * @var AbstractInstruction[]
+     */
+    protected $instructions = [];
+
+    /**
      * @param array $data
      * @return InternalRequest
      */
@@ -34,8 +40,23 @@ class InternalRequest extends Request implements \JsonSerializable
     {
         $target = (new static($data['uri'] ?? ''));
         $target->getBody()->write($data['body'] ?? '');
+        $data['instructions'] = static::buildInstructions($data);
         unset($data['uri'], $data['body']);
         return $target->with($data);
+    }
+
+    /**
+     * @param array $data
+     * @return AbstractInstruction[]
+     */
+    private static function buildInstructions(array $data): array
+    {
+        return array_map(
+            function (array $data) {
+                return AbstractInstruction::fromArray($data);
+            },
+            $data['instructions'] ?? []
+        );
     }
 
     /**
@@ -59,6 +80,7 @@ class InternalRequest extends Request implements \JsonSerializable
             'headers' => $this->headers,
             'uri' => (string)$this->uri,
             'body' => (string)$this->body,
+            'instructions' => $this->instructions,
         ];
     }
 
@@ -136,6 +158,28 @@ class InternalRequest extends Request implements \JsonSerializable
         $target = clone $this;
         $target->uri = $target->uri->withQuery($query);
         return $target;
+    }
+
+    /**
+     * @param AbstractInstruction[] $instructions
+     * @return InternalRequest
+     */
+    public function withInstructions(array $instructions): InternalRequest
+    {
+        $target = clone $this;
+        foreach ($instructions as $instruction) {
+            $target->instructions[$instruction->getIdentifier()] = $instruction;
+        }
+        return $target;
+    }
+
+    /**
+     * @param string $identifier
+     * @return null|AbstractInstruction
+     */
+    public function getInstruction(string $identifier): ?AbstractInstruction
+    {
+        return $this->instructions[$identifier] ?? null;
     }
 
     /**
