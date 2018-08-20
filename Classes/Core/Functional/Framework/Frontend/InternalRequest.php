@@ -15,6 +15,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 
 use TYPO3\CMS\Core\Http\Request;
+use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 
@@ -44,7 +45,8 @@ class InternalRequest extends Request implements \JsonSerializable
         if ($uri === null) {
             $uri = 'http://localhost/';
         }
-        parent::__construct($uri, 'GET');
+        $body = new Stream('php://temp', 'rw');
+        parent::__construct($uri, 'GET', $body);
     }
 
     /**
@@ -56,7 +58,7 @@ class InternalRequest extends Request implements \JsonSerializable
             'method' => $this->method,
             'headers' => $this->headers,
             'uri' => (string)$this->uri,
-            'body' => (string)$this->body
+            'body' => (string)$this->body,
         ];
     }
 
