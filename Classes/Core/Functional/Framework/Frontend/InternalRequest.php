@@ -72,6 +72,19 @@ class InternalRequest extends Request implements \JsonSerializable
     }
 
     /**
+     * @param int $targetPageId Page the mount points to
+     * @param int $sourePageId Page the mount is defined at
+     * @return InternalRequest
+     */
+    public function withMountPoint(int $targetPageId, int $sourePageId): InternalRequest
+    {
+        return $this->withQueryParameter(
+            'MP',
+            sprintf('%d-%d', $targetPageId, $sourePageId)
+        );
+    }
+
+    /**
      * @param int $languageId
      * @return InternalRequest
      */
@@ -81,6 +94,8 @@ class InternalRequest extends Request implements \JsonSerializable
     }
 
     /**
+     * Adds or overrides parameter on existing query.
+     *
      * @param string $parameterName
      * @param null|int|float|string $value
      * @return InternalRequest
