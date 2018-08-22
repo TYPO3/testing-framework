@@ -30,6 +30,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -772,10 +773,19 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         if ($data['status'] === Response::STATUS_Failure) {
-            throw new $data['exception']['type'](
-                $data['exception']['message'],
-                $data['exception']['code']
-            );
+            try {
+                $exception = new $data['exception']['type'](
+                    $data['exception']['message'],
+                    $data['exception']['code']
+                );
+            } catch (\Throwable $throwable) {
+                $exception = new InternalResponseException(
+                    (string)$data['exception']['message'],
+                    (int)$data['exception']['code'],
+                    (string)$data['exception']['type']
+                );
+            }
+            throw $exception;
         }
 
         return InternalResponse::fromArray($data['content']);
