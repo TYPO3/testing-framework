@@ -19,10 +19,10 @@ use Symfony\Component\Yaml\Yaml;
 use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
- * Factory for DataHandler data map information parsed from a structured array
+ * Factory for DataHandler information parsed from a structured array
  * (or more specifically a scenario definition written in YAML)
  */
-class DataMapFactory
+class DataHandlerFactory
 {
     private const DYNAMIC_ID = 10000;
 
@@ -39,7 +39,7 @@ class DataMapFactory
     /**
      * @var array
      */
-    private $dataMap = [];
+    private $dataMapPerWorkspace = [];
 
     /**
      * @var bool[]
@@ -58,9 +58,9 @@ class DataMapFactory
 
     /**
      * @param string $yamlFile
-     * @return DataMapFactory
+     * @return static
      */
-    public static function fromYamlFile(string $yamlFile): DataMapFactory
+    public static function fromYamlFile(string $yamlFile): self
     {
         $yamlContent = file_get_contents($yamlFile);
         $settings = Yaml::parse($yamlContent);
@@ -77,9 +77,9 @@ class DataMapFactory
     /**
      * @return array
      */
-    public function getDataMap(): array
+    public function getDataMapPerWorkspace(): array
     {
-        return $this->dataMap;
+        return $this->dataMapPerWorkspace;
     }
 
     /**
@@ -132,11 +132,21 @@ class DataMapFactory
             $parentId
         );
 
+        $workspaceId = $itemSettings['version']['workspace'] ?? 0;
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        $this->setInDataMap($tableName, $newId, $values);
+        $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
 
-        foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
+        foreach ($itemSettings['versionVariants'] ?? [] as $versionVariantSettings) {
+            $this->processVersionVariantItem(
+                $entityConfiguration,
+                $versionVariantSettings,
+                $newId,
+                $entityConfiguration->isNode() ? $newId : $nodeId
+            );
+        }
+
+        foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
                 $entityConfiguration,
                 $variantItemSettings,
@@ -189,9 +199,9 @@ class DataMapFactory
 
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        $this->setInDataMap($tableName, $newId, $values);
+        $this->setInDataMap($tableName, $newId, $values, 0);
 
-        foreach ($itemSettings['languageVariants'] as $variantItemSettings) {
+        foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
                 $entityConfiguration,
                 $variantItemSettings,
@@ -204,6 +214,28 @@ class DataMapFactory
     /**
      * @param EntityConfiguration $entityConfiguration
      * @param array $itemSettings
+     * @param string $ancestorId
+     */
+    private function processVersionVariantItem(
+        EntityConfiguration $entityConfiguration,
+        array $itemSettings,
+        string $ancestorId,
+        string $nodeId = null
+    ): void {
+        $values = $this->processEntityValues(
+            $entityConfiguration,
+            $itemSettings,
+            $nodeId
+        );
+
+        $tableName = $entityConfiguration->getTableName();
+        $this->setInDataMap($tableName, $ancestorId, $values, (int)$values['workspace']);
+    }
+
+    /**
+     * @param string string $sourceProperty
+     * @param EntityConfiguration $entityConfiguration
+     * @param array $itemSettings
      * @param string|null $nodeId
      * @param string|null $parentId
      * @return array
@@ -214,17 +246,39 @@ class DataMapFactory
         string $nodeId = null,
         string $parentId = null
     ): array {
-        if (empty($itemSettings['self']) || !is_array($itemSettings['self'])) {
+        if (isset($itemSettings['self']) && isset($itemSettings['version'])) {
             throw new \LogicException(
                 sprintf(
-                    'Missing "self" declaration for entity "%s"',
+                    'Cannot declare both "self" and "version" for entity "%s"',
+                    $entityConfiguration->getName()
+                ),
+                1534872399
+            );
+        }
+        if (isset($itemSettings['version']) &&  empty($itemSettings['version']['workspace'])) {
+            throw new \LogicException(
+                sprintf(
+                    'Cannot declare "version" without "workspace" for entity "%s"',
+                    $entityConfiguration->getName()
+                ),
+                1534872400
+            );
+        }
+
+        $sourceProperty = isset($itemSettings['version']) ? 'version' : 'self';
+
+        if (empty($itemSettings[$sourceProperty]) || !is_array($itemSettings[$sourceProperty])) {
+            throw new \LogicException(
+                sprintf(
+                    'Missing "%s" declaration for entity "%s"',
+                    $sourceProperty,
                     $entityConfiguration->getName()
                 ),
                 1533734369
             );
         }
 
-        $staticId = (int)($itemSettings['self']['id'] ?? 0);
+        $staticId = (int)($itemSettings[$sourceProperty]['id'] ?? 0);
         if ($this->hasStaticId($entityConfiguration, $staticId)) {
             throw new \LogicException(
                 sprintf(
@@ -240,7 +294,7 @@ class DataMapFactory
 
         $suggestedId = $staticId > 0 ? $staticId : $this->incrementDynamicId($entityConfiguration);
         $this->addSuggestedId($entityConfiguration, $suggestedId);
-        $values = $entityConfiguration->processValues($itemSettings['self']);
+        $values = $entityConfiguration->processValues($itemSettings[$sourceProperty]);
         $values['uid'] = $suggestedId;
 
         // Assign node pointer value
@@ -352,18 +406,24 @@ class DataMapFactory
      * @param string $tableName
      * @param string $identifier
      * @param array $values
+     * @param int $workspaceId
      */
     private function setInDataMap(
         string $tableName,
         string $identifier,
-        array $values = []
+        array $values,
+        int $workspaceId = 0
     ): void {
         if (empty($values)) {
-            $this->dataMap[$tableName][$identifier] = $values;
+            $this->dataMapPerWorkspace[$workspaceId][$tableName][$identifier] = $values;
             return;
         }
 
-        $tableDataMap = $this->filterDataMapByPageId($tableName, $values['pid'] ?? null);
+        $tableDataMap = $this->filterDataMapByPageId(
+            $workspaceId,
+            $tableName,
+            $values['pid'] ?? null
+        );
         $identifiers = array_keys($tableDataMap);
         $currentIndex = array_search($identifier, $identifiers);
 
@@ -376,25 +436,50 @@ class DataMapFactory
             $values['pid'] = '-' . $identifiers[$previousIndex];
         }
 
-        $this->dataMap[$tableName][$identifier] = $values;
+        $this->dataMapPerWorkspace[$workspaceId][$tableName][$identifier] = $values;
     }
 
     /**
+     * @param int $workspaceId
      * @param string $tableName
      * @param null|int|string $pageId
      * @return array
      */
-    private function filterDataMapByPageId(string $tableName, $pageId): array
-    {
+    private function filterDataMapByPageId(
+        int $workspaceId,
+        string $tableName,
+        $pageId
+    ): array {
         if ($pageId === null) {
             return [];
         }
 
         return array_filter(
-            $this->dataMap[$tableName] ?? [],
-            function (array $item) use ($pageId) {
-                return ($item['pid'] ?? null) === $pageId;
+            $this->dataMapPerWorkspace[$workspaceId][$tableName] ?? [],
+            function (array $item) use ($pageId, $workspaceId) {
+                $itemPageId = $this->resolveDataMapPageId(
+                    $workspaceId,
+                    $item['pid'] ?? null
+                );
+                return $itemPageId === $pageId;
             }
         );
+    }
+
+    /**
+     * @param int $workspaceId
+     * @param null|int|string $pageId
+     * @return null|int|string
+     */
+    private function resolveDataMapPageId(int $workspaceId, $pageId)
+    {
+        $normalizePageId = (string)$pageId;
+        if ($pageId === null || $normalizePageId{0} !== '-') {
+            return $pageId;
+        }
+
+        $regularPageId = substr($normalizePageId, 1);
+        $resolvedPageId = $this->dataMapPerWorkspace[$workspaceId]['pages'][$regularPageId]['pid'] ?? null;
+        return $this->resolveDataMapPageId($workspaceId, $resolvedPageId);
     }
 }
