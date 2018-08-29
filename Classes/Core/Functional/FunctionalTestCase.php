@@ -27,6 +27,8 @@ use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
+use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseAccessor;
+use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseSnapshot;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
@@ -904,6 +906,51 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         $connection->allowIdentityInsert($allowIdentityInsert);
+    }
+
+    /**
+     * Invokes database snapshot and either restores data from existing
+     * snapshot or otherwise invokes $callback and creates a new snapshot.
+     *
+     * @param callable $callback
+     * @throws DBALException
+     */
+    protected function withDatabaseSnapshot(callable $callback)
+    {
+        $connection = $this->getConnectionPool()->getConnectionByName(
+            ConnectionPool::DEFAULT_CONNECTION_NAME
+        );
+        $accessor = new DatabaseAccessor($connection);
+        $snapshot = DatabaseSnapshot::instance();
+
+        if ($snapshot->exists()) {
+            $snapshot->restore($accessor);
+        } else {
+            call_user_func($callback);
+            $snapshot->create($accessor);
+        }
+    }
+
+    /**
+     * Initializes database snapshot and storage.
+     */
+    protected static function initializeDatabaseSnapshot()
+    {
+        $snapshot = DatabaseSnapshot::initialize(
+            static::getInstancePath() . '/typo3temp/var/snapshots/',
+            static::getInstanceIdentifier()
+        );
+        if ($snapshot->exists()) {
+            $snapshot->purge();
+        }
+    }
+
+    /**
+     * Destroys database snapshot (if available).
+     */
+    protected static function destroyDatabaseSnapshot()
+    {
+        DatabaseSnapshot::destroy();
     }
 
     /**
