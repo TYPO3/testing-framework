@@ -118,6 +118,7 @@ class DatabaseSnapshot
      */
     public function purge(): bool
     {
+        unset($this->inMemoryImport);
         return unlink($this->snapshotPath);
     }
 
@@ -127,7 +128,7 @@ class DatabaseSnapshot
     public function create(DatabaseAccessor $accessor)
     {
         $export = $accessor->export();
-        $serialized = serialize($export);
+        $serialized = json_encode($export);
         // It's not the exact consumption due to serialization literals... fine
         if (strlen($serialized) <= self::VALUE_IN_MEMORY_THRESHOLD) {
             $this->inMemoryImport = $export;
@@ -142,9 +143,9 @@ class DatabaseSnapshot
      */
     public function restore(DatabaseAccessor $accessor)
     {
-        $import = $this->inMemoryImport ?? unserialize(
+        $import = $this->inMemoryImport ?? json_decode(
             file_get_contents($this->snapshotPath),
-            ['allowed_classes' => false]
+            true
         );
 
         if (!is_array($import)) {
