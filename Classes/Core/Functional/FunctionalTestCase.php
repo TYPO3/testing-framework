@@ -240,7 +240,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         $this->identifier = self::getInstanceIdentifier();
-        $this->instancePath = self::getInstanceIdentifier();
+        $this->instancePath = self::getInstancePath();
         putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
 
         $testbase = new Testbase();
