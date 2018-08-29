@@ -237,9 +237,8 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->markTestSkipped('Functional tests must be called through phpunit on CLI');
         }
 
-        // Use a 7 char long hash of class name as identifier
-        $this->identifier = substr(sha1(get_class($this)), 0, 7);
-        $this->instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $this->identifier;
+        $this->identifier = self::getInstanceIdentifier();
+        $this->instancePath = self::getInstanceIdentifier();
         putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
 
         $testbase = new Testbase();
@@ -900,5 +899,24 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         $connection->allowIdentityInsert($allowIdentityInsert);
+    }
+
+    /**
+     * Uses a 7 char long hash of class name as identifier.
+     *
+     * @return string
+     */
+    protected static function getInstanceIdentifier(): string
+    {
+        return substr(sha1(static::class), 0, 7);
+    }
+
+    /**
+     * @return string
+     */
+    protected static function getInstancePath(): string
+    {
+        $identifier = self::getInstanceIdentifier();
+        return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
     }
 }
