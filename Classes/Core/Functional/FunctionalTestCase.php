@@ -366,7 +366,8 @@ abstract class FunctionalTestCase extends BaseTestCase
     {
         $this->importDataSet($this->backendUserFixture);
 
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('be_users');
+        $queryBuilder = $this->getConnectionPool()
+            ->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
 
         $userRow = $queryBuilder->select('*')
@@ -686,7 +687,8 @@ abstract class FunctionalTestCase extends BaseTestCase
     {
         $pageId = (int)$pageId;
 
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages');
+        $connection = $this->getConnectionPool()
+            ->getConnectionForTable('pages');
         $page = $connection->select(['*'], 'pages', ['uid' => $pageId])->fetch();
 
         if (empty($page)) {
@@ -723,7 +725,8 @@ abstract class FunctionalTestCase extends BaseTestCase
         foreach ($typoScriptFiles as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('sys_template');
+        $connection = $this->getConnectionPool()
+            ->getConnectionForTable('sys_template');
         $connection->delete('sys_template', ['pid' => $pageId]);
         $connection->insert(
             'sys_template',
@@ -739,7 +742,8 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function addTypoScriptToTemplateRecord(int $pageId, $typoScript)
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('sys_template');
+        $connection = $this->getConnectionPool()
+            ->getConnectionForTable('sys_template');
 
         $template = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1])->fetch();
         if (empty($template)) {
@@ -891,8 +895,9 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function allowIdentityInsert(?bool $allowIdentityInsert)
     {
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+        $connection = $this->getConnectionPool()->getConnectionByName(
+            ConnectionPool::DEFAULT_CONNECTION_NAME
+        );
 
         if (!$connection instanceof DatabaseConnectionWrapper) {
             return;
