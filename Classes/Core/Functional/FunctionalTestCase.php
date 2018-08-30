@@ -762,38 +762,38 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
+     * @param bool $followRedirects Whether to follow HTTP location redirects
      * @return InternalResponse
      */
-    protected function executeFrontendRequest(InternalRequest $request, InternalRequestContext $context = null): InternalResponse
-    {
+    protected function executeFrontendRequest(
+        InternalRequest $request,
+        InternalRequestContext $context = null,
+        bool $followRedirects = false
+    ): InternalResponse {
         if ($context === null) {
             $context = new InternalRequestContext();
         }
 
-        $result = $this->retrieveFrontendRequestResult($request, $context);
-        $data = json_decode($result['stdout'], true);
+        $locationHeaders = [];
 
-        if ($data === null) {
-            $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
-        }
-
-        if ($data['status'] === Response::STATUS_Failure) {
-            try {
-                $exception = new $data['exception']['type'](
-                    $data['exception']['message'],
-                    $data['exception']['code']
-                );
-            } catch (\Throwable $throwable) {
-                $exception = new InternalResponseException(
-                    (string)$data['exception']['message'],
-                    (int)$data['exception']['code'],
-                    (string)$data['exception']['type']
+        do {
+            $result = $this->retrieveFrontendRequestResult($request, $context);
+            $response = $this->reconstituteFrontendRequestResult($result);
+            $locationHeader = $response->getHeaderLine('location');
+            if (in_array($locationHeader, $locationHeaders, true)) {
+                $this->fail(
+                    implode(LF . '* ', array_merge(
+                        ['Redirect loop detected:'],
+                        $locationHeaders,
+                        [$locationHeader]
+                    ))
                 );
             }
-            throw $exception;
-        }
+            $locationHeaders[] = $locationHeader;
+            $request = new InternalRequest($locationHeader);
+        } while ($followRedirects && !empty($locationHeader));
 
-        return InternalResponse::fromArray($data['content']);
+        return $response;
     }
 
     /**
@@ -824,6 +824,36 @@ abstract class FunctionalTestCase extends BaseTestCase
         $php = AbstractPhpProcess::factory();
         $result = $php->runJob($template->render());
         return $result;
+    }
+
+    /**
+     * @param array $result
+     */
+    protected function reconstituteFrontendRequestResult(array $result): InternalResponse
+    {
+        $data = json_decode($result['stdout'], true);
+
+        if ($data === null) {
+            $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
+        }
+
+        if ($data['status'] === Response::STATUS_Failure) {
+            try {
+                $exception = new $data['exception']['type'](
+                    $data['exception']['message'],
+                    $data['exception']['code']
+                );
+            } catch (\Throwable $throwable) {
+                $exception = new InternalResponseException(
+                    (string)$data['exception']['message'],
+                    (int)$data['exception']['code'],
+                    (string)$data['exception']['type']
+                );
+            }
+            throw $exception;
+        }
+
+        return InternalResponse::fromArray($data['content']);
     }
 
     /**
