@@ -74,7 +74,7 @@ class DatabaseConnectionWrapper extends Connection
         if ($this->allowIdentityInsert !== null) {
             return $this->allowIdentityInsert;
         }
-        return !empty($GLOBALS['TCA'][$tableName] && isset($data['uid']));
+        return !empty($GLOBALS['TCA'][$tableName]) && isset($data['uid']);
     }
 
     /**
