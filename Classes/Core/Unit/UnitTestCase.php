@@ -59,6 +59,10 @@ abstract class UnitTestCase extends BaseTestCase
      */
     protected function tearDown()
     {
+        // Flush the two static $indpEnvCache and $idnaStringCache
+        // between test runs to prevent side effects from these caches.
+        GeneralUtility::flushInternalRuntimeCaches();
+
         // Unset properties of test classes to safe memory
         $reflection = new \ReflectionObject($this);
         foreach ($reflection->getProperties() as $property) {
