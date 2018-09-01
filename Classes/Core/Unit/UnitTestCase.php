@@ -137,6 +137,10 @@ abstract class UnitTestCase extends BaseTestCase
             $this->restoreEnvironment();
         }
 
+        // Flush the two static $indpEnvCache and $idnaStringCache
+        // between test runs to prevent side effects from these caches.
+        GeneralUtility::flushInternalRuntimeCaches();
+
         // GeneralUtility::makeInstance() singleton handling
         if ($this->resetSingletonInstances === true) {
             // Reset singletons if asked for by test setup
