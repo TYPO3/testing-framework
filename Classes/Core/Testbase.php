@@ -561,7 +561,6 @@ class Testbase
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
         $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $connection->close();
-        $connectionPool->resetConnections();
 
         // Drop database if exists. Directly using the Doctrine DriverManager to
         // work around connection caching in ConnectionPool.
