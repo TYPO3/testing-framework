@@ -693,7 +693,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *   record (legacy behavior of this method)
      * + `[
      *      'constants' => ['path/constants.typoscript'],
-     *      'typoScript' => ['path/setup.typoscript']
+     *      'setup' => ['path/setup.typoscript']
      *    ]`
      *   which allows to define contents for the `contants` and `setup` part
      *   of the TypoScript template record at the same time
@@ -713,12 +713,12 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->fail('Cannot set up frontend root page "' . $pageId . '"');
         }
 
-        // migrate legacy definition to support `constants` and `typoScript`
+        // migrate legacy definition to support `constants` and `setup`
         if (!empty($typoScriptFiles)
             && empty($typoScriptFiles['constants'])
-            && empty($typoScriptFiles['typoScript'])
+            && empty($typoScriptFiles['setup'])
         ) {
-            $typoScriptFiles = ['typoScript' => $typoScriptFiles];
+            $typoScriptFiles = ['setup' => $typoScriptFiles];
         }
 
         $databasePlatform = 'mysql';
@@ -751,7 +751,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
         $templateValues['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
-        foreach ($typoScriptFiles['typoScript'] ?? [] as $typoScriptFile) {
+        foreach ($typoScriptFiles['setup'] ?? [] as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
 
