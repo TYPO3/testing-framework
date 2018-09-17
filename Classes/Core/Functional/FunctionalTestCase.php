@@ -682,6 +682,22 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+     * Sets up a root-page containing TypoScript settings for frontend testing.
+     *
+     * Parameter `$typoScriptFiles` can either be
+     * + `[
+     *      'path/first.typoscript',
+     *      'path/second.typoscript'
+     *    ]`
+     *   which just loads files to the setup setion of the TypoScript template
+     *   record (legacy behavior of this method)
+     * + `[
+     *      'constants' => ['path/constants.typoscript'],
+     *      'typoScript' => ['path/setup.typoscript']
+     *    ]`
+     *   which allows to define contents for the `contants` and `setup` part
+     *   of the TypoScript template record at the same time
+     *
      * @param int $pageId
      * @param array $typoScriptFiles
      */
@@ -695,6 +711,14 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         if (empty($page)) {
             $this->fail('Cannot set up frontend root page "' . $pageId . '"');
+        }
+
+        // migrate legacy definition to support `constants` and `typoScript`
+        if (!empty($typoScriptFiles)
+            && empty($typoScriptFiles['constants'])
+            && empty($typoScriptFiles['typoScript'])
+        ) {
+            $typoScriptFiles = ['typoScript' => $typoScriptFiles];
         }
 
         $databasePlatform = 'mysql';
@@ -723,10 +747,14 @@ abstract class FunctionalTestCase extends BaseTestCase
             ]
         );
 
+        foreach ($typoScriptFiles['constants'] ?? [] as $typoScriptFile) {
+            $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+        }
         $templateValues['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
-        foreach ($typoScriptFiles as $typoScriptFile) {
+        foreach ($typoScriptFiles['typoScript'] ?? [] as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
+
         $connection = $this->getConnectionPool()
             ->getConnectionForTable('sys_template');
         $connection->delete('sys_template', ['pid' => $pageId]);
