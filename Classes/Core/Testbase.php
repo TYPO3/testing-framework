@@ -609,7 +609,7 @@ class Testbase
         GeneralUtility::purgeInstances();
         GeneralUtility::resetApplicationContext();
 
-        $classLoader = require rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
+        $classLoader = require __DIR__ . '/../../../../autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
