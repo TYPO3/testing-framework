@@ -113,7 +113,9 @@ class Testbase
 
     public function definePackagesPath()
     {
-        define('TYPO3_PATH_PACKAGES', $this->getPackagesPath());
+        if (!defined('TYPO3_PATH_PACKAGES')) {
+            define('TYPO3_PATH_PACKAGES', $this->getPackagesPath());
+        }
     }
 
     /**
@@ -141,7 +143,9 @@ class Testbase
      */
     public function defineTypo3ModeBe()
     {
-        define('TYPO3_MODE', 'BE');
+        if (!defined('TYPO3_MODE')) {
+            define('TYPO3_MODE', 'BE');
+        }
     }
 
     /**
