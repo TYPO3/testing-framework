@@ -750,7 +750,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         foreach ($typoScriptFiles['constants'] ?? [] as $typoScriptFile) {
             $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
-        $templateValues['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
+        $templateFields['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
         foreach ($typoScriptFiles['setup'] ?? [] as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
