@@ -244,6 +244,7 @@ class BackendCoreEnvironment extends Extension
         foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
+        $testbase->createLastRunTextfile($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
         // ext:styleguide is always loaded
         $testExtensionsToLoad = array_merge(
@@ -265,11 +266,12 @@ class BackendCoreEnvironment extends Extension
         $localConfiguration['BE']['lockHashKeyWords'] = '';
         $localConfiguration['BE']['installToolPassword'] = '$P$notnotnotnotnotnot.validvalidva';
         $localConfiguration['BE']['loginSecurityLevel'] = 'rsa';
+        $localConfiguration['SYS']['isInitialInstallationInProgress'] = false;
+        $localConfiguration['SYS']['isInitialDatabaseImportDone'] = true;
         $localConfiguration['SYS']['displayErrors'] = false;
         $localConfiguration['SYS']['debugExceptionHandler'] = '';
         $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
         $localConfiguration['SYS']['encryptionKey'] = 'iAmInvalid';
-        $localConfiguration['SYS']['features']['redirects.hitCount'] = true;
         // @todo: This sql_mode should be enabled as soon as styleguide and dataHandler can cope with it
         //$localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
         $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
@@ -281,17 +283,19 @@ class BackendCoreEnvironment extends Extension
             'fluid',
             'filelist',
             'extensionmanager',
+            'lang',
             'setup',
             'rsaauth',
+            'saltedpasswords',
             'backend',
             'about',
             'belog',
             'install',
+            't3skin',
             'frontend',
             'recordlist',
-            'redirects',
             'reports',
-            'sys_note',
+            'sv',
             'scheduler',
             'tstemplate',
         ];
