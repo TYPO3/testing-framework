@@ -319,11 +319,11 @@ class BackendCoreEnvironment extends Extension
 
         // styleguide generator uses DataHandler for some parts. DataHandler needs an initialized BE user
         // with admin right and the live workspace.
-        Bootstrap::initializeBackendUser();
+        Bootstrap::getInstance()->initializeBackendUser();
         $GLOBALS['BE_USER']->user['admin'] = 1;
         $GLOBALS['BE_USER']->user['uid'] = 1;
         $GLOBALS['BE_USER']->workspace = 0;
-        Bootstrap::initializeLanguageObject();
+        Bootstrap::getInstance()->initializeLanguageObject();
 
         $styleguideGenerator = new Generator();
         $styleguideGenerator->create();
