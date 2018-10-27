@@ -23,5 +23,5 @@ script:
     echo "Running php lint";
     echo;
     echo;
-    find . -name \*.php -exec php -l {} >/dev/null \;
+    find . -name \*.php ! -path "./.Build/*" -exec php -l {} >/dev/null \;
 
