@@ -17,4 +17,11 @@ script:
     echo;
     echo;
     .Build/bin/phpunit Tests/Unit/;
+    
+  - >
+    echo;
+    echo "Running php lint";
+    echo;
+    echo;
+    find . -name \*.php -exec php -l {} >/dev/null \;
 
