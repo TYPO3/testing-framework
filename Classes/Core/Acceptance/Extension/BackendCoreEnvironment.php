@@ -188,7 +188,7 @@ class BackendCoreEnvironment extends Extension
         $this->config['typo3Setup'] = is_string($env)
             ? (trim($env) === 'false' ? false : (bool)$env)
             : $this->config['typo3Setup'];
-        $env = getenv('typoCleanup');
+        $env = getenv('typo3Cleanup');
         $this->config['typo3Cleanup'] = is_string($env)
             ? (trim($env) === 'false' ? false : (bool)$env)
             : $this->config['typo3Cleanup'];
