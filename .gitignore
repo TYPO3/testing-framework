@@ -1,2 +1,4 @@
-# phpstorm project files
+.Build/
 .idea/
+composer.lock
+public/
