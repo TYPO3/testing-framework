@@ -60,7 +60,14 @@ class DataSet
 
         $rawData = [];
         $fileHandle = fopen($fileName, 'r');
-        while (($values = fgetcsv($fileHandle, 0)) !== false) {
+        // UTF-8 Files starting with BOM will break the first field in the first line
+        // which is usually the first table name. That‘s wy we omit a BOM at the beginning.
+        $bom = "\xef\xbb\xbf";
+        if (fgets($fileHandle, 4) !== $bom) {
+            // BOM not found - rewind pointer to start of file.
+            rewind($fileHandle);
+        }
+        while (!feof($fileHandle) && ($values = fgetcsv($fileHandle, 0)) !== false) {
             $rawData[] = $values;
         }
         fclose($fileHandle);
