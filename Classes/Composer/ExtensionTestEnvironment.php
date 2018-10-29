@@ -70,7 +70,7 @@ final class ExtensionTestEnvironment
         }
         $extensionKey = $composerConfigExtraSection['typo3/cms']['extension-key'];
         $webDir = $composerConfigExtraSection['typo3/cms']['web-dir'];
-        $typo3confExt = __DIR__ . '/../../' . $webDir . '/typo3conf/ext';
+        $typo3confExt = __DIR__ . '/../../../../../../' . $webDir . '/typo3conf/ext';
         if (!is_dir($typo3confExt) &&
             !mkdir($typo3confExt, 0775, true) &&
             !is_dir($typo3confExt)
