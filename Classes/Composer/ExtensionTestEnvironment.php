@@ -81,7 +81,7 @@ final class ExtensionTestEnvironment
             );
         }
         if (!is_link($typo3confExt . '/' . $extensionKey)) {
-            symlink(dirname(__DIR__, 2) . '/', $typo3confExt . '/' . $extensionKey);
+            symlink(dirname(__DIR__, 6) . '/', $typo3confExt . '/' . $extensionKey);
         }
     }
 }
