@@ -346,7 +346,16 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/' . ltrim($designationIdentifier, '/');
-            $success = copy($sourcePath, $destinationPath);
+            $destinationParentPath = dirname($destinationPath);
+            if (is_file($sourcePath)) {
+                if (!is_dir($destinationParentPath)) {
+                    // Create parent dir if it does not exist yet
+                    mkdir($destinationParentPath, 0775, true);
+                }
+                $success = copy($sourcePath, $destinationPath);
+            } else {
+                $success = $this->copyRecursive($sourcePath, $destinationPath);
+            }
             if (!$success) {
                 throw new Exception(
                     'Can not copy the path ' . $sourcePath . ' to ' . $destinationPath,
@@ -819,6 +828,36 @@ class Testbase
                 );
             }
         }
+    }
+
+    /**
+     * Copy a directory structure $from a source $to a destination,
+     *
+     * @param $from Absolute source path
+     * @param $to Absolute target path
+     * @return bool True if all went well
+     */
+    protected function copyRecursive($from, $to) {
+        $dir = opendir($from);
+        if (!file_exists($to)) {
+            mkdir($to, 0775, true);
+        }
+        $result = true;
+        while (false !== ($file = readdir($dir))) {
+            if ($file == '.' || $file == '..') {
+                continue;
+            }
+            if (is_dir($from . DIRECTORY_SEPARATOR . $file)) {
+                $success = $this->copyRecursive($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
+                $result = $result & $success;
+            }
+            else {
+                $success = copy($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
+                $result = $result & $success;
+            }
+        }
+        closedir($dir);
+        return $result;
     }
 
     /**
