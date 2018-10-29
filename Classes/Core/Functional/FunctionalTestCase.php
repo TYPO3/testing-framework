@@ -134,24 +134,31 @@ abstract class FunctionalTestCase extends BaseTestCase
      * The array keys are the source paths and the array values are the destination
      * paths, example:
      *
-     * array(
+     * [
      *   'typo3/sysext/impext/Tests/Functional/Fixtures/Folders/fileadmin/user_upload' =>
      *   'fileadmin/user_upload',
      *   'typo3conf/ext/my_own_ext/Tests/Functional/Fixtures/Folders/uploads/tx_myownext' =>
      *   'uploads/tx_myownext'
-     * );
+     * ]
      *
      * To be able to link from my_own_ext the extension path needs also to be registered in
      * property $testExtensionsToLoad
      *
-     * @var array
+     * @var string[]
      */
     protected $pathsToLinkInTestInstance = [];
 
     /**
      * Similar to $pathsToLinkInTestInstance, with the difference that given
      * paths are really duplicated and provided in the instance - instead of
-     * using symbolic links.
+     * using symbolic links. Examples:
+     *
+     * [
+     *   // Copy an entire directory recursive to fileadmin
+     *   'typo3/sysext/lowlevel/Tests/Functional/Fixtures/testImages/' => 'fileadmin/',
+     *   // Copy a single file into some deep destination directory
+     *   'typo3/sysext/lowlevel/Tests/Functional/Fixtures/testImage/someImage.jpg' => 'fileadmin/_processed_/0/a/someImage.jpg',
+     * ]
      *
      * @var string[]
      */
@@ -183,9 +190,9 @@ abstract class FunctionalTestCase extends BaseTestCase
      * To create additional folders add the paths to this array. Given paths are expected to be
      * relative to the test instance root and have to begin with a slash. Example:
      *
-     * array(
+     * [
      *   'fileadmin/user_upload'
-     * );
+     * ]
      *
      * @var array
      */
