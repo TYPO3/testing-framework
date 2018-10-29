@@ -17,6 +17,7 @@ use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Extbase\Error\Result;
 use TYPO3\CMS\Extbase\Reflection\ReflectionService;
+use TYPO3\TestingFramework\Fluid\Unit\Core\Rendering\RenderingContextFixture;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperInterface;
@@ -98,7 +99,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
         $this->controllerContext->expects($this->any())->method('getUriBuilder')->will($this->returnValue($this->uriBuilder));
         $this->controllerContext->expects($this->any())->method('getRequest')->will($this->returnValue($this->request->reveal()));
         $this->arguments = [];
-        $this->renderingContext = $this->getAccessibleMock(\TYPO3\CMS\Fluid\Tests\Unit\Core\Rendering\RenderingContextFixture::class, ['getControllerContext']);
+        $this->renderingContext = $this->getAccessibleMock(RenderingContextFixture::class, ['getControllerContext']);
         $this->renderingContext->expects($this->any())->method('getControllerContext')->willReturn($this->controllerContext);
         $this->renderingContext->setVariableProvider($this->templateVariableContainer);
         $this->renderingContext->_set('viewHelperVariableContainer', $this->viewHelperVariableContainer->reveal());
