@@ -50,6 +50,7 @@ class InstallSqliteCoreEnvironment extends Extension
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
+        putenv('TYPO3_PATH_APP=' . $instancePath);
 
         $testbase->createDirectory($instancePath);
         $testbase->setUpInstanceCoreLinks($instancePath);
