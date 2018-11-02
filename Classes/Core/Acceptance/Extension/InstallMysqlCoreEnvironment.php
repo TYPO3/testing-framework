@@ -26,6 +26,8 @@ use TYPO3\TestingFramework\Core\Testbase;
  * This codeception extension creates a basic TYPO3 instance within
  * typo3temp. It is used as a basic acceptance test that clicks through
  * the TYPO3 installation steps.
+ * 
+ * @internal Used by core, do not use in extensions, may vanish later.
  */
 class InstallMysqlCoreEnvironment extends Extension
 {
