@@ -27,11 +27,11 @@ use TYPO3\TestingFramework\Core\Testbase;
 
 /**
  * This codeception extension creates a full TYPO3 instance within
- * typo3temp. Own acceptance test suites may extend from this class
+ * typo3temp. Own acceptance test suites should extend from this class
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
  */
-class BackendCoreEnvironment extends Extension
+abstract class BackendEnvironment extends Extension
 {
     /**
      * Some settings can be overridden by the same name environment variables, see _initialize()
@@ -160,11 +160,24 @@ class BackendCoreEnvironment extends Extension
     ];
 
     /**
+     * This array is to be extended by consuming extensions.
+     * It is merged with $config early in bootstrap to create
+     * the final setup configuration.
+     *
+     * Typcially, extensions specify here which core extensions
+     * should be loaded and that the extension that is tested should
+     * be loaded by setting 'coreExtensionsToLoad' and 'testExtensionsToLoad'.
+     *
+     * @var array
+     */
+    protected $localConfig = [];
+
+    /**
      * Events to listen to
      */
     public static $events = [
         Events::SUITE_BEFORE => 'bootstrapTypo3Environment',
-        Events::TEST_AFTER => 'cleanupTypo3Environment'
+        Events::TEST_BEFORE => 'cleanupTypo3Environment'
     ];
 
     /**
@@ -184,6 +197,7 @@ class BackendCoreEnvironment extends Extension
      */
     public function _initialize()
     {
+        $this->config = array_replace($this->config, $this->localConfig);
         $env = getenv('typo3Setup');
         $this->config['typo3Setup'] = is_string($env)
             ? (trim($env) === 'false' ? false : (bool)$env)
@@ -246,11 +260,7 @@ class BackendCoreEnvironment extends Extension
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
         $testbase->setUpInstanceCoreLinks($instancePath);
-        // ext:styleguide is always loaded
-        $testExtensionsToLoad = array_merge(
-            [ 'typo3conf/ext/styleguide' ],
-            $this->config['testExtensionsToLoad']
-        );
+        $testExtensionsToLoad = $this->config['testExtensionsToLoad'];
         $testbase->linkTestExtensionsToInstance($instancePath, $testExtensionsToLoad);
         $testbase->linkPathsInTestInstance($instancePath, $this->config['pathsToLinkInTestInstance']);
         $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration($this->config);
@@ -275,30 +285,10 @@ class BackendCoreEnvironment extends Extension
         //$localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
         $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
         $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->config['configurationToUseInTestInstance']);
-        $defaultCoreExtensionsToLoad = [
-            'core',
-            'beuser',
-            'extbase',
-            'fluid',
-            'filelist',
-            'extensionmanager',
-            'setup',
-            'rsaauth',
-            'backend',
-            'about',
-            'belog',
-            'install',
-            'frontend',
-            'recordlist',
-            'redirects',
-            'reports',
-            'sys_note',
-            'scheduler',
-            'tstemplate',
-        ];
+        $coreExtensionsToLoad = $this->config['coreExtensionsToLoad'];
         $frameworkExtensionPaths = [];
-        $testbase->setUpPackageStates($instancePath, $defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad, $frameworkExtensionPaths);
-        $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($defaultCoreExtensionsToLoad, $this->config['coreExtensionsToLoad'], $testExtensionsToLoad)));
+        $testbase->setUpPackageStates($instancePath, [], $coreExtensionsToLoad, $testExtensionsToLoad, $frameworkExtensionPaths);
+        $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($coreExtensionsToLoad, $testExtensionsToLoad)));
         $testbase->setUpBasicTypo3Bootstrap($instancePath);
         $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
         $testbase->loadExtensionTables();
@@ -313,20 +303,6 @@ class BackendCoreEnvironment extends Extension
         foreach ($this->config['xmlDatabaseFixtures'] as $fixture) {
             $testbase->importXmlDatabaseFixture($fixture);
         }
-
-        // styleguide generator uses DataHandler for some parts. DataHandler needs an initialized BE user
-        // with admin right and the live workspace.
-        Bootstrap::initializeBackendUser();
-        $GLOBALS['BE_USER']->user['admin'] = 1;
-        $GLOBALS['BE_USER']->user['uid'] = 1;
-        $GLOBALS['BE_USER']->workspace = 0;
-        Bootstrap::initializeLanguageObject();
-
-        $styleguideGenerator = new Generator();
-        $styleguideGenerator->create();
-
-        // @todo: Find out why that is needed to execute the first test successfully
-        $this->cleanupTypo3Environment();
     }
 
     /**
