@@ -30,7 +30,7 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface
     public function initialize(array $parameters, \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController)
     {
         $context = RequestBootstrap::getInternalRequestContext();
-        if (empty($context) || empty($context->getBackendUserId()) || empty($context->getWorkspaceId())) {
+        if (empty($context) || empty($context->getBackendUserId())) {
             return;
         }
 
@@ -39,9 +39,9 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface
             ->getConnectionForTable('be_users')
             ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()])
             ->fetch();
-        $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
-        // @todo Deprecated, switch to aspect
-        $frontendController->beUserLogin = true;
+        if (!empty($context->getWorkspaceId())) {
+            $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
+        }
 
         $parameters['BE_USER'] = $backendUser;
         $GLOBALS['BE_USER'] = $backendUser;
