@@ -14,4 +14,7 @@ This framework works on top of a composer based installation.
 $ composer require typo3/testing-framework
 ```
 
-## Exhaustive docs will be added after TYPO3 v8 LTS release
+## Documentation
+
+Usage examples within core and for extensions can be found in
+[TYPO3 explained](https://docs.typo3.org/typo3cms/CoreApiReference/Testing/Index.html).
