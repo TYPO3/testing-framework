@@ -301,6 +301,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
                 $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
+                $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
             } else {
                 $dbPath = $this->instancePath . '/test.sqlite';
                 $localConfiguration['DB']['Connections']['Default']['path'] = $dbPath;
@@ -312,8 +313,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $localConfiguration['SYS']['debugExceptionHandler'] = '';
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
             $localConfiguration['SYS']['encryptionKey'] = 'i-am-not-a-secure-encryption-key';
-            // @todo: This should be moved over to DB/Connections/Default/initCommands
-            $localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
             $defaultCoreExtensionsToLoad = [
