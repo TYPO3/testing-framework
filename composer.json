@@ -23,7 +23,6 @@
   "support": {
     "general": "https://typo3.org/support/",
     "issues": "https://forge.typo3.org",
-    "irc": "irc://irc.freenode.net/#typo3-cms",
     "news": "nntp://lists.typo3.org"
   },
   "require": {
