@@ -18,3 +18,9 @@ $ composer require typo3/testing-framework
 
 Usage examples within core and for extensions can be found in
 [TYPO3 explained](https://docs.typo3.org/typo3cms/CoreApiReference/Testing/Index.html).
+
+## Tags and branches
+
+* Branch master is for core v10 and currently tagged as 5.x.y
+* Branch 9 is for core v9 and tagged as 4.x.y
+* Branch 8 is for core v8 and tagged as 1.x.y
