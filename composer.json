@@ -22,8 +22,7 @@
   ],
   "support": {
     "general": "https://typo3.org/support/",
-    "issues": "https://forge.typo3.org",
-    "news": "nntp://lists.typo3.org"
+    "issues": "https://github.com/TYPO3/testing-framework/issues"
   },
   "require": {
     "phpunit/phpunit": "^7.1",
