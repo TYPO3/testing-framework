@@ -33,30 +33,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, MiddlewareInterface
 {
     /**
-     * @param array $parameters
-     * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController
-     */
-    public function initialize(array $parameters, \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController)
-    {
-        $context = RequestBootstrap::getInternalRequestContext();
-        if (empty($context) || empty($context->getBackendUserId())) {
-            return;
-        }
-
-        $backendUser = $this->createBackendUser();
-        $backendUser->user = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('be_users')
-            ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()])
-            ->fetch();
-        if (!empty($context->getWorkspaceId())) {
-            $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
-        }
-
-        $parameters['BE_USER'] = $backendUser;
-        $GLOBALS['BE_USER'] = $backendUser;
-    }
-
-    /**
      * @return FrontendBackendUserAuthentication
      */
     protected function createBackendUser()
@@ -67,6 +43,9 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
     /**
      * Process an incoming server request and return a response, optionally delegating
      * response creation to a handler.
+     * @param ServerRequestInterface $request
+     * @param RequestHandlerInterface $handler
+     * @return ResponseInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
