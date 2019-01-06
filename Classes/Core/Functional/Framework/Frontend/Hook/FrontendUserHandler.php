@@ -20,6 +20,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
  * Handler for frontend user
+ * @deprecated has been superseded by a PSR-15 middleware for TYPO3 v10.0.
  */
 class FrontendUserHandler implements \TYPO3\CMS\Core\SingletonInterface
 {
