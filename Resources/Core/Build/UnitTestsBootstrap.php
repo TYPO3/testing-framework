@@ -34,11 +34,17 @@ call_user_func(function () {
     $testbase->defineTypo3ModeBe();
     $testbase->setTypo3TestingContext();
     $testbase->definePackagesPath();
-    $testbase->createDirectory(PATH_site . 'typo3conf/ext');
-    $testbase->createDirectory(PATH_site . 'typo3temp/assets');
-    $testbase->createDirectory(PATH_site . 'typo3temp/var/tests');
-    $testbase->createDirectory(PATH_site . 'typo3temp/var/transient');
-    $testbase->createDirectory(PATH_site . 'uploads');
+
+    $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
+    \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(3, $requestType);
+
+    // Environment is set up, now create folders for testing
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/assets');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/tests');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/transient');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/uploads');
+
 
     // Retrieve an instance of class loader and inject to core bootstrap
     $classLoaderFilepath = TYPO3_PATH_PACKAGES . 'autoload.php';
@@ -46,15 +52,6 @@ call_user_func(function () {
         die('ClassLoader can\'t be loaded. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
     }
     $classLoader = require $classLoaderFilepath;
-
-    $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
-    \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
-    if (\TYPO3\CMS\Core\Utility\GeneralUtility::getApplicationContext() === null) {
-        // @deprecated can be removed in v5
-        $applicationContext = \TYPO3\CMS\Core\Core\Bootstrap::createApplicationContext();
-        \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::initializeEnvironment($applicationContext);
-        \TYPO3\CMS\Core\Utility\GeneralUtility::presetApplicationContext($applicationContext);
-    }
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
     \TYPO3\CMS\Core\Core\Bootstrap::baseSetup();
 

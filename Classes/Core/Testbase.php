@@ -75,38 +75,22 @@ class Testbase
      */
     public function defineBaseConstants()
     {
-        // A null, a tabulator, a linefeed, a carriage return, a substitution, a CR-LF combination
-        defined('NUL') ?: define('NUL', chr(0));
-        defined('TAB') ?: define('TAB', chr(9));
+        // a linefeed, a carriage return, a CR-LF combination
         defined('LF') ?: define('LF', chr(10));
         defined('CR') ?: define('CR', chr(13));
-        defined('SUB') ?: define('SUB', chr(26));
         defined('CRLF') ?: define('CRLF', CR . LF);
-
-        if (!defined('TYPO3_OS')) {
-            // Operating system identifier
-            // Either "WIN" or empty string
-            $typoOs = '';
-            if (!stristr(PHP_OS, 'darwin') && !stristr(PHP_OS, 'cygwin') && stristr(PHP_OS, 'win')) {
-                $typoOs = 'WIN';
-            }
-            define('TYPO3_OS', $typoOs);
-        }
     }
 
     /**
-     * Defines the PATH_site and PATH_thisScript constant and sets $_SERVER['SCRIPT_NAME'].
+     * Sets $_SERVER['SCRIPT_NAME'].
      * For unit tests only
      *
      * @return void
      */
     public function defineSitePath()
     {
-        define('PATH_site', $this->getWebRoot());
-        define('PATH_thisScript', PATH_site . 'typo3/index.php');
-        $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
-
-        if (!file_exists(PATH_thisScript)) {
+        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
+        if (!file_exists($_SERVER['SCRIPT_NAME'])) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
     }

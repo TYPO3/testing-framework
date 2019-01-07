@@ -38,12 +38,12 @@ namespace TYPO3\TestingFramework\Core;
  * $root->addChild($subfolder);
  * // Load fixture files and folders from disk
  * \org\bovigo\vfs\vfsStream::copyFromFileSystem(__DIR__ . '/Fixture/Files', $subfolder, 1024*1024);
- * FileStreamWrapper::init(PATH_site);
+ * FileStreamWrapper::init(Environment::getPublicPath());
  * FileStreamWrapper::registerOverlayPath('fileadmin', 'vfs://root/fileadmin');
  *
  * // Use file functions as usual
- * mkdir(PATH_site . 'fileadmin/test/');
- * $file = PATH_site . 'fileadmin/test/Foo.bar';
+ * mkdir(Environment::getPublicPath() . '/ileadmin/test/');
+ * $file = Environment::getPublicPath() . '/fileadmin/test/Foo.bar';
  * file_put_contents($file, 'Baz');
  * $content = file_get_contents($file);
  * $this->assertSame('Baz', $content);
