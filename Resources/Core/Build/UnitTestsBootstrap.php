@@ -49,12 +49,6 @@ call_user_func(function () {
 
     $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
     \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
-    if (\TYPO3\CMS\Core\Utility\GeneralUtility::getApplicationContext() === null) {
-        // @deprecated can be removed in v5
-        $applicationContext = \TYPO3\CMS\Core\Core\Bootstrap::createApplicationContext();
-        \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::initializeEnvironment($applicationContext);
-        \TYPO3\CMS\Core\Utility\GeneralUtility::presetApplicationContext($applicationContext);
-    }
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
     \TYPO3\CMS\Core\Core\Bootstrap::baseSetup();
 
