@@ -882,10 +882,12 @@ class Testbase
     {
         if (getenv('TYPO3_PATH_ROOT')) {
             $webRoot = getenv('TYPO3_PATH_ROOT');
-        } elseif (getenv('TYPO3_PATH_WEB')) {
-            // @deprecated
-            $webRoot = getenv('TYPO3_PATH_WEB');
         } else {
+            // If doing casual extension testing, env var TYPO3_PATH_ROOT is *always* set
+            // through the composer autoload-include.php file created by cms-composer-installer.
+            // This fallback here is for native core (typo3/cms package) tests, where
+            // cms-composer-installer does not create that file since that package is also
+            // used for packaging non-composer instances.
             $webRoot = getcwd();
         }
         return rtrim(strtr($webRoot, '\\', '/'), '/') . '/';
