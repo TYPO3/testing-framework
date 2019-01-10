@@ -32,13 +32,6 @@ use TYPO3\TestingFramework\Core\BaseTestCase;
 abstract class UnitTestCase extends BaseTestCase
 {
     /**
-     * @todo make LoadedExtensionsArray serializable instead
-     *
-     * @var array
-     */
-    protected $backupGlobalsBlacklist = ['TYPO3_LOADED_EXT'];
-
-    /**
      * If set to true, setUp() will back up the state of the
      * TYPO3\CMS\Core\Core\Environment class and restore it
      * in tearDown().
