@@ -75,12 +75,9 @@ class Testbase
      */
     public function defineBaseConstants()
     {
-        // A null, a tabulator, a linefeed, a carriage return, a substitution, a CR-LF combination
-        defined('NUL') ?: define('NUL', chr(0));
-        defined('TAB') ?: define('TAB', chr(9));
+        // A linefeed, a carriage return, a CR-LF combination
         defined('LF') ?: define('LF', chr(10));
         defined('CR') ?: define('CR', chr(13));
-        defined('SUB') ?: define('SUB', chr(26));
         defined('CRLF') ?: define('CRLF', CR . LF);
     }
 
