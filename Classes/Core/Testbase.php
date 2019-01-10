@@ -82,16 +82,6 @@ class Testbase
         defined('CR') ?: define('CR', chr(13));
         defined('SUB') ?: define('SUB', chr(26));
         defined('CRLF') ?: define('CRLF', CR . LF);
-
-        if (!defined('TYPO3_OS')) {
-            // Operating system identifier
-            // Either "WIN" or empty string
-            $typoOs = '';
-            if (!stristr(PHP_OS, 'darwin') && !stristr(PHP_OS, 'cygwin') && stristr(PHP_OS, 'win')) {
-                $typoOs = 'WIN';
-            }
-            define('TYPO3_OS', $typoOs);
-        }
     }
 
     /**
