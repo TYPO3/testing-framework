@@ -48,7 +48,6 @@ call_user_func(function () {
     $testbase->defineSitePath();
     $testbase->defineTypo3ModeBe();
     $testbase->setTypo3TestingContext();
-    $testbase->definePackagesPath();
 
     $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
     \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
@@ -60,13 +59,9 @@ call_user_func(function () {
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/uploads');
 
     // Retrieve an instance of class loader and inject to core bootstrap
-    $classLoaderFilepath = TYPO3_PATH_PACKAGES . 'autoload.php';
-    if (!file_exists($classLoaderFilepath)) {
-        die('ClassLoader can\'t be loaded. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
-    }
-    $classLoader = require $classLoaderFilepath;
-
+    $classLoader = require $testbase->getPackagesPath() . '/autoload.php';
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
+
     \TYPO3\CMS\Core\Core\Bootstrap::baseSetup();
 
     // Initialize default TYPO3_CONF_VARS

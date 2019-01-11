@@ -95,13 +95,6 @@ class Testbase
         }
     }
 
-    public function definePackagesPath()
-    {
-        if (!defined('TYPO3_PATH_PACKAGES')) {
-            define('TYPO3_PATH_PACKAGES', $this->getPackagesPath());
-        }
-    }
-
     /**
      * Defines the constant ORIGINAL_ROOT for the path to the original TYPO3 document root.
      * For functional / acceptance tests only
@@ -258,7 +251,7 @@ class Testbase
     public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths)
     {
         foreach ($extensionPaths as $extensionPath) {
-            $absoluteExtensionPath = TYPO3_PATH_PACKAGES . 'typo3/testing-framework/' . $extensionPath;
+            $absoluteExtensionPath = $this->getPackagesPath() . '/typo3/testing-framework/' . $extensionPath;
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
                     'Framework extension path ' . $absoluteExtensionPath . ' not found',
@@ -849,11 +842,11 @@ class Testbase
      * Since we are installed in vendor dir, we can safely assume the path of the vendor
      * directory relative to this file
      *
-     * @return string
+     * @return string Absolute path to vendor dir, without trailing slash
      */
-    protected function getPackagesPath(): string
+    public function getPackagesPath(): string
     {
-        return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/') . '/';
+        return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/');
     }
 
     /**
@@ -893,7 +886,7 @@ class Testbase
         if (strpos($path, 'EXT:') === 0) {
             $path = GeneralUtility::getFileAbsFileName($path);
         } elseif (strpos($path, 'PACKAGE:') === 0) {
-            $path = $this->getPackagesPath() . str_replace('PACKAGE:', '',$path);
+            $path = $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
         }
         return $path;
     }

@@ -253,7 +253,6 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         $testbase = new Testbase();
         $testbase->defineTypo3ModeBe();
-        $testbase->definePackagesPath();
         $testbase->setTypo3TestingContext();
 
         $isFirstTest = false;
@@ -848,13 +847,14 @@ abstract class FunctionalTestCase extends BaseTestCase
             'context' => json_encode($context),
         ];
 
-        $template = new \Text_Template(TYPO3_PATH_PACKAGES . 'typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
+        $vendorPath = (new Testbase())->getPackagesPath();
+        $template = new \Text_Template($vendorPath . '/typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
         $template->setVar(
             [
                 'arguments' => var_export($arguments, true),
                 'documentRoot' => $this->instancePath,
                 'originalRoot' => ORIGINAL_ROOT,
-                'vendorPath' => TYPO3_PATH_PACKAGES
+                'vendorPath' => $vendorPath . '/'
             ]
         );
 
