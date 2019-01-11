@@ -30,15 +30,34 @@ call_user_func(function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();
     $testbase->enableDisplayErrors();
     $testbase->defineBaseConstants();
+
+    // These if's are for core testing (package typo3/cms) only. cms-composer-installer does
+    // not create the autoload-include.php file that sets these env vars and sets composer
+    // mode to true. testing-framework can not be used without composer anyway, so it is safe
+    // to do this here. This way it does not matter if 'bin/phpunit' or 'vendor/phpunit/phpunit/phpunit'
+    // is called to run the tests since the 'relative to entry script' path calculation within
+    // SystemEnvironmentBuilder is not used. However, the binary must be called from the document
+    // root since getWebRoot() uses 'getcwd()'.
+    if (!getenv('TYPO3_PATH_ROOT')) {
+        putenv('TYPO3_PATH_ROOT=' . rtrim($testbase->getWebRoot(), '/'));
+    }
+    if (!getenv('TYPO3_PATH_WEB')) {
+        putenv('TYPO3_PATH_WEB=' . rtrim($testbase->getWebRoot(), '/'));
+    }
+
     $testbase->defineSitePath();
     $testbase->defineTypo3ModeBe();
     $testbase->setTypo3TestingContext();
     $testbase->definePackagesPath();
-    $testbase->createDirectory(PATH_site . 'typo3conf/ext');
-    $testbase->createDirectory(PATH_site . 'typo3temp/assets');
-    $testbase->createDirectory(PATH_site . 'typo3temp/var/tests');
-    $testbase->createDirectory(PATH_site . 'typo3temp/var/transient');
-    $testbase->createDirectory(PATH_site . 'uploads');
+
+    $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
+    \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
+
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/assets');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/tests');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/transient');
+    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/uploads');
 
     // Retrieve an instance of class loader and inject to core bootstrap
     $classLoaderFilepath = TYPO3_PATH_PACKAGES . 'autoload.php';
@@ -47,8 +66,6 @@ call_user_func(function () {
     }
     $classLoader = require $classLoaderFilepath;
 
-    $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
-    \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
     \TYPO3\CMS\Core\Core\Bootstrap::baseSetup();
 
