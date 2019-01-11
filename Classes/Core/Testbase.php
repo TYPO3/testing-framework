@@ -82,16 +82,14 @@ class Testbase
     }
 
     /**
-     * Defines the PATH_site and sets $_SERVER['SCRIPT_NAME'].
+     * Sets $_SERVER['SCRIPT_NAME'].
      * For unit tests only
      *
      * @return void
      */
     public function defineSitePath()
     {
-        define('PATH_site', $this->getWebRoot());
-        $_SERVER['SCRIPT_NAME'] = PATH_site . 'typo3/index.php';
-
+        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
         if (!file_exists($_SERVER['SCRIPT_NAME'])) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
@@ -864,7 +862,7 @@ class Testbase
      *
      * @return string the TYPO3 document root using Unix path separators
      */
-    protected function getWebRoot()
+    public function getWebRoot()
     {
         if (getenv('TYPO3_PATH_ROOT')) {
             $webRoot = getenv('TYPO3_PATH_ROOT');
