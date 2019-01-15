@@ -98,8 +98,6 @@ abstract class BackendEnvironment extends Extension
          * array(
          *   'typo3/sysext/impext/Tests/Functional/Fixtures/Folders/fileadmin/user_upload' =>
          *   'fileadmin/user_upload',
-         *   'typo3conf/ext/my_own_ext/Tests/Functional/Fixtures/Folders/uploads/tx_myownext' =>
-         *   'uploads/tx_myownext'
          * );
          *
          * To be able to link from my_own_ext the extension path needs also to be registered in
@@ -129,7 +127,6 @@ abstract class BackendEnvironment extends Extension
          * /typo3temp
          * /typo3conf
          * /typo3conf/ext
-         * /uploads
          *
          * To create additional folders add the paths to this array. Given paths are expected to be
          * relative to the test instance root and have to begin with a slash. Example:
@@ -247,7 +244,6 @@ abstract class BackendEnvironment extends Extension
         $testbase->createDirectory($instancePath . '/typo3temp/var/transient');
         $testbase->createDirectory($instancePath . '/typo3temp/assets');
         $testbase->createDirectory($instancePath . '/typo3conf/ext');
-        $testbase->createDirectory($instancePath . '/uploads');
         // Additionally requested directories
         foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);

@@ -56,7 +56,6 @@ call_user_func(function () {
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/assets');
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/tests');
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/transient');
-    $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/uploads');
 
     // Retrieve an instance of class loader and inject to core bootstrap
     $classLoader = require $testbase->getPackagesPath() . '/autoload.php';
