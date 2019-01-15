@@ -5,7 +5,6 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'example',
     'version' => '9.4.0',
     'state' => 'beta',
-    'uploadfolder' => 0,
     'createDirs' => '',
     'clearCacheOnLoad' => 0,
     'author' => 'Oliver Hader',
