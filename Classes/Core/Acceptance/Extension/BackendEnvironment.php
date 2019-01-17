@@ -264,7 +264,6 @@ abstract class BackendEnvironment extends Extension
         $localConfiguration['BE']['debug'] = true;
         $localConfiguration['BE']['lockHashKeyWords'] = '';
         $localConfiguration['BE']['installToolPassword'] = '$P$notnotnotnotnotnot.validvalidva';
-        $localConfiguration['BE']['loginSecurityLevel'] = 'rsa';
         $localConfiguration['SYS']['displayErrors'] = false;
         $localConfiguration['SYS']['debugExceptionHandler'] = '';
         $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
