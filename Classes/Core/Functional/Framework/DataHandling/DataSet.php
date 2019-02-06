@@ -193,6 +193,21 @@ class DataSet
     }
 
     /**
+     * @return int
+     */
+    public function getMaximumPadding(): int
+    {
+        $maximums = array_map(
+            function (array $tableData) {
+                return count($tableData['fields'] ?? []);
+            },
+            array_values($this->data)
+        );
+        // adding additional index since field values are indented by one
+        return max($maximums) + 1;
+    }
+
+    /**
      * @param string $tableName
      * @return NULL|array
      */
@@ -233,8 +248,9 @@ class DataSet
 
     /**
      * @param string $fileName
+     * @param null|int $padding
      */
-    public function persist(string $fileName)
+    public function persist(string $fileName, int $padding = null)
     {
         $fileHandle = fopen($fileName, 'w');
 
@@ -246,15 +262,32 @@ class DataSet
             $fields = $tableData['fields'];
             array_unshift($fields, '');
 
-            fputcsv($fileHandle, [$tableName]);
-            fputcsv($fileHandle, $fields);
+            fputcsv($fileHandle, $this->pad([$tableName], $padding));
+            fputcsv($fileHandle, $this->pad($fields, $padding));
 
             foreach ($tableData['elements'] as $element) {
                 array_unshift($element, '');
-                fputcsv($fileHandle, $element);
+                fputcsv($fileHandle, $this->pad($element, $padding));
             }
         }
 
         fclose($fileHandle);
+    }
+
+    /**
+     * @param array $values
+     * @param null|int $padding
+     * @return array
+     */
+    protected function pad(array $values, int $padding = null): array
+    {
+        if ($padding === null) {
+            return $values;
+        }
+
+        return array_merge(
+            $values,
+            array_fill(0, $padding - count($values), '')
+        );
     }
 }
