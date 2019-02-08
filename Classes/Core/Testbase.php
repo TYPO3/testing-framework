@@ -18,6 +18,7 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
@@ -795,7 +796,8 @@ class Testbase
      */
     public static function resetTableSequences(Connection $connection, string $tableName)
     {
-        if ($connection->getDatabasePlatform() instanceof PostgreSqlPlatform) {
+        $platform = $connection->getDatabasePlatform();
+        if ($platform instanceof PostgreSqlPlatform) {
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->getRestrictions()->removeAll();
             $row = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
@@ -827,6 +829,14 @@ class Testbase
                     )
                 );
             }
+        } elseif ($platform instanceof SqlitePlatform) {
+            // Drop eventually existing sqlite sequence for this table
+            $connection->exec(
+                sprintf(
+                    'DELETE FROM sqlite_sequence WHERE name=%s',
+                    $connection->quote($tableName)
+                )
+            );
         }
     }
 
