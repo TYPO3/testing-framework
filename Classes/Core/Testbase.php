@@ -807,7 +807,7 @@ class Testbase
                 );
             }
         } elseif ($platform instanceof SqlitePlatform) {
-            // Drop eventually existing sqlite sequence for htis table
+            // Drop eventually existing sqlite sequence for this table
             $connection->exec(
                 sprintf(
                     'DELETE FROM sqlite_sequence WHERE name=%s',
