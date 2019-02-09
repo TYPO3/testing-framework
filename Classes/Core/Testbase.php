@@ -807,13 +807,17 @@ class Testbase
                 );
             }
         } elseif ($platform instanceof SqlitePlatform) {
-            // Drop eventually existing sqlite sequence for this table
-            $connection->exec(
-                sprintf(
-                    'DELETE FROM sqlite_sequence WHERE name=%s',
-                    $connection->quote($tableName)
-                )
-            );
+
+            $sequenceExists = $connection->select(['name'],'sqlite_master', ['type' => 'table', 'name' =>'sqlite_sequence'])->fetchColumn();
+            if ($sequenceExists !== false) {
+                // Drop eventually existing sqlite sequence for this table
+                $connection->exec(
+                    sprintf(
+                        'DELETE FROM sqlite_sequence WHERE name=%s',
+                        $connection->quote($tableName)
+                    )
+                );
+            }
         }
     }
 
