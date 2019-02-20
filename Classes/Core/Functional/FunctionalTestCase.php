@@ -864,6 +864,10 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function reconstituteFrontendRequestResult(array $result): InternalResponse
     {
+        if (!empty($result['stderr'])) {
+            $this->fail('Frontend Response is erroneous: ' . LF . $result['stderr']);
+        }
+
         $data = json_decode($result['stdout'], true);
 
         if ($data === null) {
@@ -908,6 +912,10 @@ abstract class FunctionalTestCase extends BaseTestCase
             $workspaceId,
             $frontendUserId
         );
+        if (!empty($result['stderr'])) {
+            $this->fail('Frontend Response is erroneous: ' . LF . $result['stderr']);
+        }
+
         $data = json_decode($result['stdout'], true);
 
         if ($data === null) {
