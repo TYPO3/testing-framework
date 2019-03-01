@@ -26,7 +26,7 @@
   },
   "require": {
     "phpunit/phpunit": "^6.2",
-    "mikey179/vfsStream": "~1.6.0",
+    "mikey179/vfsstream": "~1.6.0",
     "typo3fluid/fluid": "^2.2",
     "typo3/cms-core": "^8.5 || ^9",
     "typo3/cms-backend": "^8.5 || ^9",
