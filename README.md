@@ -11,7 +11,7 @@ and acceptance tests within the TYPO3 extension ecosystem.
 This framework works on top of a composer based installation.
 
 ```
-$ composer require typo3/testing-framework
+$ composer require --dev typo3/testing-framework
 ```
 
 ## Documentation
