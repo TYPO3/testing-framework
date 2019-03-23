@@ -52,7 +52,7 @@ class DatabaseConnectionWrapper extends Connection
      */
     public function insert($tableName, array $data, array $types = []): int
     {
-        $modified = $this->shallModifyIdentityInsert($tableName, $data)
+        $modified = $this->shallModifyIdentityInsert($data)
             && $this->modifyIdentityInsert($tableName, true);
 
         $result = parent::insert($tableName, $data, $types);
@@ -65,16 +65,15 @@ class DatabaseConnectionWrapper extends Connection
     }
 
     /**
-     * @param string $tableName
      * @param array $data
      * @return bool
      */
-    private function shallModifyIdentityInsert(string $tableName, array $data): bool
+    private function shallModifyIdentityInsert(array $data): bool
     {
         if ($this->allowIdentityInsert !== null) {
             return $this->allowIdentityInsert;
         }
-        return !empty($GLOBALS['TCA'][$tableName]) && isset($data['uid']);
+        return isset($data['uid']);
     }
 
     /**
