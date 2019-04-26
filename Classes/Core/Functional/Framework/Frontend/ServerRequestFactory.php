@@ -12,9 +12,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Class ServerRequestFactory
  *
  * Extends the default ServerRequestFactory because we need the body content
- * from the testing framework request which is passed along in the _SERVER
- * variables.
- * 
+ * and the headers from the testing framework request which is passed along
+ * in the _SERVER variables.
+ *
  * @package TYPO3\TestingFramework\Core\Functional\Framework\Frontend
  */
 class ServerRequestFactory extends \TYPO3\CMS\Core\Http\ServerRequestFactory
@@ -38,7 +38,7 @@ class ServerRequestFactory extends \TYPO3\CMS\Core\Http\ServerRequestFactory
             $uri,
             $method,
             $serverParameters['X_TYPO3_TESTING_FRAMEWORK']['request']->getBody(),
-            $headers,
+            $serverParameters['X_TYPO3_TESTING_FRAMEWORK']['request']->getHeaders(),
             $serverParameters,
             static::normalizeUploadedFiles($_FILES)
         );
