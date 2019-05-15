@@ -70,7 +70,7 @@ call_user_func(function () {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '.*';
 
     $cache = new \TYPO3\CMS\Core\Cache\Frontend\PhpFrontend(
-        'cache_core',
+        'core',
         new \TYPO3\CMS\Core\Cache\Backend\NullBackend('production', [])
     );
     // Set all packages to active
