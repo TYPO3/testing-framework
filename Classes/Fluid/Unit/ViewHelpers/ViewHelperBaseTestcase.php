@@ -76,7 +76,7 @@ abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->viewHelperVariableContainer = $this->prophesize(ViewHelperVariableContainer::class);
         $this->templateVariableContainer = $this->createMock(StandardVariableProvider::class);
