@@ -44,7 +44,7 @@ class DatabaseAccessor
         $export = [];
         foreach ($schemaManager->listTables() as $table) {
             $tableName = $table->getName();
-            if (stripos($tableName, 'cf_') === 0) {
+            if (stripos($tableName, 'cf_') === 0 || stripos($tableName, 'cache_') === 0) {
                 continue;
             }
 
