@@ -296,7 +296,9 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
                 $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
-                $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
+                if ($dbDriver === 'mysqli') {
+                    $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
+                }
             } else {
                 $dbPath = $this->instancePath . '/test.sqlite';
                 $localConfiguration['DB']['Connections']['Default']['path'] = $dbPath;
