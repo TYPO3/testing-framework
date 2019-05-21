@@ -92,7 +92,7 @@ abstract class UnitTestCase extends BaseTestCase
     /**
      * Set error reporting to always fail on E_NOTICE
      */
-    public static function setUpBeforeClass(): void
+    public static function setUpBeforeClass()
     {
         $errorReporting = self::$backupErrorReporting = error_reporting();
         // Always fail on notice level errors
@@ -102,7 +102,7 @@ abstract class UnitTestCase extends BaseTestCase
     /**
      * Reset error reporting to original state
      */
-    public static function tearDownAfterClass(): void
+    public static function tearDownAfterClass()
     {
         error_reporting(self::$backupErrorReporting);
     }
@@ -110,7 +110,7 @@ abstract class UnitTestCase extends BaseTestCase
     /**
      * Generic setUp()
      */
-    protected function setUp(): void
+    protected function setUp()
     {
         if ($this->backupEnvironment === true) {
             $this->backupEnvironment();
@@ -130,7 +130,7 @@ abstract class UnitTestCase extends BaseTestCase
      * @throws \RuntimeException
      * @return void
      */
-    protected function tearDown(): void
+    protected function tearDown()
     {
         // Restore Environment::class is asked for
         if ($this->backupEnvironment === true) {

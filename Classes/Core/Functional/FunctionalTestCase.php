@@ -240,7 +240,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @return void
      * @throws \Doctrine\DBAL\DBALException
      */
-    protected function setUp(): void
+    protected function setUp()
     {
         if (!defined('ORIGINAL_ROOT')) {
             $this->markTestSkipped('Functional tests must be called through phpunit on CLI');
