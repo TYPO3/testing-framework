@@ -260,6 +260,7 @@ class DataSet
     public function persist(string $fileName, int $padding = null)
     {
         $fileHandle = fopen($fileName, 'w');
+        $modifier = CsvWriterStreamFilter::apply($fileHandle);
 
         foreach ($this->data as $tableName => $tableData) {
             if (empty($tableData['fields']) || empty($tableData['elements'])) {
@@ -269,12 +270,12 @@ class DataSet
             $fields = $tableData['fields'];
             array_unshift($fields, '');
 
-            fputcsv($fileHandle, $this->pad([$tableName], $padding));
-            fputcsv($fileHandle, $this->pad($fields, $padding));
+            fputcsv($fileHandle, $this->pad($modifier([$tableName]), $padding));
+            fputcsv($fileHandle, $this->pad($modifier($fields), $padding));
 
             foreach ($tableData['elements'] as $element) {
                 array_unshift($element, '');
-                fputcsv($fileHandle, $this->pad($element, $padding));
+                fputcsv($fileHandle, $this->pad($modifier($element), $padding));
             }
         }
 
