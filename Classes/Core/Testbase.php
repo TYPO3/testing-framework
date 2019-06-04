@@ -873,8 +873,6 @@ class Testbase
      */
     public function getPackagesPath(): string
     {
-        // @hack: remove me
-        return getcwd() . '/vendor';
         return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/');
     }
 
