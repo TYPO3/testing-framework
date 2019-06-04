@@ -44,6 +44,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class Testbase
 {
     /**
+     * Usually contains the major version of TYPO3 Core
+     * @var int
+     */
+    private $coreVersion;
+
+    /**
      * This class must be called in CLI environment as a security measure
      * against path disclosures and other stuff. Check this within
      * constructor to make sure this check can't be circumvented.
@@ -53,6 +59,11 @@ class Testbase
         // Ensure cli only as security measure
         if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
             die('This script supports command line usage only. Please check your command.');
+        }
+        if (class_exists(\TYPO3\CMS\Frontend\Page\PageGenerator::class)) {
+            $this->coreVersion = 9;
+        } else {
+            $this->coreVersion = 10;
         }
     }
 
@@ -90,7 +101,13 @@ class Testbase
      */
     public function defineSitePath()
     {
-        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
+        if ($this->coreVersion === 9) {
+            define('PATH_site', $this->getWebRoot());
+            define('PATH_thisScript', PATH_site . 'typo3/index.php');
+            $_SERVER['SCRIPT_NAME'] = PATH_thisScript;
+        } else {
+            $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
+        }
         if (!file_exists($_SERVER['SCRIPT_NAME'])) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
@@ -856,6 +873,8 @@ class Testbase
      */
     public function getPackagesPath(): string
     {
+        // @hack: remove me
+        return getcwd() . '/vendor';
         return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/');
     }
 
@@ -899,6 +918,11 @@ class Testbase
             $path = $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
         }
         return $path;
+    }
+
+    public function getCurrentTypo3Version(): int
+    {
+        return $this->coreVersion;
     }
 
     /**
