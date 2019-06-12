@@ -173,9 +173,9 @@ abstract class UnitTestCase extends BaseTestCase
             if (!GeneralUtility::validPathStr($absoluteFileName)) {
                 throw new \RuntimeException('tearDown() cleanup: Filename contains illegal characters', 1410633087);
             }
-            if (strpos($absoluteFileName, Environment::getPublicPath() . '/typo3temp/var/') !== 0) {
+            if (strpos($absoluteFileName, Environment::getVarPath()) !== 0 && strpos($absoluteFileName, Environment::getPublicPath() . '/typo3temp/') !== 0) {
                 throw new \RuntimeException(
-                    'tearDown() cleanup:  Files to delete must be within typo3temp/var/',
+                    'tearDown() cleanup:  Files to delete must be within ' . Environment::getVarPath() . ' or ' . Environment::getPublicPath() . '/typo3temp/',
                     1410633412
                 );
             }
