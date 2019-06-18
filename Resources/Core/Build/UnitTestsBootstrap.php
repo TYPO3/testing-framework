@@ -29,6 +29,7 @@
 call_user_func(function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();
     $testbase->enableDisplayErrors();
+    $testbase->defineBaseConstants();
 
     // These if's are for core testing (package typo3/cms) only. cms-composer-installer does
     // not create the autoload-include.php file that sets these env vars and sets composer
@@ -56,10 +57,6 @@ call_user_func(function () {
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/tests');
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/var/transient');
 
-    if ($testbase->getCurrentTypo3Version() === 9) {
-        $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/uploads');
-    }
-
     // Retrieve an instance of class loader and inject to core bootstrap
     $classLoader = require $testbase->getPackagesPath() . '/autoload.php';
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
@@ -73,7 +70,7 @@ call_user_func(function () {
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '.*';
 
     $cache = new \TYPO3\CMS\Core\Cache\Frontend\PhpFrontend(
-        ($testbase->getCurrentTypo3Version() === 9 ? 'cache_core' : 'core'),
+        'core',
         new \TYPO3\CMS\Core\Cache\Backend\NullBackend('production', [])
     );
     // Set all packages to active
