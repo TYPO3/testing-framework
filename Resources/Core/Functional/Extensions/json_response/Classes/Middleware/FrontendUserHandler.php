@@ -44,17 +44,17 @@ class FrontendUserHandler implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        $GLOBALS['TSFE']->fe_user->checkPid = 0;
+        $frontendUserAuthentication = $request->getAttribute('frontend.user');
+        $frontendUserAuthentication->checkPid = 0;
 
         $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('fe_users')
             ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
             ->fetch();
         if (is_array($frontendUser)) {
-            $GLOBALS['TSFE']->fe_user->createUserSession($frontendUser);
-            $GLOBALS['TSFE']->fe_user->user = $GLOBALS['TSFE']->fe_user->fetchUserSession();
-            $GLOBALS['TSFE']->initUserGroups();
-            $this->setFrontendUserAspect(GeneralUtility::makeInstance(Context::class), $GLOBALS['TSFE']->fe_user);
+            $frontendUserAuthentication->createUserSession($frontendUser);
+            $frontendUserAuthentication->user = $frontendUserAuthentication->fetchUserSession();
+            $this->setFrontendUserAspect(GeneralUtility::makeInstance(Context::class), $frontendUserAuthentication);
         }
 
         return $handler->handle($request);
