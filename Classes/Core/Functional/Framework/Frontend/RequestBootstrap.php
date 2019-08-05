@@ -14,6 +14,9 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Configuration\ConfigurationManager;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Http\MiddlewareDispatcher;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 
 /**
@@ -115,7 +118,7 @@ class RequestBootstrap
         $_SERVER['SCRIPT_FILENAME'] = $_SERVER['_'] = $_SERVER['PATH_TRANSLATED'] = $this->requestArguments['documentRoot'] . '/index.php';
         $_SERVER['QUERY_STRING'] = (isset($requestUrlParts['query']) ? $requestUrlParts['query'] : '');
         $_SERVER['REQUEST_URI'] = $requestUrlParts['path'] . (isset($requestUrlParts['query']) ? '?' . $requestUrlParts['query'] : '');
-        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_METHOD'] = $this->request->getMethod();
 
         // Define HTTPS and server port:
         if (isset($requestUrlParts['scheme'])) {
@@ -164,7 +167,21 @@ class RequestBootstrap
                 $GLOBALS,
                 $this->context->getGlobalSettings() ?? []
             );
-            $container->get(\TYPO3\CMS\Frontend\Http\Application::class)->run();
+
+            $requestHandler = new MiddlewareDispatcher(
+                $container->get(\TYPO3\CMS\Frontend\Http\RequestHandler::class),
+                $container->get('frontend.middlewares'),
+                $container
+            );
+            $application = new \TYPO3\JsonResponse\Framework\Frontend\Application(
+                $requestHandler,
+                $container->get(ConfigurationManager::class),
+                $container->get(Context::class)
+            );
+
+            // simple ->run won't take our request body
+            $application->runFromTestingFramework();
+
             $result['status'] = 'success';
             $result['content'] = static::getContent();
         } catch (\Exception $exception) {
