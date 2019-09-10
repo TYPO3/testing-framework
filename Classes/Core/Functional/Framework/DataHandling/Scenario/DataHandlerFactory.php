@@ -215,7 +215,8 @@ class DataHandlerFactory
 
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        $this->setInDataMap($tableName, $newId, $values, 0);
+        $workspaceId = $itemSettings['version']['workspace'] ?? 0;
+        $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
         if (isset($itemSettings['actions'])) {
             $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
         }
