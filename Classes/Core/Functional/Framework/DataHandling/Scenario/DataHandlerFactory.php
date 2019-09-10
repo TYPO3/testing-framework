@@ -199,7 +199,8 @@ class DataHandlerFactory
 
         $tableName = $entityConfiguration->getTableName();
         $newId = StringUtility::getUniqueId('NEW');
-        $this->setInDataMap($tableName, $newId, $values, 0);
+        $workspaceId = $itemSettings['version']['workspace'] ?? 0;
+        $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
 
         foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
