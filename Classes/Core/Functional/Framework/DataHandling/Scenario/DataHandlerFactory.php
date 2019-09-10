@@ -293,7 +293,14 @@ class DataHandlerFactory
         $parentColumnName = $entityConfiguration->getParentColumnName();
         $nodeColumnName = $entityConfiguration->getNodeColumnName();
 
-        $suggestedId = $staticId > 0 ? $staticId : $this->incrementDynamicId($entityConfiguration);
+        // @todo probably dynamic assignment is a bad idea & we should just use auto incremented values...
+        $incrementValue = !empty($itemSettings['version']) ? 2 : 1;
+        if ($staticId > 0) {
+            $suggestedId = $staticId;
+            $this->incrementDynamicId($entityConfiguration, $incrementValue - 1);
+        } else {
+            $suggestedId = $this->incrementDynamicId($entityConfiguration, $incrementValue);
+        }
         $this->addSuggestedId($entityConfiguration, $suggestedId);
         $values = $entityConfiguration->processValues($itemSettings[$sourceProperty]);
         $values['uid'] = $suggestedId;
@@ -401,12 +408,16 @@ class DataHandlerFactory
      * @return int
      */
     private function incrementDynamicId(
-        EntityConfiguration $entityConfiguration
+        EntityConfiguration $entityConfiguration,
+        int $incrementValue = 1
     ): int {
         if (!isset($this->dynamicIdsPerEntity[$entityConfiguration->getName()])) {
             $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = static::DYNAMIC_ID;
         }
-        return ++$this->dynamicIdsPerEntity[$entityConfiguration->getName()];
+        $result = $this->dynamicIdsPerEntity[$entityConfiguration->getName()];
+        // increment for next(!) assingment, since current process might create version or language variants
+        $this->dynamicIdsPerEntity[$entityConfiguration->getName()] += $incrementValue;
+        return $result;
     }
 
     /**
