@@ -374,6 +374,16 @@ class DataHandlerFactory
         int $suggestedId
     ): void {
         $identifier = $entityConfiguration->getTableName() . ':' . $suggestedId;
+        if (isset($this->suggestedIds[$identifier])) {
+            throw new \LogicException(
+                sprintf(
+                    'Cannot redeclare identifier "%s" with "%d"',
+                    $identifier,
+                    $suggestedId
+                ),
+                1568146788
+            );
+        }
         $this->suggestedIds[$identifier] = true;
     }
 
