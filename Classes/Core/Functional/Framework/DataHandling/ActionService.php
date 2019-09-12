@@ -492,10 +492,6 @@ class ActionService
             ->from($tableName)
             ->where(
                 $queryBuilder->expr()->eq(
-                    'pid',
-                    $queryBuilder->createNamedParameter(-1, \PDO::PARAM_INT)
-                ),
-                $queryBuilder->expr()->eq(
                     't3ver_oid',
                     $queryBuilder->createNamedParameter($liveUid, \PDO::PARAM_INT)
                 ),
