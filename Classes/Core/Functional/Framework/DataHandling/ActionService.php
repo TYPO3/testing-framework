@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
@@ -486,15 +487,12 @@ class ActionService
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable($tableName);
-        $queryBuilder->getRestrictions()->removeAll();
+        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+
         $statement = $queryBuilder
             ->select('uid')
             ->from($tableName)
             ->where(
-                $queryBuilder->expr()->eq(
-                    'pid',
-                    $queryBuilder->createNamedParameter(-1, \PDO::PARAM_INT)
-                ),
                 $queryBuilder->expr()->eq(
                     't3ver_oid',
                     $queryBuilder->createNamedParameter($liveUid, \PDO::PARAM_INT)
