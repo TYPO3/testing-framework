@@ -61,13 +61,20 @@ class InternalRequest extends Request implements \JsonSerializable
 
     /**
      * @param string|null $uri URI for the request, if any.
+     * @param string $method method to use, GET is default.
+     * @param string|null $content body content to use, if any.
+     * @param array $headers Headers for the message, if any.
      */
-    public function __construct($uri = null) {
+    public function __construct($uri = null, $method = 'GET', string $content = null, array $headers = []) {
         if ($uri === null) {
             $uri = 'http://localhost/';
         }
-        $body = new Stream('php://temp', 'rw');
-        parent::__construct($uri, 'GET', $body);
+        $body = new Stream('php://temp', 'wb+');
+        if (null !== $content) {
+            $body->write($content);
+            $body->rewind();
+        }
+        parent::__construct($uri, $method, $body, $headers);
     }
 
     /**
@@ -200,5 +207,15 @@ class InternalRequest extends Request implements \JsonSerializable
         $parameters = \GuzzleHttp\Psr7\parse_query($query);
         $parameters[$parameterName] = $value;
         return \GuzzleHttp\Psr7\build_query($parameters);
+    }
+
+    public function withHeaders(array $headers): InternalRequest
+    {
+        $target = clone $this;
+        $target->headers = $headers;
+        if (!isset($target->headers['user-agent'])) {
+            $target->headers['user-agent'] = 'TYPO3 Functional Test Request';
+        }
+        return $target;
     }
 }

@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: false
+    autoconfigure: false
+    public: true
+
+  TYPO3\JsonResponse\:
+    resource: '../Classes/*'

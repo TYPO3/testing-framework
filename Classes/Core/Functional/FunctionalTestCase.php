@@ -733,7 +733,10 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         $connection->update(
             'pages',
-            ['is_siteroot' => 1],
+            [
+                'is_siteroot' => 1,
+                'slug' => '/'
+            ],
             ['uid' => $pageId]
         );
 
