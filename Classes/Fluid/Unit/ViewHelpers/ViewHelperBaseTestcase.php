@@ -13,10 +13,12 @@ namespace TYPO3\TestingFramework\Fluid\Unit\ViewHelpers;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Extbase\Error\Result;
 use TYPO3\CMS\Extbase\Reflection\ReflectionService;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3\TestingFramework\Fluid\Unit\Core\Rendering\RenderingContextFixture;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
@@ -26,7 +28,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperVariableContainer;
 /**
  * Base test class for testing view helpers
  */
-abstract class ViewHelperBaseTestcase extends \TYPO3\TestingFramework\Core\Unit\UnitTestCase
+abstract class ViewHelperBaseTestcase extends UnitTestCase
 {
     /**
      * @var ViewHelperVariableContainer|ObjectProphecy

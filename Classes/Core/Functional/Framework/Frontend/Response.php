@@ -19,7 +19,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 class Response
 {
-    const STATUS_Success = 'success';
     const STATUS_Failure = 'failure';
 
     /**

@@ -14,10 +14,14 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\SingletonInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+
 /**
  * Section renderer for frontend responses.
  */
-class Renderer implements \TYPO3\CMS\Core\SingletonInterface
+class Renderer implements SingletonInterface
 {
     /**
      * @var array
@@ -25,7 +29,7 @@ class Renderer implements \TYPO3\CMS\Core\SingletonInterface
     protected $sections = [];
 
     /**
-     * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
+     * @var ContentObjectRenderer
      */
     public $cObj;
 
@@ -153,8 +157,6 @@ class Renderer implements \TYPO3\CMS\Core\SingletonInterface
      */
     protected function createParser()
     {
-        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-            \TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Parser::class
-        );
+        return GeneralUtility::makeInstance(Parser::class);
     }
 }

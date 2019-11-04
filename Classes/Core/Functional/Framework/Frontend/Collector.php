@@ -14,6 +14,11 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+
 /**
  * Model of frontend response
  */
@@ -67,9 +72,9 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
     {
         $currentFile = $this->cObj->getCurrentFile();
 
-        if ($currentFile instanceof \TYPO3\CMS\Core\Resource\File) {
+        if ($currentFile instanceof File) {
             $tableName = 'sys_file';
-        } elseif ($currentFile instanceof \TYPO3\CMS\Core\Resource\FileReference) {
+        } elseif ($currentFile instanceof FileReference) {
             $tableName = 'sys_file_reference';
         } else {
             return;
@@ -149,7 +154,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
         if (!isset($this->tableFields) && !empty($this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'])) {
             $this->tableFields = $this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'];
             foreach ($this->tableFields as &$fieldList) {
-                $fieldList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $fieldList, true);
+                $fieldList = GeneralUtility::trimExplode(',', $fieldList, true);
             }
             unset($fieldList);
         }
@@ -174,13 +179,13 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      */
     protected function getRenderer()
     {
-        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-            \TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Renderer::class
+        return GeneralUtility::makeInstance(
+            Renderer::class
         );
     }
 
     /**
-     * @return \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController
+     * @return TypoScriptFrontendController
      */
     protected function getFrontendController()
     {

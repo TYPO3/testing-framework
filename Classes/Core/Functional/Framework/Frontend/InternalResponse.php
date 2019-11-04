@@ -20,7 +20,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 /**
  * Model of internal frontend response.
  */
-class InternalResponse extends \TYPO3\CMS\Core\Http\Response
+class InternalResponse extends Response
 {
     use AssignablePropertyTrait;
 

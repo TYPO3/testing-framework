@@ -32,7 +32,7 @@ class TypoScriptInstruction extends AbstractInstruction
     protected $typoScript;
 
     /**
-     * @param array $typoScript
+     * @param array $constants
      * @return static
      */
     public function withConstants(array $constants): self
