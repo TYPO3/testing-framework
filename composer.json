@@ -25,7 +25,7 @@
     "issues": "https://github.com/TYPO3/testing-framework/issues"
   },
   "require": {
-    "phpunit/phpunit": "^7.5.6 || ^8",
+    "phpunit/phpunit": "^8.2.3",
     "mikey179/vfsstream": "~1.6.8",
     "typo3fluid/fluid": "dev-master as 2.6.6",
     "typo3/cms-core": "10.*.*@dev",
