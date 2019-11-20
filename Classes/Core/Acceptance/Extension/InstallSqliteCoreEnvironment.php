@@ -44,10 +44,7 @@ class InstallSqliteCoreEnvironment extends Extension
     public function bootstrapTypo3Environment()
     {
         $testbase = new Testbase();
-        $testbase->enableDisplayErrors();
-        $testbase->defineBaseConstants();
         $testbase->defineOriginalRootPath();
-        $testbase->setTypo3TestingContext();
 
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         $testbase->removeOldInstanceIfExists($instancePath);
