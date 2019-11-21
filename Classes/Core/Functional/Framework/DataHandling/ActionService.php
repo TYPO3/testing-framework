@@ -20,7 +20,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
 
@@ -74,7 +73,7 @@ class ActionService
             if (!isset($recordData['pid'])) {
                 $recordData['pid'] = $pageId;
             }
-            $currentUid = StringUtility::getUniqueId('NEW');
+            $currentUid = $this->getUniqueIdForNewRecords();
             $newTableIds[$tableName][] = $currentUid;
             $dataMap[$tableName][$currentUid] = $recordData;
             if ($previousTableName !== null && $previousUid !== null) {
@@ -147,7 +146,7 @@ class ActionService
             $recordData = $this->resolvePreviousUid($recordData, $currentUid);
             $currentUid = $recordData['uid'];
             if ($recordData['uid'] === '__NEW') {
-                $currentUid = StringUtility::getUniqueId('NEW');
+                $currentUid = $this->getUniqueIdForNewRecords();
             }
             if (strpos((string)$currentUid, 'NEW') === 0) {
                 $recordData['pid'] = $pageId;
@@ -540,5 +539,16 @@ class ActionService
     protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
+    }
+
+    /**
+     * This function generates a unique id by using the more entropy parameter, so it can be used
+     * in DataHandler.
+     *
+     * @return string
+     */
+    private function getUniqueIdForNewRecords(): string
+    {
+        return str_replace('.', '', uniqid('NEW', true));
     }
 }

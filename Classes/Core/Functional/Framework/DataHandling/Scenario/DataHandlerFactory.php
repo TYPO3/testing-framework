@@ -16,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario
  */
 
 use Symfony\Component\Yaml\Yaml;
-use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
  * Factory for DataHandler information parsed from a structured array
@@ -62,9 +61,7 @@ class DataHandlerFactory
      */
     public static function fromYamlFile(string $yamlFile): self
     {
-        $yamlContent = file_get_contents($yamlFile);
-        $settings = Yaml::parse($yamlContent);
-        return new static($settings);
+        return new static(Yaml::parseFile($yamlFile));
     }
 
     public function __construct(array $settings)
@@ -134,7 +131,7 @@ class DataHandlerFactory
 
         $workspaceId = $itemSettings['version']['workspace'] ?? 0;
         $tableName = $entityConfiguration->getTableName();
-        $newId = StringUtility::getUniqueId('NEW');
+        $newId = $this->getUniqueIdForNewRecords();
         $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
 
         foreach ($itemSettings['versionVariants'] ?? [] as $versionVariantSettings) {
@@ -198,7 +195,7 @@ class DataHandlerFactory
         );
 
         $tableName = $entityConfiguration->getTableName();
-        $newId = StringUtility::getUniqueId('NEW');
+        $newId = $this->getUniqueIdForNewRecords();
         $workspaceId = $itemSettings['version']['workspace'] ?? 0;
         $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
 
@@ -503,5 +500,16 @@ class DataHandlerFactory
         $regularPageId = substr($normalizePageId, 1);
         $resolvedPageId = $this->dataMapPerWorkspace[$workspaceId]['pages'][$regularPageId]['pid'] ?? null;
         return $this->resolveDataMapPageId($workspaceId, $resolvedPageId);
+    }
+
+    /**
+     * This function generates a unique id by using the more entropy parameter, so it can be used
+     * in DataHandler.
+     *
+     * @return string
+     */
+    private function getUniqueIdForNewRecords(): string
+    {
+        return str_replace('.', '', uniqid('NEW', true));
     }
 }

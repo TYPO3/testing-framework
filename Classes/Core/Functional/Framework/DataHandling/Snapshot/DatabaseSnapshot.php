@@ -23,7 +23,7 @@ class DatabaseSnapshot
     private const VALUE_IN_MEMORY_THRESHOLD = 1024**2;
 
     /**
-     * @var self
+     * @var static
      */
     private static $instance;
 
