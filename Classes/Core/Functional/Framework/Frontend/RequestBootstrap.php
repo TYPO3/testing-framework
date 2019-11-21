@@ -14,7 +14,10 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Frontend\Http\Application;
 
 /**
  * Bootstrap for direct CLI Request
@@ -148,23 +151,20 @@ class RequestBootstrap
      */
     public function executeAndOutput()
     {
-        global $TT, $TSFE, $TYPO3_CONF_VARS, $BE_USER, $TYPO3_MISC;
+        global $TSFE, $BE_USER;
 
         $result = ['status' => 'failure', 'content' => null, 'error' => null];
 
         ob_start();
         try {
             chdir($_SERVER['DOCUMENT_ROOT']);
-            \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(
-                0,
-                \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_FE
-            );
-            $container = \TYPO3\CMS\Core\Core\Bootstrap::init($this->classLoader);
+            SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_FE);
+            $container = Bootstrap::init($this->classLoader);
             ArrayUtility::mergeRecursiveWithOverrule(
                 $GLOBALS,
                 $this->context->getGlobalSettings() ?? []
             );
-            $container->get(\TYPO3\CMS\Frontend\Http\Application::class)->run();
+            $container->get(Application::class)->run();
             $result['status'] = 'success';
             $result['content'] = static::getContent();
         } catch (\Exception $exception) {

@@ -21,6 +21,7 @@ trait AssignablePropertyTrait
 {
     /**
      * @param array $data
+     * @param callable|null $cast
      * @return static
      */
     private function assign(array $data, callable $cast = null)

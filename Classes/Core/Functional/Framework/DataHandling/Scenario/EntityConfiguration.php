@@ -233,11 +233,11 @@ class EntityConfiguration
     }
 
     /**
-     * @param array $valueInstruction
+     * @param array $valueInstructions
      */
-    private function assertValueInstructions(array $valueInstruction): void
+    private function assertValueInstructions(array $valueInstructions): void
     {
-        foreach ($valueInstruction as $columnName => $valueInstruction) {
+        foreach ($valueInstructions as $columnName => $valueInstruction) {
             if (empty($valueInstruction) || !is_array($valueInstruction)) {
                 throw new \LogicException(
                     sprintf(

@@ -16,8 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 /**
  * DataHandler DataSet
  */
@@ -41,10 +39,7 @@ class DataSet
             $data = self::applyDefaultValues($data);
         }
 
-        return GeneralUtility::makeInstance(
-            DataSet::class,
-            $data
-        );
+        return new DataSet($data);
     }
 
     /**
@@ -93,7 +88,7 @@ class DataSet
         foreach ($rawData as $values) {
             if (!empty($values[0])) {
                 // Skip comment lines, starting with "#"
-                if ($values[0]{0} === '#') {
+                if ($values[0][0] === '#') {
                     continue;
                 }
                 $tableName = $values[0];

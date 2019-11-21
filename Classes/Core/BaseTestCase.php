@@ -14,6 +14,7 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,7 +43,7 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callOriginalClone whether to call the __clone method
      * @param bool $callAutoload whether to call any autoload function
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|\TYPO3\TestingFramework\Core\AccessibleObjectInterface
+     * @return MockObject|AccessibleObjectInterface
      *         a mock of $originalClassName with access methods added
      *
      * @throws \InvalidArgumentException
@@ -87,10 +88,9 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callOriginalClone
      * @param bool $callAutoload
      * @param array $mockedMethods
+     * @return MockObject|AccessibleObjectInterface
      *
      * @throws \InvalidArgumentException
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject|\TYPO3\TestingFramework\Core\AccessibleObjectInterface
      *
      */
     protected function getAccessibleMockForAbstractClass(
@@ -127,7 +127,7 @@ abstract class BaseTestCase extends TestCase
 
         eval(
             $abstractModifier . 'class ' . $accessibleClassName .
-                ' extends ' . $className . ' implements ' . \TYPO3\TestingFramework\Core\AccessibleObjectInterface::class . ' {' .
+                ' extends ' . $className . ' implements ' . AccessibleObjectInterface::class . ' {' .
                     'public function _call($methodName) {' .
                         'if ($methodName === \'\') {' .
                             'throw new \InvalidArgumentException(\'$methodName must not be empty.\', 1334663993);' .
