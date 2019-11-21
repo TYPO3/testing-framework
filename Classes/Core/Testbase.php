@@ -99,6 +99,17 @@ class Testbase
     }
 
     /**
+     * Sets the environment variable TYPO3_CONTEXT to testing.
+     * Needs to be called after each Functional executing a frontend request
+     *
+     * @return void
+     */
+    public function setTypo3TestingContext()
+    {
+        putenv('TYPO3_CONTEXT=Testing');
+    }
+
+    /**
      * Creates directories, recursively if required.
      *
      * @param string $directory Absolute path to directories to create
