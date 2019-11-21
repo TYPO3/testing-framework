@@ -17,7 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
 
 use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Schema\Table;
-use TYPO3\CMS\Core\Database\Connection;
+use Doctrine\DBAL\Connection;
 
 class DatabaseAccessor
 {
@@ -114,7 +114,6 @@ class DatabaseAccessor
         $this->connection->truncate($tableName);
 
         $columnNames = array_keys($columns);
-        $columnTypes = array_values($columns);
         foreach ($items as $item) {
             $this->connection->insert(
                 $tableName,
