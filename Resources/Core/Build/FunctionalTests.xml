@@ -26,4 +26,9 @@
 			<directory>../../../../../../typo3/sysext/*/Tests/Functional/</directory>
 		</testsuite>
 	</testsuites>
+    <php>
+        <const name="TYPO3_MODE" value="BE" />
+        <ini name="display_errors" value="1" />
+        <env name="TYPO3_CONTEXT" value="Testing" />
+    </php>
 </phpunit>

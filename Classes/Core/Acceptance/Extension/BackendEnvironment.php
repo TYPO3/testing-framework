@@ -226,8 +226,6 @@ abstract class BackendEnvironment extends Extension
             return;
         }
         $testbase = new Testbase();
-        $testbase->enableDisplayErrors();
-        $testbase->defineBaseConstants();
         $testbase->defineOriginalRootPath();
         $testbase->createDirectory(ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance');
         $testbase->createDirectory(ORIGINAL_ROOT . 'typo3temp/var/transient');
@@ -236,8 +234,6 @@ abstract class BackendEnvironment extends Extension
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
         putenv('TYPO3_PATH_APP=' . $instancePath);
 
-        $testbase->defineTypo3ModeBe();
-        $testbase->setTypo3TestingContext();
         $testbase->removeOldInstanceIfExists($instancePath);
         // Basic instance directory structure
         $testbase->createDirectory($instancePath . '/fileadmin');

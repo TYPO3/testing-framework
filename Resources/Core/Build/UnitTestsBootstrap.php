@@ -28,8 +28,6 @@
  */
 call_user_func(function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();
-    $testbase->enableDisplayErrors();
-    $testbase->defineBaseConstants();
 
     // These if's are for core testing (package typo3/cms) only. cms-composer-installer does
     // not create the autoload-include.php file that sets these env vars and sets composer
@@ -46,8 +44,6 @@ call_user_func(function () {
     }
 
     $testbase->defineSitePath();
-    $testbase->defineTypo3ModeBe();
-    $testbase->setTypo3TestingContext();
 
     $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
     \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::run(0, $requestType);
@@ -61,13 +57,9 @@ call_user_func(function () {
     $classLoader = require $testbase->getPackagesPath() . '/autoload.php';
     \TYPO3\CMS\Core\Core\Bootstrap::initializeClassLoader($classLoader);
 
-    \TYPO3\CMS\Core\Core\Bootstrap::baseSetup();
-
     // Initialize default TYPO3_CONF_VARS
     $configurationManager = new \TYPO3\CMS\Core\Configuration\ConfigurationManager();
     $GLOBALS['TYPO3_CONF_VARS'] = $configurationManager->getDefaultConfiguration();
-    // Avoid failing tests that rely on HTTP_HOST retrieval
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '.*';
 
     $cache = new \TYPO3\CMS\Core\Cache\Frontend\PhpFrontend(
         'core',
@@ -79,11 +71,7 @@ call_user_func(function () {
     \TYPO3\CMS\Core\Utility\GeneralUtility::setSingletonInstance(\TYPO3\CMS\Core\Package\PackageManager::class, $packageManager);
     \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::setPackageManager($packageManager);
 
-    if (!\TYPO3\CMS\Core\Core\Environment::isComposerMode()) {
-        // Dump autoload info if in non composer mode
-        \TYPO3\CMS\Core\Core\ClassLoadingInformation::dumpClassLoadingInformation();
-        \TYPO3\CMS\Core\Core\ClassLoadingInformation::registerClassLoadingInformation();
-    }
+    $testbase->dumpClassLoadingInformation();
 
     \TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
 });

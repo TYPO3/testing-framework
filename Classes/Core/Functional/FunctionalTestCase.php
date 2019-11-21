@@ -249,8 +249,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         putenv('TYPO3_PATH_APP=' . $this->instancePath);
 
         $testbase = new Testbase();
-        $testbase->defineTypo3ModeBe();
-        $testbase->setTypo3TestingContext();
 
         $isFirstTest = false;
         $currentTestCaseClass = get_called_class();

@@ -55,32 +55,6 @@ class Testbase
     }
 
     /**
-     *  Makes sure error messages during the tests get displayed no matter what is set in php.ini
-     *
-     * @return void
-     */
-    public function enableDisplayErrors()
-    {
-        @ini_set('display_errors', 1);
-    }
-
-    /**
-     * Defines a list of basic constants that are used by GeneralUtility and other
-     * helpers during tests setup. Those are sanitized in SystemEnvironmentBuilder
-     * to be not defined again.
-     *
-     * @return void
-     * @see SystemEnvironmentBuilder::defineBaseConstants()
-     */
-    public function defineBaseConstants()
-    {
-        // A linefeed, a carriage return, a CR-LF combination
-        defined('LF') ?: define('LF', chr(10));
-        defined('CR') ?: define('CR', chr(13));
-        defined('CRLF') ?: define('CRLF', CR . LF);
-    }
-
-    /**
      * Sets $_SERVER['SCRIPT_NAME'].
      * For unit tests only
      *
@@ -122,16 +96,6 @@ class Testbase
         if (!defined('TYPO3_MODE')) {
             define('TYPO3_MODE', 'BE');
         }
-    }
-
-    /**
-     * Sets the environment variable TYPO3_CONTEXT to testing.
-     *
-     * @return void
-     */
-    public function setTypo3TestingContext()
-    {
-        putenv('TYPO3_CONTEXT=Testing');
     }
 
     /**

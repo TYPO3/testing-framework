@@ -26,13 +26,6 @@ use PHPUnit\Framework\TestCase;
 abstract class BaseTestCase extends TestCase
 {
     /**
-     * Whether global variables should be backed up
-     *
-     * @var bool
-     */
-    protected $backupGlobals = true;
-
-    /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
      * @param string $originalClassName name of class to create the mock object of, must not be empty
