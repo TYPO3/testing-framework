@@ -35,11 +35,6 @@ class ResponseContent
     /**
      * @var array
      */
-    protected $structurePaths;
-
-    /**
-     * @var array
-     */
     protected $records;
 
     /**
@@ -106,14 +101,6 @@ class ResponseContent
             },
             $sectionIdentifiers
         );
-    }
-
-    /**
-     * @return array
-     */
-    public function getScope(): array
-    {
-        return $this->scope;
     }
 
     /**

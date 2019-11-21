@@ -27,7 +27,7 @@ class ArrayValueInstruction extends AbstractInstruction
     protected $array = [];
 
     /**
-     * @param array $typoScript
+     * @param array $array
      * @return static
      */
     public function withArray(array $array): self

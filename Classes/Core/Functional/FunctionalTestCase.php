@@ -340,21 +340,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Get DatabaseConnection instance - $GLOBALS['TYPO3_DB']
-     *
-     * This method should be used instead of direct access to
-     * $GLOBALS['TYPO3_DB'] for easy IDE auto completion.
-     *
-     * @return \TYPO3\CMS\Core\Database\DatabaseConnection
-     * @deprecated since TYPO3 v8, will be removed in TYPO3 v9
-     */
-    protected function getDatabaseConnection()
-    {
-        GeneralUtility::logDeprecatedFunction();
-        return $GLOBALS['TYPO3_DB'];
-    }
-
-    /**
      * @return ConnectionPool
      */
     protected function getConnectionPool()
@@ -862,6 +847,7 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * @param array $result
+     * @return InternalResponse
      */
     protected function reconstituteFrontendRequestResult(array $result): InternalResponse
     {
@@ -963,7 +949,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      * + true: always allow, e.g. before actually importing data
      * + false: always deny, e.g. when importing data is finished
      *
-     * @param bool|null $allowIdentityInsert
      * @param bool|null $allowIdentityInsert
      * @throws DBALException
      */

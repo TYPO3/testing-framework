@@ -16,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 use TYPO3\CMS\Core\Http\Request;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractInstruction;
 

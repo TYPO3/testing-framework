@@ -14,6 +14,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Hook;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\TypoScriptInstruction;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
@@ -21,7 +22,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 /**
  * Modifier for global TypoScript dynamically provided by test-case.
  */
-class TypoScriptInstructionModifier implements \TYPO3\CMS\Core\SingletonInterface
+class TypoScriptInstructionModifier implements SingletonInterface
 {
     /**
      * @param array $parameters
@@ -82,14 +83,14 @@ class TypoScriptInstructionModifier implements \TYPO3\CMS\Core\SingletonInterfac
      */
     private function compileAssignments(array $nestedArray): string
     {
-        $assingments = $this->flatten($nestedArray);
+        $assignments = $this->flatten($nestedArray);
         array_walk(
-            $assingments,
+            $assignments,
             function (&$value, $key) {
                 $value = sprintf('%s = %s', $key, $value);
             }
         );
-        return implode("\n", $assingments);
+        return implode("\n", $assignments);
     }
 
     /**

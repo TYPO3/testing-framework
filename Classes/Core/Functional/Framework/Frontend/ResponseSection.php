@@ -89,25 +89,9 @@ class ResponseSection
     /**
      * @return array
      */
-    public function getStructurePaths()
-    {
-        return $this->structurePaths;
-    }
-
-    /**
-     * @return array
-     */
     public function getRecords()
     {
         return $this->records;
-    }
-
-    /**
-     * @return array
-     */
-    public function getQueries()
-    {
-        return $this->queries;
     }
 
     /**

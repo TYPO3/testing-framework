@@ -4,6 +4,7 @@
 	colors="true"
 	convertErrorsToExceptions="true"
 	convertWarningsToExceptions="true"
+	convertNoticesToExceptions="true"
 	forceCoversAnnotation="false"
 	processIsolation="false"
 	stopOnError="false"

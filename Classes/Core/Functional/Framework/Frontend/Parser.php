@@ -14,10 +14,12 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\SingletonInterface;
+
 /**
  * Model of frontend response
  */
-class Parser implements \TYPO3\CMS\Core\SingletonInterface
+class Parser implements SingletonInterface
 {
     /**
      * @var array

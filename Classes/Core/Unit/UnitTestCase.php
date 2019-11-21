@@ -70,35 +70,12 @@ abstract class UnitTestCase extends BaseTestCase
     protected $testFilesToDelete = [];
 
     /**
-     * @var int Backup variable of current error reporting
-     */
-    private static $backupErrorReporting;
-
-    /**
      * Holds state of TYPO3\CMS\Core\Core\Environment if
      * $this->backupEnvironment has been set to true in a test case
      *
      * @var array
      */
     private $backedUpEnvironment = [];
-
-    /**
-     * Set error reporting to always fail on E_NOTICE
-     */
-    public static function setUpBeforeClass(): void
-    {
-        $errorReporting = self::$backupErrorReporting = error_reporting();
-        // Always fail on notice level errors
-        error_reporting($errorReporting | E_NOTICE);
-    }
-
-    /**
-     * Reset error reporting to original state
-     */
-    public static function tearDownAfterClass(): void
-    {
-        error_reporting(self::$backupErrorReporting);
-    }
 
     /**
      * Generic setUp()
@@ -130,8 +107,8 @@ abstract class UnitTestCase extends BaseTestCase
             $this->restoreEnvironment();
         }
 
-        // Flush the two static $indpEnvCache and $idnaStringCache
-        // between test runs to prevent side effects from these caches.
+        // Flush the static $indpEnvCache
+        // between test runs to prevent side effects from this cache.
         GeneralUtility::flushInternalRuntimeCaches();
 
         // GeneralUtility::makeInstance() singleton handling
@@ -141,7 +118,7 @@ abstract class UnitTestCase extends BaseTestCase
         } else {
             // But fail if there are instances left and the test did not ask for reset
             $singletonInstances = GeneralUtility::getSingletonInstances();
-            // Reset singletons anyway to not let all futher tests fail
+            // Reset singletons anyway to not let all further tests fail
             GeneralUtility::resetSingletonInstances([]);
             self::assertEmpty(
                 $singletonInstances,
@@ -157,8 +134,8 @@ abstract class UnitTestCase extends BaseTestCase
             $declaringClass = $property->getDeclaringClass()->getName();
             if (
                 !$property->isStatic()
-                && $declaringClass !== \TYPO3\TestingFramework\Core\Unit\UnitTestCase::class
-                && $declaringClass !== \TYPO3\TestingFramework\Core\BaseTestCase::class
+                && $declaringClass !== UnitTestCase::class
+                && $declaringClass !== BaseTestCase::class
                 && strpos($property->getDeclaringClass()->getName(), 'PHPUnit') !== 0
             ) {
                 $propertyName = $property->getName();

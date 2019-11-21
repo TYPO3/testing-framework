@@ -415,7 +415,7 @@ class DataHandlerFactory
             $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = static::DYNAMIC_ID;
         }
         $result = $this->dynamicIdsPerEntity[$entityConfiguration->getName()];
-        // increment for next(!) assingment, since current process might create version or language variants
+        // increment for next(!) assignment, since current process might create version or language variants
         $this->dynamicIdsPerEntity[$entityConfiguration->getName()] += $incrementValue;
         return $result;
     }

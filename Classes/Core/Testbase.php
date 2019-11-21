@@ -16,13 +16,11 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -452,7 +450,7 @@ class Testbase
         $finalConfigurationArray = require ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
-        $result = $this->writeFile(
+        $result = file_put_contents(
             $instancePath . '/typo3conf/LocalConfiguration.php',
             '<?php' . chr(10) .
             'return ' .
@@ -521,7 +519,7 @@ class Testbase
             ];
         }
 
-        $result = $this->writeFile(
+        $result = file_put_contents(
             $instancePath . '/typo3conf/PackageStates.php',
             '<?php' . chr(10) .
             'return ' .
@@ -767,7 +765,7 @@ class Testbase
      * Doing this once per insert is rather slow, but due to the soft reference behavior
      * this needs to be done after every row to ensure consistent results.
      *
-     * @param \TYPO3\CMS\Core\Database\Connection $connection
+     * @param Connection $connection
      * @param string $tableName
      * @throws \Doctrine\DBAL\DBALException
      */
@@ -820,8 +818,8 @@ class Testbase
     /**
      * Copy a directory structure $from a source $to a destination,
      *
-     * @param $from Absolute source path
-     * @param $to Absolute target path
+     * @param string $from Absolute source path
+     * @param string $to Absolute target path
      * @return bool True if all went well
      */
     protected function copyRecursive($from, $to) {
@@ -899,26 +897,5 @@ class Testbase
             $path = $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
         }
         return $path;
-    }
-
-    /**
-     * Writes $content to the file $file. This is a simplified version
-     * of GeneralUtility::writeFile that does not fix permissions.
-     *
-     * @param string $file Filepath to write to
-     * @param string $content Content to write
-     * @return bool TRUE if the file was successfully opened and written to.
-     */
-    protected function writeFile($file, $content)
-    {
-        if ($fd = fopen($file, 'wb')) {
-            $res = fwrite($fd, $content);
-            fclose($fd);
-            if ($res === false) {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 }
