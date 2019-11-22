@@ -80,6 +80,16 @@ class DataHandlerFactory
     }
 
     /**
+     * @return string[]
+     */
+    public function getDataMapTableNames(): array
+    {
+        return array_unique(array_merge(
+            [], ...array_map('array_keys', $this->dataMapPerWorkspace)
+        ));
+    }
+
+    /**
      * @return bool[]
      */
     public function getSuggestedIds(): array
@@ -148,7 +158,7 @@ class DataHandlerFactory
                 $entityConfiguration,
                 $variantItemSettings,
                 [$newId],
-                $entityConfiguration->isNode() ? $newId : $nodeId
+                $entityConfiguration->isNode() ? '-' . $newId : $nodeId
             );
         }
 
@@ -220,6 +230,25 @@ class DataHandlerFactory
         string $ancestorId,
         string $nodeId = null
     ): void {
+        if (isset($itemSettings['self'])) {
+            throw new \LogicException(
+                sprintf(
+                    'Cannot declare "self" in version variant for entity "%s"',
+                    $entityConfiguration->getName()
+                ),
+                1574365935
+            );
+        }
+        if (isset($itemSettings['version']['id'])) {
+            throw new \LogicException(
+                sprintf(
+                    'Cannot assign "id" for version variant for entity "%s"',
+                    $entityConfiguration->getName()
+                ),
+                1574365936
+            );
+        }
+
         $values = $this->processEntityValues(
             $entityConfiguration,
             $itemSettings,
@@ -253,7 +282,7 @@ class DataHandlerFactory
                 1534872399
             );
         }
-        if (isset($itemSettings['version']) &&  empty($itemSettings['version']['workspace'])) {
+        if (isset($itemSettings['version']) && empty($itemSettings['version']['workspace'])) {
             throw new \LogicException(
                 sprintf(
                     'Cannot declare "version" without "workspace" for entity "%s"',
