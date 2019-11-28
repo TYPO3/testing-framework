@@ -14,12 +14,11 @@ namespace TYPO3\TestingFramework\Fluid\Unit\ViewHelpers;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use TYPO3\CMS\Extbase\Error\Result;
-use TYPO3\CMS\Extbase\Reflection\ReflectionService;
+use TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext;
+use TYPO3\CMS\Extbase\Mvc\Web\Request;
+use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
-use TYPO3\TestingFramework\Fluid\Unit\Core\Rendering\RenderingContextFixture;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperInterface;
@@ -41,12 +40,7 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
     protected $templateVariableContainer;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder
-     */
-    protected $uriBuilder;
-
-    /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext
+     * @var ControllerContext
      */
     protected $controllerContext;
 
@@ -61,19 +55,14 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
     protected $arguments;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Web\Request
+     * @var Request
      */
     protected $request;
 
     /**
-     * @var \TYPO3\CMS\Fluid\Core\Rendering\RenderingContext
+     * @var RenderingContext
      */
     protected $renderingContext;
-
-    /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Controller\MvcPropertyMappingConfigurationService
-     */
-    protected $mvcPropertyMapperConfigurationService;
 
     /**
      * @return void
@@ -82,31 +71,17 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
     {
         $this->viewHelperVariableContainer = $this->prophesize(ViewHelperVariableContainer::class);
         $this->templateVariableContainer = $this->createMock(StandardVariableProvider::class);
-        $this->uriBuilder = $this->createMock(\TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder::class);
-        $this->uriBuilder->expects($this->any())->method('reset')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setArguments')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setSection')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setFormat')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setCreateAbsoluteUri')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setAddQueryString')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setArgumentsToBeExcludedFromQueryString')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setLinkAccessRestrictedPages')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setTargetPageUid')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setTargetPageType')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setNoCache')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setUseCacheHash')->will($this->returnValue($this->uriBuilder));
-        $this->uriBuilder->expects($this->any())->method('setAddQueryStringMethod')->will($this->returnValue($this->uriBuilder));
-        $this->request = $this->prophesize(\TYPO3\CMS\Extbase\Mvc\Web\Request::class);
-        $this->controllerContext = $this->createMock(\TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext::class);
-        $this->controllerContext->expects($this->any())->method('getUriBuilder')->will($this->returnValue($this->uriBuilder));
+        $this->request = $this->prophesize(Request::class);
+        $this->controllerContext = $this->createMock(ControllerContext::class);
         $this->controllerContext->expects($this->any())->method('getRequest')->will($this->returnValue($this->request->reveal()));
         $this->arguments = [];
-        $this->renderingContext = $this->getAccessibleMock(RenderingContextFixture::class, ['getControllerContext']);
-        $this->renderingContext->expects($this->any())->method('getControllerContext')->willReturn($this->controllerContext);
+        $this->renderingContext = $this->getMockBuilder(RenderingContext::class)
+            ->addMethods(['dummy'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->renderingContext->setVariableProvider($this->templateVariableContainer);
-        $this->renderingContext->_set('viewHelperVariableContainer', $this->viewHelperVariableContainer->reveal());
+        $this->renderingContext->injectViewHelperVariableContainer($this->viewHelperVariableContainer->reveal());
         $this->renderingContext->setControllerContext($this->controllerContext);
-        $this->mvcPropertyMapperConfigurationService = $this->getAccessibleMock(\TYPO3\CMS\Extbase\Mvc\Controller\MvcPropertyMappingConfigurationService::class, ['dummy']);
     }
 
     /**
@@ -117,13 +92,6 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
     {
         $viewHelper->setRenderingContext($this->renderingContext);
         $viewHelper->setArguments($this->arguments);
-        // this condition is needed for compatibility with both CMS and Fluid base VH class,
-        // as well as support for testing on core source before/after https://review.typo3.org/#/c/52796/
-        if (method_exists($viewHelper, 'injectReflectionService')) {
-            $reflectionServiceProphecy = $this->prophesize(ReflectionService::class);
-            $reflectionServiceProphecy->getMethodParameters(Argument::cetera())->willReturn([]);
-            $viewHelper->injectReflectionService($reflectionServiceProphecy->reveal());
-        }
     }
 
     /**
@@ -142,53 +110,5 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
             }
         }
         $viewHelper->setArguments($arguments);
-    }
-
-    /**
-     * Helper function for a valid mapping result
-     */
-    protected function stubRequestWithoutMappingErrors()
-    {
-        $this->request->getOriginalRequest()->willReturn(null);
-        $this->request->getArguments()->willReturn([]);
-        $result = $this->prophesize(Result::class);
-        $result->forProperty('objectName')->willReturn($result->reveal());
-        $result->forProperty('someProperty')->willReturn($result->reveal());
-        $result->hasErrors()->willReturn(false);
-        $this->request->getOriginalRequestMappingResults()->willReturn($result->reveal());
-    }
-
-    /**
-     * Helper function for a mapping result with errors
-     */
-    protected function stubRequestWithMappingErrors()
-    {
-        $this->request->getOriginalRequest()->willReturn(null);
-        $this->request->getArguments()->willReturn([]);
-        $result = $this->prophesize(Result::class);
-        $result->forProperty('objectName')->willReturn($result->reveal());
-        $result->forProperty('someProperty')->willReturn($result->reveal());
-        $result->hasErrors()->willReturn(true);
-        $this->request->getOriginalRequestMappingResults()->willReturn($result->reveal());
-    }
-
-    /**
-     * Helper function for the bound property
-     *
-     * @param $formObject
-     */
-    protected function stubVariableContainer($formObject)
-    {
-        $this->viewHelperVariableContainer->exists(Argument::cetera())->willReturn(true);
-        $this->viewHelperVariableContainer->get(Argument::any(),
-            'formObjectName')->willReturn('objectName');
-        $this->viewHelperVariableContainer->get(Argument::any(),
-            'fieldNamePrefix')->willReturn('fieldPrefix');
-        $this->viewHelperVariableContainer->get(Argument::any(), 'formFieldNames')->willReturn([]);
-        $this->viewHelperVariableContainer->get(Argument::any(),
-            'formObject')->willReturn($formObject);
-        $this->viewHelperVariableContainer->get(Argument::any(),
-            'renderedHiddenFields')->willReturn([]);
-        $this->viewHelperVariableContainer->addOrUpdate(Argument::cetera())->willReturn(null);
     }
 }
