@@ -115,34 +115,13 @@ abstract class BaseTestCase extends TestCase
     protected function buildAccessibleProxy($className)
     {
         $accessibleClassName = $this->getUniqueId('Tx_Phpunit_AccessibleProxy');
-        $class = new \ReflectionClass($className);
-        $abstractModifier = $class->isAbstract() ? 'abstract ' : '';
-
+        $reflectionClass = new \ReflectionClass($className);
         eval(
-            $abstractModifier . 'class ' . $accessibleClassName .
+            ($reflectionClass->isAbstract() ? 'abstract ' : '') . 'class ' . $accessibleClassName .
                 ' extends ' . $className . ' implements ' . AccessibleObjectInterface::class . ' {' .
-                    'public function _call($methodName) {' .
-                        'if ($methodName === \'\') {' .
-                            'throw new \InvalidArgumentException(\'$methodName must not be empty.\', 1334663993);' .
-                        '}' .
-                        '$args = func_get_args();' .
-                        'return call_user_func_array(array($this, $methodName), array_slice($args, 1));' .
-                    '}' .
-                    'public function _set($propertyName, $value) {' .
-                        'if ($propertyName === \'\') {' .
-                            'throw new \InvalidArgumentException(\'$propertyName must not be empty.\', 1334664355);' .
-                        '}' .
-                        '$this->$propertyName = $value;' .
-                    '}' .
-                    'public function _get($propertyName) {' .
-                        'if ($propertyName === \'\') {' .
-                            'throw new \InvalidArgumentException(\'$propertyName must not be empty.\', 1334664967);' .
-                        '}' .
-                        'return $this->$propertyName;' .
-                    '}' .
+                    ' use ' . AccessibleProxyTrait::class . ';' .
             '}'
         );
-
         return $accessibleClassName;
     }
 
