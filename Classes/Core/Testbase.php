@@ -580,7 +580,12 @@ class Testbase
         $_SERVER['PWD'] = $instancePath;
         $_SERVER['argv'][0] = 'index.php';
 
-        $classLoader = require rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
+        $classLoaderPath = rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../vendor/autoload.php';
+        if (!file_exists($classLoaderPath)) {
+            // the root composer.json might be outside the public instance path
+            $classLoaderPath = rtrim(realpath($instancePath . '/typo3'), '\\/') . '/../../vendor/autoload.php';
+        }
+        $classLoader = require $classLoaderPath;
         Bootstrap::getInstance()
             ->initializeClassLoader($classLoader)
             ->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI)
