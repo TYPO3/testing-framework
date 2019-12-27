@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
  * The mother of all test cases.
@@ -136,7 +137,7 @@ abstract class BaseTestCase extends TestCase
      */
     protected function getUniqueId($prefix = '')
     {
-        $uniqueId = uniqid(mt_rand(), true);
-        return $prefix . str_replace('.', '', $uniqueId);
+        trigger_error('Method will be removed with next version. Use TYPO3\CMS\Core\Utility\StringUtility::getUniqueId() instead.', E_USER_DEPRECATED);
+        return StringUtility::getUniqueId($prefix);
     }
 }
