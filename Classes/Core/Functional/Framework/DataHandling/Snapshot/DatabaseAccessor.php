@@ -16,8 +16,10 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  */
 
 use Doctrine\DBAL\FetchMode;
+use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
-use TYPO3\CMS\Core\Database\Connection;
+use Doctrine\DBAL\Connection;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
 
 class DatabaseAccessor
 {
@@ -90,7 +92,7 @@ class DatabaseAccessor
      */
     private function exportTable(string $tableName): array
     {
-        return $this->connection->createQueryBuilder()
+        return $this->createQueryBuilder()
             ->select('*')->from($tableName)
             ->execute()->fetchAll(FetchMode::ASSOCIATIVE);
     }
@@ -140,5 +142,17 @@ class DatabaseAccessor
             $columnNames
         );
         return array_combine($columnNames, $columnTypes);
+    }
+
+    /**
+     * @return DoctrineQueryBuilder|TYPO3QueryBuilder
+     */
+    private function createQueryBuilder()
+    {
+        $queryBuilder = $this->connection->createQueryBuilder();
+        if ($queryBuilder instanceof TYPO3QueryBuilder) {
+            $queryBuilder->getRestrictions()->removeAll();
+        }
+        return $queryBuilder;
     }
 }
