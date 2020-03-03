@@ -52,7 +52,7 @@ abstract class AbstractPageTree
         foreach ($path as $pageName) {
             $context = $this->ensureTreeNodeIsOpen($pageName, $context);
         }
-        $context->findElement(\WebDriverBy::cssSelector(self::$treeItemAnchorSelector))->click();
+        $context->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(self::$treeItemAnchorSelector))->click();
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class AbstractPageTree
         $I = $this->tester;
         $I->switchToIFrame();
         return $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver) {
-            return $webdriver->findElement(\WebDriverBy::cssSelector(self::$pageTreeSelector));
+            return $webdriver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(self::$pageTreeSelector));
         });
     }
 
@@ -84,11 +84,11 @@ abstract class AbstractPageTree
         /** @var RemoteWebElement $context */
         $context = $I->executeInSelenium(function () use ($nodeText, $context
         ) {
-            return $context->findElement(\WebDriverBy::xpath('//*[text()=\'' . $nodeText . '\']/..'));
+            return $context->findElement(\Facebook\WebDriver\WebDriverBy::xpath('//*[text()=\'' . $nodeText . '\']/..'));
         });
 
         try {
-            $context->findElement(\WebDriverBy::cssSelector('.chevron.collapsed'))->click();
+            $context->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector('.chevron.collapsed'))->click();
         } catch (\Facebook\WebDriver\Exception\NoSuchElementException $e) {
             // element not found so it may be already opened...
         } catch (\Facebook\WebDriver\Exception\ElementNotVisibleException $e) {
