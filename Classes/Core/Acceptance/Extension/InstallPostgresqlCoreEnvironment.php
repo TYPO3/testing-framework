@@ -15,7 +15,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Codeception\Event\SuiteEvent;
 use Codeception\Event\TestEvent;
 use Codeception\Events;
 use Codeception\Extension;
