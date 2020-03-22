@@ -347,6 +347,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
+
     /**
      * Initialize backend user
      *
@@ -355,6 +356,20 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @throws Exception
      */
     protected function setUpBackendUserFromFixture($userUid)
+    {
+        $this->importDataSet($this->backendUserFixture);
+
+        return $this->setUpBackendUser($userUid);
+    }
+
+    /**
+     * Sets up Backend User which is already available in db
+     *
+     * @param int $userUid
+     * @return BackendUserAuthentication
+     * @throws Exception
+     */
+    protected function setUpBackendUser($userUid): BackendUserAuthentication
     {
         $this->importDataSet($this->backendUserFixture);
 
