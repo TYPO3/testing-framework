@@ -358,6 +358,18 @@ abstract class FunctionalTestCase extends BaseTestCase
     {
         $this->importDataSet($this->backendUserFixture);
 
+        return $this->setUpBackendUser($userUid);
+    }
+
+    /**
+     * Sets up Backend User which is already available in db
+     *
+     * @param int $userUid
+     * @return BackendUserAuthentication
+     * @throws Exception
+     */
+    protected function setUpBackendUser($userUid): BackendUserAuthentication
+    {
         $queryBuilder = $this->getConnectionPool()
             ->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
