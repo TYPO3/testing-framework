@@ -347,7 +347,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
-
     /**
      * Initialize backend user
      *
