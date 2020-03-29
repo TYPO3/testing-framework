@@ -398,6 +398,10 @@ abstract class FunctionalTestCase extends BaseTestCase
             );
         }
         $GLOBALS['BE_USER']->backendCheckLogin();
+        GeneralUtility::makeInstance(Context::class)->setAspect(
+            'backend.user',
+            GeneralUtility::makeInstance(UserAspect::class, $backendUser)
+        );
 
         return $backendUser;
     }
