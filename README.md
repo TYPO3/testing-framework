@@ -21,6 +21,6 @@ Usage examples within core and for extensions can be found in
 
 ## Tags and branches
 
-* Branch master is for core v10 and currently tagged as 5.x.y
+* Branch master is for core v10 and currently tagged as 6.x.y
 * Branch 9 is for core v9 and tagged as 4.x.y
 * Branch 8 is for core v8 and tagged as 1.x.y
