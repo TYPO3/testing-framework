@@ -80,6 +80,17 @@ class DataHandlerWriter
                 $this->dataHandler->errorLog
             );
         }
+        foreach ($factory->getCommandMapPerWorkspace() as $workspaceId => $commandMap) {
+            $commandMap = $this->updateCommandMap($commandMap);
+            $backendUser = clone $this->backendUser;
+            $backendUser->workspace = $workspaceId;
+            $this->dataHandler->start([], $commandMap, $backendUser);
+            $this->dataHandler->process_cmdmap();
+            $this->errors = array_merge(
+                $this->errors,
+                $this->dataHandler->errorLog
+            );
+        }
     }
 
     /**
@@ -122,5 +133,36 @@ class DataHandlerWriter
             }
         }
         return $updatedTableDataMap;
+    }
+
+    /**
+     * @param array $commandMap
+     * @return array
+     */
+    private function updateCommandMap(array $commandMap): array
+    {
+        $updatedTableCommandMap = [];
+        foreach ($commandMap as $tableName => $tableDataMap) {
+            foreach ($tableDataMap as $key => $values) {
+                $key = $this->dataHandler->substNEWwithIDs[$key] ?? $key;
+                $values = array_map(
+                    function ($value) {
+                        if (!is_string($value)) {
+                            return $value;
+                        }
+                        if (strpos($value, 'NEW') === 0) {
+                            return $this->dataHandler->substNEWwithIDs[$value] ?? $value;
+                        }
+                        if (strpos($value, '-NEW') === 0) {
+                            return $this->dataHandler->substNEWwithIDs[substr($value, 1)] ?? $value;
+                        }
+                        return $value;
+                    },
+                    $values
+                );
+                $updatedTableCommandMap[$tableName][$key] = $values;
+            }
+        }
+        return $updatedTableCommandMap;
     }
 }
