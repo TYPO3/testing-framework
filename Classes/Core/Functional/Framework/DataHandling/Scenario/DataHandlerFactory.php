@@ -41,6 +41,11 @@ class DataHandlerFactory
     private $dataMapPerWorkspace = [];
 
     /**
+     * @var array
+     */
+    private $commandMapPerWorkspace = [];
+
+    /**
      * @var bool[]
      */
     private $suggestedIds = [];
@@ -77,6 +82,14 @@ class DataHandlerFactory
     public function getDataMapPerWorkspace(): array
     {
         return $this->dataMapPerWorkspace;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCommandMapPerWorkspace(): array
+    {
+        return $this->commandMapPerWorkspace;
     }
 
     /**
@@ -143,6 +156,9 @@ class DataHandlerFactory
         $tableName = $entityConfiguration->getTableName();
         $newId = $this->getUniqueIdForNewRecords();
         $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
+        if (isset($itemSettings['actions'])) {
+            $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
+        }
 
         foreach ($itemSettings['versionVariants'] ?? [] as $versionVariantSettings) {
             $this->processVersionVariantItem(
@@ -208,6 +224,9 @@ class DataHandlerFactory
         $newId = $this->getUniqueIdForNewRecords();
         $workspaceId = $itemSettings['version']['workspace'] ?? 0;
         $this->setInDataMap($tableName, $newId, $values, (int)$workspaceId);
+        if (isset($itemSettings['actions'])) {
+            $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
+        }
 
         foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
@@ -257,6 +276,9 @@ class DataHandlerFactory
 
         $tableName = $entityConfiguration->getTableName();
         $this->setInDataMap($tableName, $ancestorId, $values, (int)$values['workspace']);
+        if (isset($itemSettings['actions'])) {
+            $this->setInCommandMap($tableName, $ancestorId, $nodeId, $itemSettings['actions'], (int)$values['workspace']);
+        }
     }
 
     /**
@@ -485,6 +507,37 @@ class DataHandlerFactory
         }
 
         $this->dataMapPerWorkspace[$workspaceId][$tableName][$identifier] = $values;
+    }
+
+    private function setInCommandMap(
+        string $tableName,
+        string $identifier,
+        ?string $nodeId,
+        array $actionItems,
+        int $workspaceId = 0
+    ): void {
+        if (empty($actionItems)) {
+            return;
+        }
+        // @todo implement `immediate` actions -> needs to split dataMap & commandMap in logical sections
+        foreach ($actionItems as $actionItem) {
+            $action = $actionItem['action'] ?? null;
+            $type = $actionItem['type'] ?? null;
+            $target = $actionItem['target'] ?? null;
+            if ($action === 'move') {
+                if ($type === 'toPage' && $target !== null) {
+                    $this->commandMapPerWorkspace[$workspaceId][$tableName][$identifier]['move'] = $target;
+                } elseif ($type === 'toTop' && $nodeId !== null) {
+                    $this->commandMapPerWorkspace[$workspaceId][$tableName][$identifier]['move'] = $nodeId;
+                } elseif ($type === 'afterRecord' && $target !== null) {
+                    $this->commandMapPerWorkspace[$workspaceId][$tableName][$identifier]['move'] = '-' . $target;
+                }
+            } elseif ($action === 'delete') {
+                $this->commandMapPerWorkspace[$workspaceId][$tableName][$identifier]['delete'] = true;
+            } elseif ($action === 'discard' && $workspaceId > 0) {
+                $this->commandMapPerWorkspace[$workspaceId][$tableName][$identifier]['clearWSID'] = true;
+            }
+        }
     }
 
     /**
