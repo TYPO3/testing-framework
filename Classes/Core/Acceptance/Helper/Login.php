@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 use Codeception\Exception\ConfigurationException;
 use Codeception\Module;
+use Codeception\Util\Locator;
 
 /**
  * Helper class to log in backend users and load backend
@@ -69,7 +70,7 @@ class Login extends Module
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
         $wd->switchToIFrame('list_frame');
-        $wd->waitForText('Web Content Management System');
+        $wd->seeElement(Locator::firstElement('div.module'));
         // And switch back to main frame preparing a click to main module for the following main test case
         $wd->switchToIFrame();
     }
