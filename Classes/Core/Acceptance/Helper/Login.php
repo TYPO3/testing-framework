@@ -38,8 +38,10 @@ class Login extends Module
      */
     public function useExistingSession($role = '')
     {
+        /** @var Module\WebDriver $wd */
         $wd = $this->getModule('WebDriver');
         $wd->amOnPage('/typo3/index.php');
+        $wd->waitForElement('body[data-typo3-login-ready]');
 
         $sessionCookie = '';
         if ($role) {
