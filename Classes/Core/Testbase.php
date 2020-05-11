@@ -19,6 +19,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
@@ -562,9 +563,9 @@ class Testbase
      * For functional and acceptance tests.
      *
      * @param string $instancePath Absolute path to test instance
-     * @return void
+     * @return ContainerInterface
      */
-    public function setUpBasicTypo3Bootstrap($instancePath)
+    public function setUpBasicTypo3Bootstrap($instancePath): ContainerInterface
     {
         $_SERVER['PWD'] = $instancePath;
         $_SERVER['argv'][0] = 'index.php';
@@ -575,12 +576,14 @@ class Testbase
 
         $classLoader = require __DIR__ . '/../../../../autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-        Bootstrap::init($classLoader);
+        $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
         ob_end_clean();
 
         $this->dumpClassLoadingInformation();
+
+        return $container;
     }
 
     /**

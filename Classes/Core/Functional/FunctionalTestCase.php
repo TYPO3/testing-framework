@@ -18,6 +18,7 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
+use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -219,6 +220,11 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
+     * @var ContainerInterface
+     */
+    private $container;
+
+    /**
      * This internal variable tracks if the given test is the first test of
      * that test case. This variable is set to current calling test case class.
      * Consecutive tests then optimize and do not create a full
@@ -263,7 +269,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
-            $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+            $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
             Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
@@ -327,7 +333,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $this->testExtensionsToLoad,
                 $this->frameworkExtensionsToLoad
             );
-            $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+            $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($dbDriver !== 'pdo_sqlite') {
                 $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
             } else {
@@ -345,6 +351,17 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected function getConnectionPool()
     {
         return GeneralUtility::makeInstance(ConnectionPool::class);
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    protected function getContainer(): ContainerInterface
+    {
+        if (!$this->container instanceof ContainerInterface) {
+            throw new \RuntimeException('Please invoke parent::setUp() before calling getContainer().', 1589221777);
+        }
+        return $this->container;
     }
 
     /**
