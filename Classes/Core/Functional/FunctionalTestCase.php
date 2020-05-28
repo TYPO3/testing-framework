@@ -271,7 +271,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             GeneralUtility::purgeInstances();
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $testbase->initializeTestDatabaseAndTruncateTables();
-            Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
         } else {
             $testbase->removeOldInstanceIfExists($this->instancePath);
@@ -339,7 +338,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             } else {
                 $testbase->setUpTestDatabase($dbPath, $originalDatabaseName);
             }
-            Bootstrap::initializeBackendRouter();
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();
         }

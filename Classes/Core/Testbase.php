@@ -572,7 +572,6 @@ class Testbase
 
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
-        GeneralUtility::resetApplicationContext();
 
         $classLoader = require __DIR__ . '/../../../../autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
