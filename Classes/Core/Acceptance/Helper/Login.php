@@ -72,7 +72,7 @@ class Login extends Module
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
         $wd->switchToIFrame('list_frame');
-        $wd->seeElement(Locator::firstElement('div.module'));
+        $wd->waitForElement(Locator::firstElement('div.module'));
         // And switch back to main frame preparing a click to main module for the following main test case
         $wd->switchToIFrame();
     }
