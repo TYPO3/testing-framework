@@ -16,7 +16,7 @@ namespace TYPO3\TestingFramework\Fluid\Unit\ViewHelpers;
 
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext;
-use TYPO3\CMS\Extbase\Mvc\Web\Request;
+use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
