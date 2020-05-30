@@ -80,7 +80,7 @@ class SplitAcceptanceTests extends NodeVisitorAbstract
         // Find functional test files
         $testFiles = (new Finder())
             ->files()
-            ->in([__DIR__ . '/../../../../../../../typo3/sysext/core/Tests/Acceptance/Backend', __DIR__ . '/../../../../../../../typo3/sysext/core/Tests/Acceptance/InstallTool'])
+            ->in(__DIR__ . '/../../../../../../../typo3/sysext/core/Tests/Acceptance/Backend')
             ->name('/Cest\.php$/')
         ;
 
