@@ -110,7 +110,12 @@ class SplitFunctionalTests extends NodeVisitorAbstract
                 if (isset($test['dataProvider'])) {
                     // Test uses a data provider - get number of data sets
                     $dataProviderMethodName = $test['dataProvider'];
-                    $numberOfDataSets = count((new $fqcn)->$dataProviderMethodName());
+                    $methods = (new $fqcn)->$dataProviderMethodName();
+                    if ($methods instanceof Generator) {
+                        $numberOfDataSets = iterator_count($methods);
+                    } else {
+                        $numberOfDataSets = count($methods);
+                    }
                     $testStats[$relativeFilename] += $numberOfDataSets;
                 } else {
                     // Just a single test
