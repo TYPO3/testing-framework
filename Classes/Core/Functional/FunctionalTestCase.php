@@ -752,7 +752,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         $templateFields = array_merge(
             [
                 'title' => '',
-                'sitetitle' => '',
                 'constants' => '',
                 'config' => '',
             ],
