@@ -42,7 +42,7 @@ class Login extends Module
 
         /** @var Module\WebDriver $wd */
         $wd = $this->getModule('WebDriver');
-//        if ($wd->loadSessionSnapshot('login') === false) {
+        if ($wd->loadSessionSnapshot('login') === false) {
             $wd->amOnPage('/typo3/index.php');
             $wd->waitForElement('body[data-typo3-login-ready]');
 
@@ -68,8 +68,8 @@ class Login extends Module
                 $wd->setCookie('be_lastLoginProvider', '1433416747');
             } catch (\Facebook\WebDriver\Exception\UnableToSetCookieException $e) {
             }
-//            $wd->saveSessionSnapshot('login');
-//        }
+            $wd->saveSessionSnapshot('login');
+        }
 
         // reload the page to have a logged in backend
         $wd->amOnPage('/typo3/index.php');
