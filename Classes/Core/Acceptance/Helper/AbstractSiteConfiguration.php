@@ -43,8 +43,7 @@ abstract class AbstractSiteConfiguration
 
     public function adjustSiteConfiguration(): void
     {
-        $sitesDir = __DIR__ . '/../../../../../../../typo3temp/var/tests/acceptance/typo3conf/sites';
-        $siteConfiguration = new SiteConfiguration($sitesDir);
+        $sitesDir = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance/typo3conf/sites';
         $scandir = scandir($sitesDir);
         if (!empty($scandir)) {
             $identifer = end(array_diff($scandir, ['.', '..']));
