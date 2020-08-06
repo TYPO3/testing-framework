@@ -46,8 +46,7 @@
   },
   "autoload": {
     "psr-4": {
-      "TYPO3\\TestingFramework\\": "Classes/",
-      "TYPO3\\JsonResponse\\": "Resources/Core/Functional/Extensions/json_response/Classes/"
+      "TYPO3\\TestingFramework\\": "Classes/"
     }
   }
 }
