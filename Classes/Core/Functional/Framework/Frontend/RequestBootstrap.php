@@ -16,9 +16,11 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\Http\Application;
+use TYPO3\TestingFramework\Core\Testbase;
 
 /**
  * Bootstrap for direct CLI Request
@@ -161,7 +163,10 @@ class RequestBootstrap
             chdir($_SERVER['DOCUMENT_ROOT']);
             SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_FE);
             $container = Bootstrap::init($this->classLoader);
-            ClassLoadingInformation::registerClassLoadingInformation();
+            if (Environment::isComposerMode()) {
+                $testbase = new Testbase();
+                $testbase->reloadClassLoadingInformation();
+            }
             ArrayUtility::mergeRecursiveWithOverrule(
                 $GLOBALS,
                 $this->context->getGlobalSettings() ?? []
