@@ -15,7 +15,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 
 use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
