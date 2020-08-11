@@ -32,6 +32,7 @@ abstract class AbstractSiteConfiguration
     protected const LANGUAGE_PRESETS = [
         'EN' => ['id' => 0, 'title' => 'English', 'locale' => 'en_US.UTF8'],
         'DK' => ['id' => 1, 'title' => 'Dansk', 'locale' => 'da_DK.UTF8'],
+        'DK' => ['id' => 2, 'title' => 'German', 'locale' => 'de_DE.UTF8'],
     ];
 
     /**
@@ -55,7 +56,8 @@ abstract class AbstractSiteConfiguration
         $configuration += [
             'langugages' => [
                 $this->buildDefaultLanguageConfiguration('EN', '/en/'),
-                $this->buildLanguageConfiguration('DK', '/dk/')
+                $this->buildLanguageConfiguration('DK', '/dk/'),
+                $this->buildLanguageConfiguration('DE', '/de/'),
             ],
         ];
 
