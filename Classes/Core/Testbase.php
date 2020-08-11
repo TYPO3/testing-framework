@@ -599,18 +599,6 @@ class Testbase
     }
 
     /**
-     * Reload class loading information if available
-     *
-     * @return void
-     */
-    public function reloadClassLoadingInformation()
-    {
-        if (ClassLoadingInformation::isClassLoadingInformationAvailable()) {
-            ClassLoadingInformation::registerClassLoadingInformation();
-        }
-    }
-
-    /**
      * Truncate all tables.
      * For functional and acceptance tests.
      *
