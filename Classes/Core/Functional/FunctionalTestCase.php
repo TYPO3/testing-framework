@@ -324,6 +324,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 'extbase',
                 'install',
                 'recordlist',
+                'fluid',
             ];
             $testbase->setUpPackageStates(
                 $this->instancePath,
