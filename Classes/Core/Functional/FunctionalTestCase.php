@@ -497,7 +497,8 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         foreach ($dataSet->getTableNames() as $tableName) {
             $hasUidField = ($dataSet->getIdIndex($tableName) !== null);
-            $records = $this->getAllRecords($tableName, $hasUidField);
+            $hasHashField = ($dataSet->getHashIndex($tableName) !== null);
+            $records = $this->getAllRecords($tableName, $hasUidField, $hasHashField);
             foreach ($dataSet->getElements($tableName) as $assertion) {
                 $result = $this->assertInRecords($assertion, $records);
                 if ($result === false) {
@@ -505,12 +506,27 @@ abstract class FunctionalTestCase extends BaseTestCase
                         $failMessages[] = 'Record "' . $tableName . ':' . $assertion['uid'] . '" not found in database';
                         continue;
                     }
-                    $recordIdentifier = $tableName . ($hasUidField ? ':' . $assertion['uid'] : '');
-                    $additionalInformation = ($hasUidField ? $this->renderRecords($assertion, $records[$assertion['uid']]) : $this->arrayToString($assertion));
+                    if ($hasHashField && empty($records[$assertion['hash']])) {
+                        $failMessages[] = 'Record "' . $tableName . ':' . $assertion['hash'] . '" not found in database';
+                        continue;
+                    }
+                    if ($hasUidField) {
+                        $recordIdentifier = $tableName . ':' . $assertion['uid'];
+                        $additionalInformation = $this->renderRecords($assertion, $records[$assertion['uid']]);
+                    } elseif ($hasHashField) {
+                        $recordIdentifier = $tableName . ':' . $assertion['hash'];
+                        $additionalInformation = $this->renderRecords($assertion, $records[$assertion['hash']]);
+                    } else {
+                        $recordIdentifier = $tableName;
+                        $additionalInformation = $this->arrayToString($assertion);
+                    }
                     $failMessages[] = 'Assertion in data-set failed for "' . $recordIdentifier . '":' . LF . $additionalInformation;
                     // Unset failed asserted record
                     if ($hasUidField) {
                         unset($records[$assertion['uid']]);
+                    }
+                    if ($hasHashField) {
+                        unset($records[$assertion['hash']]);
                     }
                 } else {
                     // Unset asserted record
@@ -521,10 +537,18 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             if (!empty($records)) {
                 foreach ($records as $record) {
-                    $recordIdentifier = $tableName . ':' . $record['uid'];
                     $emptyAssertion = array_fill_keys($dataSet->getFields($tableName), '[none]');
                     $reducedRecord = array_intersect_key($record, $emptyAssertion);
-                    $additionalInformation = ($hasUidField ? $this->renderRecords($emptyAssertion, $reducedRecord) : $this->arrayToString($reducedRecord));
+                    if ($hasUidField) {
+                        $recordIdentifier = $tableName . ':' . $record['uid'];
+                        $additionalInformation = $this->renderRecords($emptyAssertion, $reducedRecord);
+                    } elseif ($hasHashField) {
+                        $recordIdentifier = $tableName . ':' . $record['hash'];
+                        $additionalInformation = $this->renderRecords($emptyAssertion, $reducedRecord);
+                    } else {
+                        $recordIdentifier = $tableName;
+                        $additionalInformation = $this->arrayToString($reducedRecord);
+                    }
                     $failMessages[] = 'Not asserted record found for "' . $recordIdentifier . '":' . LF . $additionalInformation;
                 }
             }
@@ -562,9 +586,10 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @param string $tableName
      * @param bool $hasUidField
+     * @param bool $hasHashField
      * @return array
      */
-    protected function getAllRecords($tableName, $hasUidField = false)
+    protected function getAllRecords($tableName, $hasUidField = false, $hasHashField = false)
     {
         $queryBuilder = $this->getConnectionPool()
             ->getQueryBuilderForTable($tableName);
@@ -574,14 +599,22 @@ abstract class FunctionalTestCase extends BaseTestCase
             ->from($tableName)
             ->execute();
 
-        if (!$hasUidField) {
+        if (!$hasUidField && !$hasHashField) {
             return $statement->fetchAll();
         }
 
-        $allRecords = [];
-        while ($record = $statement->fetch()) {
-            $index = $record['uid'];
-            $allRecords[$index] = $record;
+        if ($hasUidField) {
+            $allRecords = [];
+            while ($record = $statement->fetch()) {
+                $index = $record['uid'];
+                $allRecords[$index] = $record;
+            }
+        } else {
+            $allRecords = [];
+            while ($record = $statement->fetch()) {
+                $index = $record['hash'];
+                $allRecords[$index] = $record;
+            }
         }
 
         return $allRecords;

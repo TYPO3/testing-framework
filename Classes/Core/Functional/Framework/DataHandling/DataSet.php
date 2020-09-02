@@ -85,6 +85,8 @@ class DataSet
         $tableName = null;
         $fieldCount = null;
         $idIndex = null;
+        // Table sys_refindex has no uid but a hash field as primary key
+        $hashIndex = null;
         foreach ($rawData as $values) {
             if (!empty($values[0])) {
                 // Skip comment lines, starting with "#"
@@ -94,6 +96,7 @@ class DataSet
                 $tableName = $values[0];
                 $fieldCount = null;
                 $idIndex = null;
+                $hashIndex = null;
                 if (!isset($data[$tableName])) {
                     $data[$tableName] = [];
                 }
@@ -101,6 +104,7 @@ class DataSet
                 $tableName = null;
                 $fieldCount = null;
                 $idIndex = null;
+                $hashIndex = null;
             } elseif ($tableName !== null && !empty($values[1])) {
                 array_shift($values);
                 if (!isset($data[$tableName]['fields'])) {
@@ -116,6 +120,10 @@ class DataSet
                         $idIndex = array_search('uid', $values);
                         $data[$tableName]['idIndex'] = $idIndex;
                     }
+                    if (in_array('hash', $values)) {
+                        $hashIndex = array_search('hash', $values);
+                        $data[$tableName]['hashIndex'] = $hashIndex;
+                    }
                 } else {
                     if (!isset($data[$tableName]['elements'])) {
                         $data[$tableName]['elements'] = [];
@@ -130,6 +138,8 @@ class DataSet
                     $element = array_combine($data[$tableName]['fields'], $values);
                     if ($idIndex !== null) {
                         $data[$tableName]['elements'][$values[$idIndex]] = $element;
+                    } elseif ($hashIndex !== null) {
+                        $data[$tableName]['elements'][$values[$hashIndex]] = $element;
                     } else {
                         $data[$tableName]['elements'][] = $element;
                     }
@@ -233,6 +243,19 @@ class DataSet
             $idIndex = $this->data[$tableName]['idIndex'];
         }
         return $idIndex;
+    }
+
+    /**
+     * @param string $tableName
+     * @return NULL|int
+     */
+    public function getHashIndex(string $tableName): ?int
+    {
+        $hashIndex = null;
+        if (isset($this->data[$tableName]['hashIndex'])) {
+            $hashIndex = $this->data[$tableName]['hashIndex'];
+        }
+        return $hashIndex;
     }
 
     /**
