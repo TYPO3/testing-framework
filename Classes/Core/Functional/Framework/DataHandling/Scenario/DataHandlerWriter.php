@@ -110,9 +110,22 @@ class DataHandlerWriter
         $updatedTableDataMap = [];
         foreach ($dataMap as $tableName => $tableDataMap) {
             foreach ($tableDataMap as $key => $values) {
-                $pageId = $values['pid'] ?? null;
                 $key = $this->dataHandler->substNEWwithIDs[$key] ?? $key;
-                $values['pid'] = $this->dataHandler->substNEWwithIDs[$pageId] ?? $pageId;
+                $values = array_map(
+                    function ($value) {
+                        if (!is_string($value)) {
+                            return $value;
+                        }
+                        if (strpos($value, 'NEW') === 0) {
+                            return $this->dataHandler->substNEWwithIDs[$value] ?? $value;
+                        }
+                        if (strpos($value, '-NEW') === 0) {
+                            return $this->dataHandler->substNEWwithIDs[substr($value, 1)] ?? $value;
+                        }
+                        return $value;
+                    },
+                    $values
+                );
                 if ((string)$key === (string)(int)$key) {
                     unset($values['pid']);
                 }
