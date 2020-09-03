@@ -499,7 +499,8 @@ abstract class FunctionalTestCase extends BaseTestCase
             $hasUidField = ($dataSet->getIdIndex($tableName) !== null);
             $hasHashField = ($dataSet->getHashIndex($tableName) !== null);
             $records = $this->getAllRecords($tableName, $hasUidField, $hasHashField);
-            foreach ($dataSet->getElements($tableName) as $assertion) {
+            $assertions = (array)$dataSet->getElements($tableName);
+            foreach ($assertions as $assertion) {
                 $result = $this->assertInRecords($assertion, $records);
                 if ($result === false) {
                     if ($hasUidField && empty($records[$assertion['uid']])) {
