@@ -17,12 +17,21 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 use Codeception\Module;
 use Codeception\Step;
+use Codeception\TestInterface;
 
 /**
  * Helper class to verify javascript browser console does not throw errors.
  */
 class Acceptance extends Module
 {
+    private $allowedBrowserErrors = [];
+
+    public function _before(TestInterface $test)
+    {
+        parent::_before($test);
+        $this->allowedBrowserErrors = [];
+    }
+
     /**
      * Wait for backend progress bar to finish / disappear before "click" steps are performed.
      *
@@ -48,6 +57,21 @@ class Acceptance extends Module
         $this->assertEmptyBrowserConsole();
     }
 
+    public function allowBrowserError(string $pattern): void
+    {
+        $this->allowedBrowserErrors[] = $pattern;
+    }
+
+    public function isAllowedBrowserError(string $message): bool
+    {
+        foreach ($this->allowedBrowserErrors as $pattern) {
+            if (preg_match($pattern, $message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Check browser console for errors and fail
      *
@@ -64,6 +88,7 @@ class Acceptance extends Module
             if (true === isset($logEntry['level'])
                 && true === isset($logEntry['message'])
                 && $this->isJSError($logEntry['level'], $logEntry['message'])
+                && $this->isAllowedBrowserError((string)$logEntry['message']) === false
             ) {
                 // Timestamp is in milliseconds, but date() requires seconds.
                 $time = date('H:i:s', (int)($logEntry['timestamp'] / 1000));
