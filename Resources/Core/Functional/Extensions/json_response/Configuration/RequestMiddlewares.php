@@ -23,7 +23,7 @@ return [
                 'typo3/cms-frontend/frontend-user-authentication'
             ],
             'before' => [
-                'typo3/cms-frontend/site-resolver',
+                'typo3/cms-frontend/base-redirect-resolver',
             ],
         ],
         'typo3/json-response/backend-user-authentication' => [
@@ -32,7 +32,7 @@ return [
                 'typo3/cms-frontend/backend-user-authentication'
             ],
             'before' => [
-                'typo3/cms-frontend/site-resolver',
+                'typo3/cms-frontend/base-redirect-resolver',
             ],
         ],
     ]
