@@ -18,6 +18,8 @@ use Prophecy\Prophet;
  * while TYPO3 still supports PHP 7.2.
  * Once the requirement for PHP 7.2 has been dropped by TYPO3, this trait can be removed and the original one can be used.
  *
+ * Some smoll adjustments have been made to keep the trait compatible with all supported versions of TYPO3.
+ *
  * The trait is used in BaseTestCase.php
  */
 trait ProphecyTrait
@@ -27,7 +29,7 @@ trait ProphecyTrait
      *
      * @internal
      */
-    private $prophet;
+    protected $prophet;
 
     /**
      * @var bool
@@ -42,7 +44,7 @@ trait ProphecyTrait
      *
      * @psalm-param class-string|null $type
      */
-    protected function prophesize(?string $classOrInterface = null): ObjectProphecy
+    protected function prophesize($classOrInterface = null): ObjectProphecy
     {
         if (\is_string($classOrInterface)) {
             \assert($this instanceof TestCase);
@@ -112,5 +114,23 @@ trait ProphecyTrait
         }
 
         return $this->prophet;
+    }
+
+    /**
+     * @param string|string[] $originalClassName
+     */
+    protected function recordDoubledType($originalClassName): void
+    {
+        if (\is_string($originalClassName)) {
+            $this->doubledTypes[] = $originalClassName;
+        }
+
+        if (\is_array($originalClassName)) {
+            foreach ($originalClassName as $_originalClassName) {
+                if (\is_string($_originalClassName)) {
+                    $this->doubledTypes[] = $_originalClassName;
+                }
+            }
+        }
     }
 }
