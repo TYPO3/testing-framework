@@ -133,7 +133,8 @@ abstract class UnitTestCase extends BaseTestCase
         foreach ($reflection->getProperties() as $property) {
             $declaringClass = $property->getDeclaringClass()->getName();
             if (
-                !$property->isStatic()
+                !$property->isPrivate()
+                && !$property->isStatic()
                 && $declaringClass !== UnitTestCase::class
                 && $declaringClass !== BaseTestCase::class
                 && strpos($property->getDeclaringClass()->getName(), 'PHPUnit') !== 0
