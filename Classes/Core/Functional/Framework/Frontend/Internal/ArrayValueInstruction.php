@@ -14,8 +14,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
-
 /**
  * Model of arbitrary array value instruction
  */

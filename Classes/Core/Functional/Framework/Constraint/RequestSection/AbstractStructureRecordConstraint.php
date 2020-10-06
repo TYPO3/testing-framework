@@ -29,13 +29,13 @@ abstract class AbstractStructureRecordConstraint extends AbstractRecordConstrain
      */
     protected $recordField;
 
-    public function setRecordIdentifier($recordIdentifier)
+    public function setRecordIdentifier($recordIdentifier): self
     {
         $this->recordIdentifier = $recordIdentifier;
         return $this;
     }
 
-    public function setRecordField($recordField)
+    public function setRecordField($recordField): self
     {
         $this->recordField = $recordField;
         return $this;

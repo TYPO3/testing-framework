@@ -16,13 +16,14 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
  * Model of frontend response
  */
-class Collector implements \TYPO3\CMS\Core\SingletonInterface
+class Collector implements SingletonInterface
 {
     /**
      * @var array
@@ -49,10 +50,10 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      */
     public $cObj;
 
-    public function addRecordData($content, array $configuration = null)
+    public function addRecordData($content, array $configuration = null): void
     {
         $recordIdentifier = $this->cObj->currentRecord;
-        list($tableName) = explode(':', $recordIdentifier);
+        [$tableName] = explode(':', $recordIdentifier);
         $currentWatcherValue = $this->getCurrentWatcherValue();
         $position = strpos($currentWatcherValue, '/' . $recordIdentifier);
 
@@ -68,7 +69,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
         }
     }
 
-    public function addFileData($content, array $configuration = null)
+    public function addFileData($content, array $configuration = null): void
     {
         $currentFile = $this->cObj->getCurrentFile();
 
@@ -94,7 +95,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      * @param array $recordData
      * @return array
      */
-    protected function filterFields($tableName, array $recordData)
+    protected function filterFields($tableName, array $recordData): array
     {
         $recordData = array_intersect_key(
             $recordData,
@@ -103,14 +104,14 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
         return $recordData;
     }
 
-    protected function addToStructure($levelIdentifier, $recordIdentifier, array $recordData)
+    protected function addToStructure($levelIdentifier, $recordIdentifier, array $recordData): void
     {
         $steps = explode('/', $levelIdentifier);
         $structurePaths = [];
         $structure = &$this->structure;
 
         foreach ($steps as $step) {
-            list($identifier, $fieldName) = explode('.', $step);
+            [$identifier, $fieldName] = explode('.', $step);
             $structurePaths[] = $identifier;
             $structurePaths[] = $fieldName;
             if (!isset($structure[$identifier])) {
@@ -132,7 +133,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      * @param NULL|array $configuration
      * @return void
      */
-    public function attachSection($content, array $configuration = null)
+    public function attachSection($content, array $configuration = null): void
     {
         $section = [
             'structure' => $this->structure,
@@ -149,7 +150,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      * @param string $tableName
      * @return array
      */
-    protected function getTableFields($tableName)
+    protected function getTableFields($tableName): array
     {
         if (!isset($this->tableFields) && !empty($this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'])) {
             $this->tableFields = $this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'];
@@ -163,7 +164,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     protected function getCurrentWatcherValue()
     {
@@ -177,11 +178,9 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
     /**
      * @return Renderer
      */
-    protected function getRenderer()
+    protected function getRenderer(): Renderer
     {
-        return GeneralUtility::makeInstance(
-            Renderer::class
-        );
+        return GeneralUtility::makeInstance(Renderer::class);
     }
 
     /**
@@ -197,7 +196,7 @@ class Collector implements \TYPO3\CMS\Core\SingletonInterface
      *
      * @return void
      */
-    protected function reset()
+    protected function reset(): void
     {
         $this->structure = [];
         $this->structurePaths = [];

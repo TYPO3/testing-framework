@@ -61,7 +61,7 @@ class Testbase
      *
      * @return void
      */
-    public function defineSitePath()
+    public function defineSitePath(): void
     {
         $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
         if (!file_exists($_SERVER['SCRIPT_NAME'])) {
@@ -76,7 +76,7 @@ class Testbase
      *
      * @return void
      */
-    public function defineOriginalRootPath()
+    public function defineOriginalRootPath(): void
     {
         if (!defined('ORIGINAL_ROOT')) {
             define('ORIGINAL_ROOT', $this->getWebRoot());
@@ -92,7 +92,7 @@ class Testbase
      *
      * @return void
      */
-    public function defineTypo3ModeBe()
+    public function defineTypo3ModeBe(): void
     {
         if (!defined('TYPO3_MODE')) {
             define('TYPO3_MODE', 'BE');
@@ -105,7 +105,7 @@ class Testbase
      *
      * @return void
      */
-    public function setTypo3TestingContext()
+    public function setTypo3TestingContext(): void
     {
         putenv('TYPO3_CONTEXT=Testing');
     }
@@ -117,7 +117,7 @@ class Testbase
      * @return void
      * @throws Exception
      */
-    public function createDirectory($directory)
+    public function createDirectory($directory): void
     {
         if (is_dir($directory)) {
             return;
@@ -137,7 +137,7 @@ class Testbase
      * @return void
      * @throws Exception
      */
-    public function removeOldInstanceIfExists($instancePath)
+    public function removeOldInstanceIfExists($instancePath): void
     {
         if (is_dir($instancePath)) {
             if (strpos($instancePath, 'typo3temp') === false) {
@@ -165,7 +165,7 @@ class Testbase
      * @throws Exception
      * @return void
      */
-    public function setUpInstanceCoreLinks($instancePath)
+    public function setUpInstanceCoreLinks($instancePath): void
     {
         $linksToSet = [
             '../../../../' => $instancePath . '/typo3_src',
@@ -193,7 +193,7 @@ class Testbase
      * @throws Exception
      * @return void
      */
-    public function linkTestExtensionsToInstance($instancePath, array $extensionPaths)
+    public function linkTestExtensionsToInstance($instancePath, array $extensionPaths): void
     {
         foreach ($extensionPaths as $extensionPath) {
             $absoluteExtensionPath = ORIGINAL_ROOT . $extensionPath;
@@ -223,7 +223,7 @@ class Testbase
      * @throws Exception
      * @return void
      */
-    public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths)
+    public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths): void
     {
         foreach ($extensionPaths as $extensionPath) {
             $absoluteExtensionPath = $this->getPackagesPath() . '/typo3/testing-framework/' . $extensionPath;
@@ -254,7 +254,7 @@ class Testbase
      * @throws Exception if a source path could not be found and on failing creating the symlink
      * @return void
      */
-    public function linkPathsInTestInstance($instancePath, array $pathsToLinkInTestInstance)
+    public function linkPathsInTestInstance($instancePath, array $pathsToLinkInTestInstance): void
     {
         foreach ($pathsToLinkInTestInstance as $sourcePathToLinkInTestInstance => $destinationPathToLinkInTestInstance) {
             $sourcePath = $instancePath . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
@@ -287,7 +287,7 @@ class Testbase
      * @param array $pathsToProvideInTestInstance
      * @throws Exception
      */
-    public function providePathsInTestInstance(string $instancePath, array $pathsToProvideInTestInstance)
+    public function providePathsInTestInstance(string $instancePath, array $pathsToProvideInTestInstance): void
     {
         foreach ($pathsToProvideInTestInstance as $sourceIdentifier => $designationIdentifier) {
             $sourcePath = $instancePath . '/' . ltrim($sourceIdentifier, '/');
@@ -328,7 +328,7 @@ class Testbase
      * @throws Exception
      * @return array [DB][host], [DB][username], ...
      */
-    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = [])
+    public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = []): array
     {
         $databaseName = mb_strtolower(trim($config['typo3DatabaseName'] ?? getenv('typo3DatabaseName')));
         $databaseHost = trim($config['typo3DatabaseHost'] ?? getenv('typo3DatabaseHost'));
@@ -395,7 +395,7 @@ class Testbase
      * @param array $configuration "LocalConfiguration" array with DB settings
      * @throws Exception
      */
-    public function testDatabaseNameIsNotTooLong($originalDatabaseName, array $configuration)
+    public function testDatabaseNameIsNotTooLong($originalDatabaseName, array $configuration): void
     {
         // Maximum database name length for mysql is 64 characters
         if (strlen($configuration['DB']['Connections']['Default']['dbname']) > 64) {
@@ -420,7 +420,7 @@ class Testbase
      * @throws Exception
      * @return void
      */
-    public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration)
+    public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration): void
     {
         // Base of final LocalConfiguration is core factory configuration
         $finalConfigurationArray = require ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
@@ -459,7 +459,7 @@ class Testbase
         array $additionalCoreExtensionsToLoad,
         array $testExtensionPaths,
         array $frameworkExtensionPaths
-    ) {
+    ): void {
         $packageStates = [
             'packages' => [],
             'version' => 5,
@@ -590,7 +590,7 @@ class Testbase
      *
      * @return void
      */
-    public function dumpClassLoadingInformation()
+    public function dumpClassLoadingInformation(): void
     {
         if (!ClassLoadingInformation::isClassLoadingInformationAvailable()) {
             ClassLoadingInformation::dumpClassLoadingInformation();
@@ -605,7 +605,7 @@ class Testbase
      * @throws Exception
      * @return void
      */
-    public function initializeTestDatabaseAndTruncateTables()
+    public function initializeTestDatabaseAndTruncateTables(): void
     {
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
@@ -622,7 +622,7 @@ class Testbase
      *
      * @return void
      */
-    public function loadExtensionTables()
+    public function loadExtensionTables(): void
     {
         Bootstrap::loadExtTables();
     }
@@ -633,7 +633,7 @@ class Testbase
      *
      * @return void
      */
-    public function createDatabaseStructure()
+    public function createDatabaseStructure(): void
     {
         $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
@@ -656,7 +656,7 @@ class Testbase
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function importXmlDatabaseFixture($path)
+    public function importXmlDatabaseFixture($path): void
     {
         $path = $this->resolvePath($path);
         if (!is_file($path)) {
@@ -673,17 +673,17 @@ class Testbase
         libxml_disable_entity_loader($previousValueOfEntityLoader);
         $foreignKeys = [];
 
-        /** @var $table \SimpleXMLElement */
+        /** @var \SimpleXMLElement $table */
         foreach ($xml->children() as $table) {
             $insertArray = [];
 
-            /** @var $column \SimpleXMLElement */
+            /** @var \SimpleXMLElement $column */
             foreach ($table->children() as $column) {
                 $columnName = $column->getName();
                 $columnValue = null;
 
                 if (isset($column['ref'])) {
-                    list($tableName, $elementId) = explode('#', $column['ref']);
+                    [$tableName, $elementId] = explode('#', $column['ref']);
                     $columnValue = $foreignKeys[$tableName][$elementId];
                 } elseif (isset($column['is-NULL']) && ($column['is-NULL'] === 'yes')) {
                     $columnValue = null;
@@ -746,7 +746,7 @@ class Testbase
      * @param string $tableName
      * @throws \Doctrine\DBAL\DBALException
      */
-    public static function resetTableSequences(Connection $connection, string $tableName)
+    public static function resetTableSequences(Connection $connection, string $tableName): void
     {
         $platform = $connection->getDatabasePlatform();
         if ($platform instanceof PostgreSqlPlatform) {
@@ -799,7 +799,8 @@ class Testbase
      * @param string $to Absolute target path
      * @return bool True if all went well
      */
-    protected function copyRecursive($from, $to) {
+    protected function copyRecursive($from, $to)
+    {
         $dir = opendir($from);
         if (!file_exists($to)) {
             mkdir($to, 0775, true);
@@ -812,8 +813,7 @@ class Testbase
             if (is_dir($from . DIRECTORY_SEPARATOR . $file)) {
                 $success = $this->copyRecursive($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
                 $result = $result & $success;
-            }
-            else {
+            } else {
                 $success = copy($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
                 $result = $result & $success;
             }
@@ -831,7 +831,7 @@ class Testbase
      */
     public function getPackagesPath(): string
     {
-        return rtrim(strtr(dirname(dirname(dirname(dirname(__DIR__)))), '\\', '/'), '/');
+        return rtrim(strtr(dirname(__DIR__, 4), '\\', '/'), '/');
     }
 
     /**
@@ -840,7 +840,7 @@ class Testbase
      *
      * @return string the TYPO3 document root using Unix path separators
      */
-    public function getWebRoot()
+    public function getWebRoot(): string
     {
         if (getenv('TYPO3_PATH_ROOT')) {
             $webRoot = getenv('TYPO3_PATH_ROOT');
@@ -860,18 +860,20 @@ class Testbase
      *
      * @param string $message
      */
-    protected function exitWithMessage($message)
+    protected function exitWithMessage($message): void
     {
         echo $message . chr(10);
         exit(1);
     }
 
-    protected function resolvePath(string $path)
+    protected function resolvePath(string $path): string
     {
         if (strpos($path, 'EXT:') === 0) {
-            $path = GeneralUtility::getFileAbsFileName($path);
-        } elseif (strpos($path, 'PACKAGE:') === 0) {
-            $path = $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
+            return GeneralUtility::getFileAbsFileName($path);
+        }
+
+        if (strpos($path, 'PACKAGE:') === 0) {
+            return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
         }
         return $path;
     }

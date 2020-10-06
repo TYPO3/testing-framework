@@ -47,25 +47,25 @@ abstract class AbstractRecordConstraint extends Constraint
      */
     protected $values;
 
-    public function setTable($table)
+    public function setTable($table) :self
     {
         $this->table = $table;
         return $this;
     }
 
-    public function setField($field)
+    public function setField($field): self
     {
         $this->field = $field;
         return $this;
     }
 
-    public function setValues(...$values)
+    public function setValues(...$values): self
     {
         $this->values = $values;
         return $this;
     }
 
-    public function setStrict($strict)
+    public function setStrict($strict): self
     {
         $this->strict = (bool)$strict;
         return $this;
@@ -87,9 +87,9 @@ abstract class AbstractRecordConstraint extends Constraint
                 $success = ($success === null ? $currentSuccess : $success || $currentSuccess);
             }
             return !empty($success);
-        } else {
-            return $this->matchesSection($other);
         }
+
+        return $this->matchesSection($other);
     }
 
     /**

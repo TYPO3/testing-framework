@@ -112,8 +112,7 @@ class Renderer implements SingletonInterface
      */
     public function renderSections($content, array $configuration = null)
     {
-        $content = json_encode($this->sections);
-        return $content;
+        return json_encode($this->sections);
     }
 
     /**
@@ -155,7 +154,7 @@ class Renderer implements SingletonInterface
     /**
      * @return Parser
      */
-    protected function createParser()
+    protected function createParser(): Parser
     {
         return GeneralUtility::makeInstance(Parser::class);
     }

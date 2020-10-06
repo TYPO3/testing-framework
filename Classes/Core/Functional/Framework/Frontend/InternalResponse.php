@@ -44,7 +44,8 @@ class InternalResponse extends Response
      * @param int $statusCode
      * @param array $headers
      */
-    public function __construct(string $body, int $statusCode = 200, array $headers = []) {
+    public function __construct(string $body, int $statusCode = 200, array $headers = [])
+    {
         parent::__construct('php://temp', $statusCode, $headers);
         $this->getBody()->write($body);
     }
