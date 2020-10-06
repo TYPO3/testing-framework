@@ -16,7 +16,6 @@ namespace TYPO3\TestingFramework\Core;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use TYPO3\TestingFramework\Core\ProphecyTrait;
 
 /**
  * The mother of all test cases.
@@ -26,7 +25,6 @@ use TYPO3\TestingFramework\Core\ProphecyTrait;
  */
 abstract class BaseTestCase extends TestCase
 {
-    use ProphecyTrait;
     /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
