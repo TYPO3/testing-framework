@@ -506,44 +506,43 @@ class ActionService
 
         $row = $statement->fetch();
         if (!empty($row['uid'])) {
-            $versionedId = (int)$row['uid'];
-        } else {
-            // Check if the actual record is a new record created in the draft workspace
-            // which contains the state of t3ver_state=-1, so we verify this by re-fetching the record
-            // from the database
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable($tableName);
-            $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-
-            $row = $queryBuilder
-                ->select('uid')
-                ->from($tableName)
-                ->where(
-                    $queryBuilder->expr()->eq(
-                        'uid',
-                        $queryBuilder->createNamedParameter($liveUid, \PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->eq(
-                        't3ver_wsid',
-                        $queryBuilder->createNamedParameter($workspaceId, \PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->eq(
-                        't3ver_oid',
-                        $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->eq(
-                        't3ver_state',
-                        $queryBuilder->createNamedParameter(VersionState::NEW_PLACEHOLDER_VERSION, \PDO::PARAM_INT)
-                    )
-                )
-                ->execute()
-                ->fetch();
-            if (!empty($row)) {
-                // This is effectively the same record as $liveUid, but only if the constraints from above match
-                $versionedId = (int)$row['uid'];
-            }
+            return (int)$row['uid'];
         }
-        return $versionedId;
+        // Check if the actual record is a new record created in the draft workspace
+        // which contains the state of t3ver_state=-1, so we verify this by re-fetching the record
+        // from the database
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable($tableName);
+        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+
+        $row = $queryBuilder
+            ->select('uid')
+            ->from($tableName)
+                ->where(
+                $queryBuilder->expr()->eq(
+                    'uid',
+                    $queryBuilder->createNamedParameter($liveUid, \PDO::PARAM_INT)
+                ),
+                $queryBuilder->expr()->eq(
+                    't3ver_wsid',
+                    $queryBuilder->createNamedParameter($workspaceId, \PDO::PARAM_INT)
+                ),
+                $queryBuilder->expr()->eq(
+                    't3ver_oid',
+                    $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)
+                ),
+                $queryBuilder->expr()->eq(
+                    't3ver_state',
+                    $queryBuilder->createNamedParameter(VersionState::NEW_PLACEHOLDER_VERSION, \PDO::PARAM_INT)
+                )
+            )
+            ->execute()
+            ->fetch();
+        if (!empty($row)) {
+            // This is effectively the same record as $liveUid, but only if the constraints from above match
+            return (int)$row['uid'];
+        }
+        return null;
     }
 
     /**
