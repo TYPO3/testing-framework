@@ -14,11 +14,9 @@
 		<crdate>1366642540</crdate>
 		<cruser_id>0</cruser_id>
 		<workspace_perms>1</workspace_perms>
-		<disableIPlock>1</disableIPlock>
 		<deleted>0</deleted>
 		<TSconfig>NULL</TSconfig>
 		<lastlogin>1371033743</lastlogin>
-		<createdByAction>0</createdByAction>
 		<workspace_id>0</workspace_id>
 		<realName>Klaus Admin</realName>
 	</be_users>
@@ -36,11 +34,9 @@
 		<crdate>1452944912</crdate>
 		<cruser_id>1</cruser_id>
 		<workspace_perms>1</workspace_perms>
-		<disableIPlock>1</disableIPlock>
 		<deleted>0</deleted>
 		<TSconfig>NULL</TSconfig>
 		<lastlogin>1452944915</lastlogin>
-		<createdByAction>0</createdByAction>
 		<workspace_id>0</workspace_id>
 		<db_mountpoints>1</db_mountpoints>
 		<usergroup>1</usergroup>
