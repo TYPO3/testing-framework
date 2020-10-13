@@ -1,5 +1,6 @@
 <?php
 declare(strict_types = 1);
+
 namespace TYPO3\TestingFramework\Core\Tests\Unit\Functional\Framework\DataHandler;
 
 /*
@@ -18,13 +19,11 @@ namespace TYPO3\TestingFramework\Core\Tests\Unit\Functional\Framework\DataHandle
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-
 /**
  * Test Case
  */
 class DataSetTest extends UnitTestCase
 {
-
     /**
      * @test
      */
@@ -33,7 +32,7 @@ class DataSetTest extends UnitTestCase
         $csvFile = __DIR__ . '/../../../Fixtures/BOM/WithoutBom.csv';
         $dataSet = DataSet::read($csvFile);
         $tableName = $dataSet->getTableNames()[0];
-        $this->assertEquals(strlen('pages'), strlen($tableName));
+        self::assertEquals(strlen('pages'), strlen($tableName));
     }
 
     /**
@@ -44,7 +43,6 @@ class DataSetTest extends UnitTestCase
         $csvFile = __DIR__ . '/../../../Fixtures/BOM/WithBom.csv';
         $dataSet = DataSet::read($csvFile);
         $tableName = $dataSet->getTableNames()[0];
-        $this->assertEquals(strlen('pages'), strlen($tableName));
+        self::assertEquals(strlen('pages'), strlen($tableName));
     }
-
 }

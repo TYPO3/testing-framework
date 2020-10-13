@@ -26,7 +26,8 @@ class InternalResponseException extends \RuntimeException
      * @param int $code
      * @param string $type
      */
-    public function __construct(string $message, int $code, string $type) {
+    public function __construct(string $message, int $code, string $type)
+    {
         parent::__construct($message, $code);
         $this->type = $type;
     }

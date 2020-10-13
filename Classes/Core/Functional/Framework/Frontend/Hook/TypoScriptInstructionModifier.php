@@ -47,8 +47,7 @@ class TypoScriptInstructionModifier implements SingletonInterface
     private function applyConstants(
         TypoScriptInstruction $instruction,
         TemplateService $service
-    )
-    {
+    ) {
         if (empty($instruction->getConstants())) {
             return;
         }
@@ -64,8 +63,7 @@ class TypoScriptInstructionModifier implements SingletonInterface
     private function applyTypoScript(
         TypoScriptInstruction $instruction,
         TemplateService $service
-    )
-    {
+    ) {
         if (empty($instruction->getTypoScript())) {
             return;
         }

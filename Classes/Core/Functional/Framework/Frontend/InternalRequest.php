@@ -61,7 +61,8 @@ class InternalRequest extends Request implements \JsonSerializable
     /**
      * @param string|null $uri URI for the request, if any.
      */
-    public function __construct($uri = null) {
+    public function __construct($uri = null)
+    {
         if ($uri === null) {
             $uri = 'http://localhost/';
         }

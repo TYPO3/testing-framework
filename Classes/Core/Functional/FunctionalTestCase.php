@@ -21,7 +21,6 @@ use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
-use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
@@ -682,7 +681,8 @@ abstract class FunctionalTestCase extends BaseTestCase
                         try {
                             $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
                         } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
-                            $linesFromXmlValues[] = 'Diff for field "' . $columns['fields'][$valueIndex] . '":' . PHP_EOL . $e->getComparisonFailure()->getDiff();
+                            $linesFromXmlValues[] = 'Diff for field "' . $columns['fields'][$valueIndex] . '":' . PHP_EOL .
+                                $e->getComparisonFailure()->getDiff();
                         }
                     }
                     $value = '[see diff]';
@@ -710,14 +710,16 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param array $record
      * @return array
      */
-    protected function getDifferentFields(array $assertion, array $record)
+    protected function getDifferentFields(array $assertion, array $record): array
     {
         $differentFields = [];
 
         foreach ($assertion as $field => $value) {
             if (strpos($value, '\\*') === 0) {
                 continue;
-            } elseif (strpos($value, '<?xml') === 0) {
+            }
+
+            if (strpos($value, '<?xml') === 0) {
                 try {
                     $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
                 } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
@@ -878,11 +880,14 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * @param InternalRequest $request
      * @param InternalRequestContext $context
-     * @param bool $legacyMode
+     * @param bool $withJsonResponse
      * @return array
      */
-    protected function retrieveFrontendRequestResult(InternalRequest $request, InternalRequestContext $context, bool $withJsonResponse = true): array
-    {
+    protected function retrieveFrontendRequestResult(
+        InternalRequest $request,
+        InternalRequestContext $context,
+        bool $withJsonResponse = true
+    ): array {
         $arguments = [
             'withJsonResponse' => $withJsonResponse,
             'documentRoot' => $this->instancePath,
@@ -902,8 +907,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         );
 
         $php = AbstractPhpProcess::factory();
-        $result = $php->runJob($template->render());
-        return $result;
+        return $php->runJob($template->render());
     }
 
     /**
@@ -951,8 +955,14 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @return Response
      * @deprecated Use retrieveFrontendRequestResult() instead
      */
-    protected function getFrontendResponse($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $failOnFailure = true, $frontendUserId = 0)
-    {
+    protected function getFrontendResponse(
+        $pageId,
+        $languageId = 0,
+        $backendUserId = 0,
+        $workspaceId = 0,
+        $failOnFailure = true,
+        $frontendUserId = 0
+    ) {
         $result = $this->getFrontendResult(
             $pageId,
             $languageId,
@@ -974,8 +984,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->fail('Frontend Response has failure:' . LF . $data['error']);
         }
 
-        $response = new Response($data['status'], $data['content'], $data['error']);
-        return $response;
+        return new Response($data['status'], $data['content'], $data['error']);
     }
 
     /**
@@ -990,8 +999,13 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @return array containing keys 'stdout' and 'stderr'
      * @deprecated Use retrieveFrontendRequestResult() instead
      */
-    protected function getFrontendResult($pageId, $languageId = 0, $backendUserId = 0, $workspaceId = 0, $frontendUserId = 0)
-    {
+    protected function getFrontendResult(
+        $pageId,
+        $languageId = 0,
+        $backendUserId = 0,
+        $workspaceId = 0,
+        $frontendUserId = 0
+    ) {
         return $this->retrieveFrontendRequestResult(
             (new InternalRequest())
                 ->withPageId($pageId)
