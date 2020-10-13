@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
@@ -44,6 +45,7 @@ class FrontendUserHandler implements MiddlewareInterface
             return $handler->handle($request);
         }
 
+        /** @var FrontendUserAuthentication $frontendUserAuthentication */
         $frontendUserAuthentication = $request->getAttribute('frontend.user');
         $frontendUserAuthentication->checkPid = 0;
 
@@ -52,9 +54,18 @@ class FrontendUserHandler implements MiddlewareInterface
             ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
             ->fetch();
         if (is_array($frontendUser)) {
+            $context = GeneralUtility::makeInstance(Context::class);
             $frontendUserAuthentication->createUserSession($frontendUser);
             $frontendUserAuthentication->user = $frontendUserAuthentication->fetchUserSession();
-            $this->setFrontendUserAspect(GeneralUtility::makeInstance(Context::class), $frontendUserAuthentication);
+            // v11+
+            if (method_exists($frontendUserAuthentication, 'createUserAspect')) {
+                $frontendUserAuthentication->fetchGroupData();
+                $userAspect = $frontendUserAuthentication->createUserAspect();
+                GeneralUtility::makeInstance(Context::class)->setAspect('frontend.user', $userAspect);
+            } else {
+                // v10
+                $this->setFrontendUserAspect($context, $frontendUserAuthentication);
+            }
         }
 
         return $handler->handle($request);
