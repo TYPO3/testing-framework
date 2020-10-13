@@ -896,7 +896,14 @@ abstract class FunctionalTestCase extends BaseTestCase
         ];
 
         $vendorPath = (new Testbase())->getPackagesPath();
-        $template = new \Text_Template($vendorPath . '/typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
+
+        // @todo Hard switch to class name in if condition after phpunit v9 is minimum requirement
+        $templateClass = \Text_Template::class;
+        if (!class_exists($templateClass)) {
+            $templateClass = \SebastianBergmann\Template\Template::class;
+        }
+        $template = new $templateClass($vendorPath . '/typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
+
         $template->setVar(
             [
                 'arguments' => var_export($arguments, true),
