@@ -1,0 +1,24 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+
+  testsuite:
+    name: all tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.2', '7.3', '7.4' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Composer install
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerInstall
+
+      - name: Lint PHP
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
+
+      - name: Unit Tests
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s unit
