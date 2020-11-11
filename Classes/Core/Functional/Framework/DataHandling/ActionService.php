@@ -20,7 +20,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Versioning\VersionState;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
 
@@ -509,7 +508,7 @@ class ActionService
             return (int)$row['uid'];
         }
         // Check if the actual record is a new record created in the draft workspace
-        // which contains the state of t3ver_state=-1, so we verify this by re-fetching the record
+        // which contains the state of t3ver_state=1, so we verify this by re-fetching the record
         // from the database
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable($tableName);
@@ -518,7 +517,7 @@ class ActionService
         $row = $queryBuilder
             ->select('uid')
             ->from($tableName)
-                ->where(
+            ->where(
                 $queryBuilder->expr()->eq(
                     'uid',
                     $queryBuilder->createNamedParameter($liveUid, \PDO::PARAM_INT)
@@ -533,7 +532,7 @@ class ActionService
                 ),
                 $queryBuilder->expr()->eq(
                     't3ver_state',
-                    $queryBuilder->createNamedParameter(VersionState::NEW_PLACEHOLDER_VERSION, \PDO::PARAM_INT)
+                    $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)
                 )
             )
             ->execute()
