@@ -3,3 +3,4 @@
 composer.lock
 public/
 Resources/Core/Build/.phpunit.result.cache
+Build/testing-docker/.env
