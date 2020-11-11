@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/TYPO3/testing-framework.svg?branch=master)](https://travis-ci.org/TYPO3/testing-framework)
-
 # TYPO3 testing framework for core and extensions
 
 A straight and slim set of classes and configuration to test TYPO3 extensions. This framework is
