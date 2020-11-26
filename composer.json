@@ -25,16 +25,17 @@
     "issues": "https://github.com/TYPO3/testing-framework/issues"
   },
   "require": {
-    "phpunit/phpunit": "^8.4 || ^9.0",
+    "phpunit/phpunit": "^9.1",
+    "phpspec/prophecy-phpunit": "^2.0",
     "psr/container": "^1.0",
     "mikey179/vfsstream": "~1.6.8",
     "typo3fluid/fluid": "^2.5|^3",
-    "typo3/cms-core": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-backend": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-frontend": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-extbase": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-fluid": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-recordlist": "10.*.*@dev || 11.*.*@dev"
+    "typo3/cms-core": "11.*.*@dev",
+    "typo3/cms-backend": "11.*.*@dev",
+    "typo3/cms-frontend": "11.*.*@dev",
+    "typo3/cms-extbase": "11.*.*@dev",
+    "typo3/cms-fluid": "11.*.*@dev",
+    "typo3/cms-recordlist": "11.*.*@dev"
   },
   "suggest": {
     "codeception/codeception": "^4.0",

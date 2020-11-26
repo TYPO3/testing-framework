@@ -14,6 +14,7 @@ namespace TYPO3\TestingFramework\Core\Unit;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -31,6 +32,8 @@ use TYPO3\TestingFramework\Core\BaseTestCase;
  */
 abstract class UnitTestCase extends BaseTestCase
 {
+    use ProphecyTrait;
+
     /**
      * If set to true, setUp() will back up the state of the
      * TYPO3\CMS\Core\Core\Environment class and restore it
