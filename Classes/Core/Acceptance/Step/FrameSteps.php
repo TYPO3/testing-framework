@@ -67,6 +67,24 @@ trait FrameSteps
     }
 
     /**
+     * Move the module menu of the main frame to top.
+     */
+    public function scrollModuleMenuToTop(): void
+    {
+        $scrollingElement = 'document.getElementsByClassName("scaffold-modulemenu")[0]';
+        $this->scrollFrameToTop($scrollingElement);
+    }
+
+    /**
+     * Move the module menu of the main frame to the bottom.
+     */
+    public function scrollModuleMenuToBottom(): void
+    {
+        $scrollingElement = 'document.getElementsByClassName("scaffold-modulemenu")[0]';
+        $this->scrollFrameToBottom($scrollingElement);
+    }
+
+    /**
      * Move the page tree of the main frame to the middle of the given element matched by the given locator.
      *
      * ``` php
@@ -84,6 +102,23 @@ trait FrameSteps
     {
         $scrollingElement = 'document.getElementById("typo3-pagetree-tree")';
         $this->scrollFrameTo($scrollingElement, $toSelector, $offsetX, $offsetY);
+    }
+    /**
+     * Move the page tree of the main frame to top.
+     */
+    public function scrollPageTreeToTop(): void
+    {
+        $scrollingElement = 'document.getElementById("typo3-pagetree-tree")';
+        $this->scrollFrameToTop($scrollingElement);
+    }
+
+    /**
+     * Move the page tree of the main frame to the bottom.
+     */
+    public function scrollPageTreeToBottom(): void
+    {
+        $scrollingElement = 'document.getElementById("typo3-pagetree-tree")';
+        $this->scrollFrameToBottom($scrollingElement);
     }
 
     /**
@@ -107,6 +142,24 @@ trait FrameSteps
     }
 
     /**
+     * Move the module body of the content frame to top.
+     */
+    public function scrollModuleBodyToTop(): void
+    {
+        $scrollingElement = 'document.getElementsByClassName("module-body")[0]';
+        $this->scrollFrameToTop($scrollingElement);
+    }
+
+    /**
+     * Move the module body of the content frame to the bottom.
+     */
+    public function scrollModuleBodyToBottom(): void
+    {
+        $scrollingElement = 'document.getElementsByClassName("module-body")[0]';
+        $this->scrollFrameToBottom($scrollingElement);
+    }
+
+    /**
      * Move the TYPO3 backend frame to the middle of the given element matched by the given locator.
      * Extra shift, calculated from the top-left corner of the element,
      * can be set by passing $offsetX and $offsetY parameters.
@@ -127,7 +180,39 @@ trait FrameSteps
                 $el = $webDriver->findElement($this->getStrictLocator($toSelector));
                 $x = $el->getLocation()->getX() + $offsetX;
                 $y = $el->getLocation()->getY() + $offsetY;
-                $webDriver->executeScript($scrollingElement . ".scrollTo($x, $y)");
+                $webDriver->executeScript( "$scrollingElement.scrollTo($x, $y)");
+            }
+        );
+    }
+
+    /**
+     * Move the TYPO3 backend frame to top.
+     *
+     * @param string $scrollingElement
+     * @return void
+     */
+    protected function scrollFrameToTop(string $scrollingElement): void
+    {
+        $I = $this;
+        $I->executeInSelenium(
+            function (RemoteWebDriver $webDriver) use ($scrollingElement) {
+                $webDriver->executeScript("$scrollingElement.scrollTop = 0");
+            }
+        );
+    }
+
+    /**
+     * Move the TYPO3 backend frame to the bottom.
+     *
+     * @param string $scrollingElement
+     * @return void
+     */
+    protected function scrollFrameToBottom(string $scrollingElement): void
+    {
+        $I = $this;
+        $I->executeInSelenium(
+            function (RemoteWebDriver $webDriver) use ($scrollingElement) {
+                $webDriver->executeScript("$scrollingElement.scrollTop = $scrollingElement.scrollHeight");
             }
         );
     }
