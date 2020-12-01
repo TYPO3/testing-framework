@@ -20,7 +20,11 @@ use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractInstruction;
 
 /**
- * Model of internal frontend request context
+ * Model of internal frontend request context.
+ *
+ * This is a helper class in testing-framework context used to execute frontend requests.
+ * It provides some convenient helper methods like ->withPageId() to easily set up a frontend request.
+ * It is later turned into a request implementing PSR-7 ServerRequestInterface.
  */
 class InternalRequest extends Request implements \JsonSerializable
 {
@@ -34,6 +38,8 @@ class InternalRequest extends Request implements \JsonSerializable
     /**
      * @param array $data
      * @return InternalRequest
+     * @internal
+     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped
      */
     public static function fromArray(array $data): InternalRequest
     {
@@ -72,6 +78,8 @@ class InternalRequest extends Request implements \JsonSerializable
 
     /**
      * @return array
+     * @internal
+     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped, also drop 'implements JsonSerializable'
      */
     public function jsonSerialize(): array
     {

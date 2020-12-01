@@ -17,7 +17,10 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 
 /**
- * Model of internal frontend request context
+ * Model of internal frontend request context.
+ *
+ * Helper class for frontend requests to hand over details like 'a backend user should be logged in'.
+ * This is used by testing-framework extension ext:json_response in its middlewares.
  */
 class InternalRequestContext implements \JsonSerializable
 {
@@ -46,6 +49,8 @@ class InternalRequestContext implements \JsonSerializable
     /**
      * @param array $data
      * @return InternalRequestContext
+     * @internal
+     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped
      */
     public static function fromArray(array $data)
     {
@@ -54,6 +59,8 @@ class InternalRequestContext implements \JsonSerializable
 
     /**
      * @return array
+     * @internal
+     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped, also drop 'implements JsonSerializable'
      */
     public function jsonSerialize(): array
     {
