@@ -17,6 +17,19 @@ var paths = {
 	'jquery/autocomplete': '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/jquery.autocomplete'
 };
 
+var packages = [
+	{
+		name: 'lit-html',
+		location: '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/lit-html',
+		main: 'lit-html'
+	},
+	{
+		name: 'lit-element',
+		location: '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/lit-element',
+		main: 'lit-element'
+	},
+];
+
 /**
  * Collect test files and define namespace mapping for RequireJS config
  */
@@ -75,6 +88,8 @@ requirejs.config({
 	baseUrl: '/base',
 
 	paths: paths,
+
+	packages: packages,
 
 	shim: {},
 
