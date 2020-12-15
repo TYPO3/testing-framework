@@ -75,6 +75,7 @@ class Login extends Module
         $wd->amOnPage('/typo3/index.php');
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions
+        $wd->waitForElement('iframe[name="list_frame"]');
         $wd->switchToIFrame('list_frame');
         $wd->waitForElement(Locator::firstElement('div.module'));
         // And switch back to main frame preparing a click to main module for the following main test case

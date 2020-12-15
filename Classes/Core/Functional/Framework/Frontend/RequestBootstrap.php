@@ -23,6 +23,9 @@ use TYPO3\CMS\Frontend\Http\Application;
 
 /**
  * Bootstrap for direct CLI Request
+ *
+ * @internal
+ * @deprecated This class should be dropped or heavily reduced when retrieveFrontendRequestResult() is dropped.
  */
 class RequestBootstrap
 {

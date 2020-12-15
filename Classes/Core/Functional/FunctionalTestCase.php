@@ -23,14 +23,21 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
+use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseAccessor;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseSnapshot;
+use TYPO3\TestingFramework\Core\Functional\Framework\FrameworkState;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
@@ -847,10 +854,146 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+     * Execute a TYPO3 frontend application request.
+     * Note this needs a core v11 and is experimental for extension developers for now.
+     *
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
      * @param bool $followRedirects Whether to follow HTTP location redirects
      * @return InternalResponse
+     */
+    protected function executeFrontendSubRequest(
+        InternalRequest $request,
+        InternalRequestContext $context = null,
+        bool $followRedirects = false
+    ): InternalResponse
+    {
+        if ($context === null) {
+            $context = new InternalRequestContext();
+        }
+        $locationHeaders = [];
+        do {
+            $result = $this->retrieveFrontendSubRequestResult($request, $context);
+            $response = $this->reconstituteFrontendRequestResult($result);
+            $locationHeader = $response->getHeaderLine('location');
+            if (in_array($locationHeader, $locationHeaders, true)) {
+                $this->fail(
+                    implode(LF . '* ', array_merge(
+                        ['Redirect loop detected:'],
+                        $locationHeaders,
+                        [$locationHeader]
+                    ))
+                );
+            }
+            $locationHeaders[] = $locationHeader;
+            $request = new InternalRequest($locationHeader);
+        } while ($followRedirects && !empty($locationHeader));
+        return $response;
+    }
+
+    /**
+     * The internal worker method that actually fires the frontend application request.
+     * The method is still a bit messy and needs to do some stuff that can be obsoleted
+     * when the core becomes more clean.
+     * It's main job is to turn the testing-framework internal request object into a
+     * a PSR-7 core/Http/ServerRequest, register the testing-framework InternalRequestContext
+     * object for the testing-framework ext:json_response middlewares to operate on, and
+     * to then call the ext:frontend Application.
+     * Note this method is in 'early' state and will change over time.
+     *
+     * @param InternalRequest $request
+     * @param InternalRequestContext $context
+     * @return array
+     * @internal Do not use directly, use ->executeFrontendSubRequest() instead
+     */
+    private function retrieveFrontendSubRequestResult(
+        InternalRequest $request,
+        InternalRequestContext $context
+    ): array
+    {
+        FrameworkState::push();
+        FrameworkState::reset();
+
+        // Needed for GeneralUtility::getIndpEnv('SCRIPT_NAME') to return correct value
+        // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
+        // See second data provider of UriPrefixRenderingTest
+        // @todo: Make TSFE not use getIndpEnv() anymore
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+
+        $requestUrlParts = parse_url($request->getUri());
+        $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
+
+        $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
+
+        // The testing-framework registers extension 'json_response' that brings some middlewares which
+        // allow to eg. log in backend users in frontend application context. These globals are used to
+        // carry that information.
+        $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] = $context;
+        $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
+        ArrayUtility::mergeRecursiveWithOverrule(
+            $GLOBALS,
+            $context->getGlobalSettings() ?? []
+        );
+        $result = [
+            'status' => 'failure',
+            'content' => null,
+            'error' => null
+        ];
+        // Create ServerRequest from testing-framework InternalRequest object
+        $uri = $request->getUri();
+
+        // Implement a side effect: String casting an uri object that has been created from 'https://website.local//'
+        // results in 'https://website.local/' (double slash at end missing). The old executeFrontendRequest() triggered
+        // this since it had to stringify the request to transfer it through the PHP process to later reconstitute it.
+        // We simulate this behavior here. See Test SlugSiteRequestTest->requestsAreRedirectedWithoutHavingDefaultSiteLanguage()
+        // with data set 'https://website.local//' relies on this behavior and leads to a different middleware redirect path
+        // if the double '//' is given.
+        // @todo: Resolve this, probably by a) changing Uri __toString() to not trigger that side effect and b) changing test
+        $uriString = (string)$uri;
+        $uri = new Uri($uriString);
+
+        $serverRequest = new ServerRequest(
+            $uri,
+            $request->getMethod(),
+            'php://input',
+            $request->getHeaders()
+        );
+        $requestUrlParts = [];
+        parse_str($uri->getQuery(), $requestUrlParts);
+        $serverRequest = $serverRequest->withQueryParams($requestUrlParts);
+        try {
+            $frontendApplication = $container->get(Application::class);
+            $jsonResponse = $frontendApplication->handle($serverRequest);
+            $result['status'] = 'success';
+            $result['content'] = json_decode($jsonResponse->getBody()->__toString(), true);
+        } catch (\Exception $exception) {
+            $result['error'] = $exception->__toString();
+            $result['exception'] = [
+                'type' => get_class($exception),
+                'message' => $exception->getMessage(),
+                'code' => $exception->getCode(),
+            ];
+        }
+        $content['stdout'] = json_encode($result);
+
+        // Somewhere an ob_start() is called in frontend that is not cleaned. Work around that for now.
+        ob_end_clean();
+
+        FrameworkState::pop();
+        return $content;
+    }
+
+    /**
+     * Old method to execute a TYPO3 frontend request. The internals feed
+     * the request to a php child process to isolate the call.
+     * This is needed for tests that run on a TYPO3 core <= v10, for
+     * tests with core v11, ->executeFrontendSubRequest() should be used.
+     *
+     * @param InternalRequest $request
+     * @param InternalRequestContext|null $context
+     * @param bool $followRedirects Whether to follow HTTP location redirects
+     * @return InternalResponse
+     * @deprecated Use executeFrontendSubRequest() instead
      */
     protected function executeFrontendRequest(
         InternalRequest $request,
@@ -884,10 +1027,14 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+     * Internal implementation of executing a frontend request incapsulated
+     * in a PHP child process.
+     *
      * @param InternalRequest $request
      * @param InternalRequestContext $context
      * @param bool $withJsonResponse
      * @return array
+     * @deprecated Use executeFrontendSubRequest() instead
      */
     protected function retrieveFrontendRequestResult(
         InternalRequest $request,
@@ -926,6 +1073,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * @param array $result
      * @return InternalResponse
+     * @internal Never use directly. May vanish without further notice.
      */
     protected function reconstituteFrontendRequestResult(array $result): InternalResponse
     {
@@ -966,7 +1114,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param bool $failOnFailure
      * @param int $frontendUserId
      * @return Response
-     * @deprecated Use retrieveFrontendRequestResult() instead
+     * @deprecated Use executeFrontendSubRequest() instead
      */
     protected function getFrontendResponse(
         $pageId,
@@ -1010,7 +1158,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param int $workspaceId
      * @param int $frontendUserId
      * @return array containing keys 'stdout' and 'stderr'
-     * @deprecated Use retrieveFrontendRequestResult() instead
+     * @deprecated Use executeFrontendSubRequest() instead
      */
     protected function getFrontendResult(
         $pageId,
