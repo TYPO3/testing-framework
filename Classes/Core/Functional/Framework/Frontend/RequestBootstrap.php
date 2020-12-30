@@ -159,6 +159,10 @@ class RequestBootstrap
                 \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_FE
             );
             $container = \TYPO3\CMS\Core\Core\Bootstrap::init($this->classLoader);
+            if (\TYPO3\CMS\Core\Core\Environment::isComposerMode() &&
+                \TYPO3\CMS\Core\Core\ClassLoadingInformation::isClassLoadingInformationAvailable()) {
+                \TYPO3\CMS\Core\Core\ClassLoadingInformation::registerClassLoadingInformation();
+            }
             ArrayUtility::mergeRecursiveWithOverrule(
                 $GLOBALS,
                 $this->context->getGlobalSettings() ?? []
