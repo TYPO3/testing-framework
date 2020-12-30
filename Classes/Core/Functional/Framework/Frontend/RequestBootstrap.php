@@ -60,8 +60,7 @@ class RequestBootstrap
 
     private function initialize()
     {
-        $directory = dirname(realpath($this->documentRoot . '/index.php'));
-        $this->classLoader = require_once $directory . '/vendor/autoload.php';
+        $this->classLoader = require_once __DIR__ . '/../../../../../../../autoload.php';
     }
 
     /**
