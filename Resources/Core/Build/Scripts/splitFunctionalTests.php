@@ -82,6 +82,7 @@ class SplitFunctionalTests extends NodeVisitorAbstract
             ->files()
             ->in(__DIR__ . '/../../../../../../../typo3/sysext/*/Tests/Functional')
             ->name('/Test\.php$/')
+            ->sortByName()
         ;
 
         $parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
