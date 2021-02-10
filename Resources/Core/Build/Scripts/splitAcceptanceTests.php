@@ -82,6 +82,7 @@ class SplitAcceptanceTests extends NodeVisitorAbstract
             ->files()
             ->in(__DIR__ . '/../../../../../../../typo3/sysext/core/Tests/Acceptance/Backend')
             ->name('/Cest\.php$/')
+            ->sortByName()
         ;
 
         $parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
