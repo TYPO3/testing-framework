@@ -44,6 +44,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Base test case class for functional tests, all TYPO3 CMS
@@ -350,6 +351,20 @@ abstract class FunctionalTestCase extends BaseTestCase
             $testbase->loadExtensionTables();
             $testbase->createDatabaseStructure();
         }
+    }
+
+    /**
+     * Default tearDown() unsets local variables to safe memory in phpunit test runner
+     */
+    protected function tearDown(): void
+    {
+        // Unset especially the container after each test, it is a huge memory hog.
+        // Test class instances in phpunit are kept until end of run, this sums up.
+        unset($this->container);
+        unset($this->identifier, $this->instancePath, $this->coreExtensionsToLoad);
+        unset($this->testExtensionsToLoad, $this->frameworkExtensionsToLoad, $this->pathsToLinkInTestInstance);
+        unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
+        unset($this->additionalFoldersToCreate, $this->backendUserFixture);
     }
 
     /**
