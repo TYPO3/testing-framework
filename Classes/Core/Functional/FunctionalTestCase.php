@@ -44,7 +44,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 /**
  * Base test case class for functional tests, all TYPO3 CMS
