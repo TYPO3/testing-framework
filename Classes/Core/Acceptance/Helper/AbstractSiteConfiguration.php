@@ -21,6 +21,9 @@ use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Tests\Acceptance\Support\InstallTester;
 use TYPO3\CMS\Core\Tests\Functional\SiteHandling\SiteBasedTestTrait;
 
+/**
+ * @deprecated Unused. Will be dropped with 7.x major version.
+ */
 abstract class AbstractSiteConfiguration
 {
 
