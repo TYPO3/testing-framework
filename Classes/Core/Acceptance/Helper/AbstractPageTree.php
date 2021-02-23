@@ -93,6 +93,8 @@ abstract class AbstractPageTree
             // element not found so it may be already opened...
         } catch (\Facebook\WebDriver\Exception\ElementNotVisibleException $e) {
             // element not found so it may be already opened...
+        } catch (\Facebook\WebDriver\Exception\ElementNotInteractableException $e) {
+            // another possible exception if the chevron isn't there ... depends on facebook driver version
         }
 
         return $context;
