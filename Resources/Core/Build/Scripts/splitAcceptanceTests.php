@@ -52,6 +52,8 @@ require __DIR__ . '/../../../../../../autoload.php';
  *
  * codeception group files including their specific set of tests are written to:
  * typo3/sysext/core/Tests/Acceptance/AcceptanceTests-Job-<counter>
+ *
+ * @deprecated This script is core specific, has been merged to core mono-repo and will be removed with next major version.
  */
 class SplitAcceptanceTests extends NodeVisitorAbstract
 {

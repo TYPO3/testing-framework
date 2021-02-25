@@ -52,6 +52,8 @@ require __DIR__ . '/../../../../../../autoload.php';
  *
  * phpunit .xml config files including their specific set of tests are written to:
  * vendor/typo3/testing-framework/core/Build/FunctionalTests-Job-<counter>.xml
+ *
+ * @deprecated This script is core specific, has been merged to core mono-repo and will be removed with next major version.
  */
 class SplitFunctionalTests extends NodeVisitorAbstract
 {
