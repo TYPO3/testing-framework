@@ -31,7 +31,7 @@ services:
           set -x
         fi
         php -v | grep '^PHP';
-        find . -name \\*.php ! -path "./.Build/\\*" ! -path "./public/\\*" -print0 | xargs -0 -n1 -P4 php -n -c /etc/php/cli-no-xdebug/php.ini -l >/dev/null
+        find . -name \\*.php ! -path "./.Build/\\*" ! -path "./public/\\*" -print0 | xargs -0 -n1 -P4 php -dxdebug.mode=off -l >/dev/null
       "
 
   unit:
@@ -50,6 +50,5 @@ services:
         fi
         php -v | grep '^PHP';
         cd ..;
-        php -n -c /etc/php/cli-no-xdebug/php.ini \
-          .Build/bin/phpunit Tests/Unit/;
+        php -dxdebug.mode=off .Build/bin/phpunit Tests/Unit/;
       "
