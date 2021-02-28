@@ -575,7 +575,7 @@ class DataHandlerFactory
     private function resolveDataMapPageId(int $workspaceId, $pageId)
     {
         $normalizePageId = (string)$pageId;
-        if ($pageId === null || $normalizePageId{0} !== '-') {
+        if ($pageId === null || $normalizePageId[0] !== '-') {
             return $pageId;
         }
 
