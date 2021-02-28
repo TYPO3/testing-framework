@@ -36,10 +36,6 @@
     "typo3/cms-fluid": "10.*.*@dev || 11.*.*@dev",
     "typo3/cms-recordlist": "10.*.*@dev || 11.*.*@dev"
   },
-  "suggest": {
-    "codeception/codeception": "^4.0",
-    "typo3/cms-styleguide": "^9.0"
-  },
   "config": {
     "vendor-dir": ".Build/vendor",
     "bin-dir": ".Build/bin"
