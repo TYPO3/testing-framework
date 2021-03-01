@@ -1,3 +1,5 @@
+![tests](https://github.com/TYPO3/testing-framework/actions/workflows/ci.yml/badge.svg)
+
 # TYPO3 testing framework for core and extensions
 
 A straight and slim set of classes and configuration to test TYPO3 extensions. This framework is
