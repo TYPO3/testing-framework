@@ -110,8 +110,9 @@ abstract class AbstractRecordConstraint extends Constraint
             if (strpos($recordIdentifier, $this->table . ':') !== 0) {
                 continue;
             }
-
-            if (($foundValueIndex = array_search($recordData[$this->field], $values)) !== false) {
+            if (isset($recordData[$this->field])
+                && (($foundValueIndex = array_search($recordData[$this->field], $values)) !== false)
+            ) {
                 unset($values[$foundValueIndex]);
             }
         }
