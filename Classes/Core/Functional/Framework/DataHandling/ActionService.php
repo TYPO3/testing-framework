@@ -465,7 +465,7 @@ class ActionService
             return $recordData;
         }
         foreach ($recordData as $fieldName => $fieldValue) {
-            if (strpos((string)$fieldValue, '__nextUid') === false) {
+            if (is_array($fieldValue) || strpos((string)$fieldValue, '__nextUid') === false) {
                 continue;
             }
             $recordData[$fieldName] = str_replace('__nextUid', $nextUid, $fieldValue);
