@@ -260,8 +260,10 @@ abstract class BackendEnvironment extends Extension
         // $this->config['configurationToUseInTestInstance ']if needed again.
         $localConfiguration['BE']['debug'] = true;
         $localConfiguration['BE']['installToolPassword'] = '$P$notnotnotnotnotnot.validvalidva';
-        $localConfiguration['SYS']['displayErrors'] = false;
-        $localConfiguration['SYS']['debugExceptionHandler'] = '';
+        $localConfiguration['SYS']['displayErrors'] = true;
+        $localConfiguration['SYS']['devIPmask'] = '*';
+        // Same as 'debug' preset from install tool: especially except on warnings!
+        $localConfiguration['SYS']['exceptionalErrors'] = E_WARNING | E_RECOVERABLE_ERROR | E_DEPRECATED;
         $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
         $localConfiguration['SYS']['encryptionKey'] = 'iAmInvalid';
         $localConfiguration['SYS']['features']['redirects.hitCount'] = true;
