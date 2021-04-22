@@ -24,9 +24,19 @@ var packages = [
 		main: 'lit-html'
 	},
 	{
+		name: '@lit/reactive-element',
+		location: '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/@lit/reactive-element',
+		main: 'reactive-element'
+	},
+	{
 		name: 'lit-element',
 		location: '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/lit-element',
 		main: 'lit-element'
+	},
+	{
+		name: 'lit',
+		location: '/base/typo3/sysext/core/Resources/Public/JavaScript/Contrib/lit',
+		main: 'index'
 	},
 ];
 
