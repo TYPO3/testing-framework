@@ -747,15 +747,17 @@ abstract class FunctionalTestCase extends BaseTestCase
                 continue;
             }
 
+            $recordValue = $record[$field] ?? null;
+
             if (strpos($value, '<?xml') === 0) {
                 try {
-                    $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
+                    $this->assertXmlStringEqualsXmlString((string)$value, (string)$recordValue);
                 } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
                     $differentFields[] = $field;
                 }
-            } elseif ($value === null && $record[$field] !== $value) {
+            } elseif ($value === null && $recordValue !== $value) {
                 $differentFields[] = $field;
-            } elseif ((string)$record[$field] !== (string)$value) {
+            } elseif ((string)$recordValue !== (string)$value) {
                 $differentFields[] = $field;
             }
         }
