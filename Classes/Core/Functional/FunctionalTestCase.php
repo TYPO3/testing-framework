@@ -747,6 +747,10 @@ abstract class FunctionalTestCase extends BaseTestCase
                 continue;
             }
 
+            if (!isset($record[$field])) {
+                throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
+            }
+
             if (strpos($value, '<?xml') === 0) {
                 try {
                     $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
