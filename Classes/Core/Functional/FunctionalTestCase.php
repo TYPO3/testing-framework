@@ -747,7 +747,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 continue;
             }
 
-            if (!isset($record[$field])) {
+            if (!array_key_exists($field, $record)) {
                 throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
             }
 
