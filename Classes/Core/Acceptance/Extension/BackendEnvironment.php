@@ -280,6 +280,12 @@ abstract class BackendEnvironment extends Extension
         $testbase->loadExtensionTables();
         $testbase->createDatabaseStructure();
 
+        // Unregister core error handler again, which has been initialized by
+        // $testbase->setUpBasicTypo3Bootstrap($instancePath); for DB schema
+        // migration.
+        // @todo: See which other possible state should be dropped here again (singletons, ...?)
+        restore_error_handler();
+
         // Unset a closure or phpunit kicks in with a 'serialization of \Closure is not allowed'
         // Alternative solution:
         // unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys']['extbase']);
