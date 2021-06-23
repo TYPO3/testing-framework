@@ -143,6 +143,16 @@ class InternalRequest extends Request implements \JsonSerializable
         return $target;
     }
 
+    public function withHeaders(array $headers): InternalRequest
+    {
+        $request = $this;
+        foreach ($headers as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+
+        return $request;
+    }
+
     /**
      * @param array $parameters
      * @return InternalRequest
