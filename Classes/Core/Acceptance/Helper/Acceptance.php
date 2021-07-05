@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  */
 
 use Codeception\Module;
+use Codeception\Module\WebDriver;
 use Codeception\Step;
 
 /**
@@ -45,7 +46,24 @@ class Acceptance extends Module
      */
     public function _afterStep(Step $step)
     {
-        $this->assertEmptyBrowserConsole();
+        if ($this->isBrowserConsoleSupported()) {
+            $this->assertEmptyBrowserConsole();
+        }
+    }
+
+    /**
+     * Selenium's logging interface is not yet supported by geckodriver, so browser console tests are disabled
+     * at the moment. However, custom parsing of geckodriver's console output can be implemented.
+     *
+     * @return bool
+     *
+     * @see https://github.com/mozilla/geckodriver/issues/284 (issue)
+     * @see https://github.com/mozilla/geckodriver/issues/284#issuecomment-477677764 (custom implementation I)
+     * @see https://github.com/nightwatchjs/nightwatch/issues/2217#issuecomment-541139435 (custom implementation II)
+     */
+    protected function isBrowserConsoleSupported()
+    {
+        return $this->getWebDriver()->_getConfig('browser') !== 'firefox';
     }
 
     /**
@@ -93,5 +111,13 @@ class Acceptance extends Module
     protected function isJSError($logEntryLevel, $message)
     {
         return $logEntryLevel === 'SEVERE' && strpos($message, 'ERR_PROXY_CONNECTION_FAILED') === false;
+    }
+
+    /**
+     * @return WebDriver
+     */
+    protected function getWebDriver()
+    {
+        return $this->getModule('WebDriver');
     }
 }
