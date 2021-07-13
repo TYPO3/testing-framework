@@ -20,6 +20,7 @@
 	stopOnSkipped="false"
 	verbose="false"
 	beStrictAboutTestsThatDoNotTestAnything="false"
+	failOnWarning="true"
 >
 	<testsuites>
 		<testsuite name="Core tests">
