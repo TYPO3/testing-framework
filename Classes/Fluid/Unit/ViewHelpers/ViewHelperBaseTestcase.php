@@ -26,6 +26,26 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\ViewHelperVariableContainer;
 
 /**
  * Base test class for testing view helpers
+ *
+ * Deprecation note:
+ * View helper tests that rely on this class also rely on heavy mocking. This
+ * makes the view helper tests created with this class rather brittle and hard
+ * to understand since they rely a lot on internal fluid knowledge.
+ *
+ * It is much easier and robust to create functional tests for view helpers.
+ * The v11 core has a lot of examples for this, and many simple cases boil down
+ * to creating an instance of a view and feeding a template to it.
+ *
+ * A simple example for a functional test exending FunctionalTestCase:
+ *
+ * $view = new StandaloneView();
+ * $view->setTemplateSource('<f:format.crop maxCharacters="10">Crop this content</f:format.crop>');
+ * self::assertSame('Crop this&hellip;', $view->render());
+ *
+ * Have a look at further core examples to get rid of this class,
+ * especially functional tests in ext:fluid.
+ *
+ * @deprecated Will be dropped with 7.x major version.
  */
 abstract class ViewHelperBaseTestcase extends UnitTestCase
 {
