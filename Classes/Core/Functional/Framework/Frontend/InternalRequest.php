@@ -143,7 +143,19 @@ class InternalRequest extends Request implements \JsonSerializable
         return $target;
     }
 
-    public function withHeaders(array $headers): InternalRequest
+    /**
+     * Helper method for with() of AssignablePropertyTrait to allow setting withHeader()
+     * from single $this->headers[] when this object is thawed using fromArray() in
+     * PHP process forking scenarios initiated by executeFrontendRequest().
+     *
+     * NOT relevant for executeFrontendSubRequest() where the request object is directly
+     * hand over to the frontend application.
+     *
+     * @param array $headers
+     * @return InternalRequest
+     * @deprecated Can be removed when retrieveFrontendRequestResult()
+     */
+    private function withHeaders(array $headers): InternalRequest
     {
         $request = $this;
         foreach ($headers as $name => $value) {
