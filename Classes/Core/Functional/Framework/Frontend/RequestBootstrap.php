@@ -104,6 +104,9 @@ class RequestBootstrap
 
         // Populating $_POST
         $_POST = [];
+        if ($this->request->hasHeader('Content-Type') && in_array('application/x-www-form-urlencoded', $this->request->getHeader('Content-Type'))) {
+            parse_str((string) $this->request->getBody(), $_POST);
+        }
         // Populating $_COOKIE
         $_COOKIE = [];
 
@@ -122,7 +125,7 @@ class RequestBootstrap
         $_SERVER['SCRIPT_FILENAME'] = $_SERVER['_'] = $_SERVER['PATH_TRANSLATED'] = $this->requestArguments['documentRoot'] . '/index.php';
         $_SERVER['QUERY_STRING'] = (isset($requestUrlParts['query']) ? $requestUrlParts['query'] : '');
         $_SERVER['REQUEST_URI'] = $requestUrlParts['path'] . (isset($requestUrlParts['query']) ? '?' . $requestUrlParts['query'] : '');
-        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_METHOD'] = $this->request->getMethod();
 
         // Define HTTPS and server port:
         if (isset($requestUrlParts['scheme'])) {
