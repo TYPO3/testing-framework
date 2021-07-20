@@ -4,11 +4,16 @@
 root = true
 
 # Unix-style newlines with a newline ending every file
-[*.rst]
+[{*.rst,*.md}]
 charset = utf-8
 end_of_line = lf
 indent_style = space
-indent_size = 3
 insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
+
+[*.rst]
+indent_size = 3
+
+[*.md]
+indent_size = 2
