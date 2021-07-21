@@ -13,7 +13,7 @@ max_line_length = 80
 trim_trailing_whitespace = true
 
 [*.rst]
-indent_size = 3
+indent_size = 4
 
 [*.md]
 indent_size = 2
