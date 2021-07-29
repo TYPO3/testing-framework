@@ -109,11 +109,18 @@ class Login extends Module
     }
 
     /**
+     * Note: The "be_typo_user" and "be_lastLoginProvider" cookies may already be set in the bootstrapping process of
+     * the acceptance tests. They pose a problem because they are created with a different cookie path that still takes
+     * precedence over the cookies set in this method. The cookies that already exist are therefore deleted as a
+     * precaution.
+     *
      * @param string $userSessionId
      */
     public function _createSession($userSessionId)
     {
         $webDriver = $this->getWebDriver();
+        $webDriver->resetCookie('be_typo_user');
+        $webDriver->resetCookie('be_lastLoginProvider');
         $webDriver->setCookie('be_typo_user', $userSessionId);
         $webDriver->setCookie('be_lastLoginProvider', '1433416747');
         $webDriver->saveSessionSnapshot('login');
