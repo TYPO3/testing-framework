@@ -1,18 +1,18 @@
-Changes proposed in this pull request:
+### Changes proposed in this pull request
 
 <!--
 1. ..
 2. ..
 -->
 
-Steps to test the solution:
+### Steps to test the solution
 
 <!--
 1. ..
 2. ..
 -->
 
-Results:
+### Results
 
 <!--
 Look at the contributing guidelines of the testing framework, what results are
