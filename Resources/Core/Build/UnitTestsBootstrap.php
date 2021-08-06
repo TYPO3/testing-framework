@@ -13,18 +13,18 @@
  */
 
 /**
+ * Boilerplate for a functional test phpunit boostrap file.
+ *
+ * This file is loosely maintained within TYPO3 testing-framework, extensions
+ * are encouraged to not use it directly, but to copy it to an own place,
+ * usually in parallel to a UnitTests.xml file.
+ *
  * This file is defined in UnitTests.xml and called by phpunit
- * before instantiating the test suites, it must also be included
- * with phpunit parameter --bootstrap if executing single test case classes.
+ * before instantiating the test suites.
  *
- * Run whole core unit test suite, example:
- * - cd /var/www/t3master/foo  # Document root of TYPO3 CMS instance (location of index.php)
- * - typo3/../bin/phpunit -c components/testing_framework/core/Build/UnitTests.xml
- *
- * Run single test case, example:
- * - cd /var/www/t3master/foo  # Document root of TYPO3 CMS instance (location of index.php)
- * - typo3/../bin/phpunit -c components/testing_framework/core/Build/UnitTests.xml
- *     typo3/sysext/core/Tests/Unit/DataHandling/DataHandlerTest.php
+ * The recommended way to execute the suite is "runTests.sh". See the
+ * according script within TYPO3 core's Build/Scripts directory and
+ * adapt to extensions needs.
  */
 call_user_func(function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();

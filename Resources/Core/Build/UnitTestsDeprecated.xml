@@ -1,25 +1,29 @@
+<!--
+    @deprecated, will be removed with next major version.
+    This has been used for core, but is of little use for extensions
+-->
 <phpunit
-	backupGlobals="true"
-	bootstrap="UnitTestsBootstrap.php"
-	colors="true"
-	convertErrorsToExceptions="true"
-	convertWarningsToExceptions="true"
-	convertNoticesToExceptions="true"
-	convertDeprecationsToExceptions="false"
-	forceCoversAnnotation="false"
-	processIsolation="false"
-	stopOnError="false"
-	stopOnFailure="false"
-	stopOnIncomplete="false"
-	stopOnSkipped="false"
-	verbose="false"
-	beStrictAboutTestsThatDoNotTestAnything="false"
+    backupGlobals="true"
+    bootstrap="UnitTestsBootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertWarningsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertDeprecationsToExceptions="false"
+    forceCoversAnnotation="false"
+    processIsolation="false"
+    stopOnError="false"
+    stopOnFailure="false"
+    stopOnIncomplete="false"
+    stopOnSkipped="false"
+    verbose="false"
+    beStrictAboutTestsThatDoNotTestAnything="false"
 >
-	<testsuites>
-		<testsuite name="Core tests">
-			<directory>../../../../../../typo3/sysext/*/Tests/UnitDeprecated/</directory>
-		</testsuite>
-	</testsuites>
+    <testsuites>
+        <testsuite name="Core tests">
+            <directory>../../../../../../typo3/sysext/*/Tests/UnitDeprecated/</directory>
+        </testsuite>
+    </testsuites>
     <filter>
         <whitelist>
             <directory>../../../../../../typo3/sysext/*/Classes/</directory>

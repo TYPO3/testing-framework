@@ -13,9 +13,14 @@
  */
 
 /**
+ * Boilerplate for a functional test phpunit boostrap file.
+ *
+ * This file is loosely maintained within TYPO3 testing-framework, extensions
+ * are encouraged to not use it directly, but to copy it to an own place,
+ * usually in parallel to a FunctionalTests.xml file.
+ *
  * This file is defined in FunctionalTests.xml and called by phpunit
- * before instantiating the test suites, it must also be included
- * with phpunit parameter --bootstrap if executing single test case classes.
+ * before instantiating the test suites.
  */
 call_user_func(function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();

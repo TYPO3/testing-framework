@@ -1,26 +1,51 @@
+<!--
+    Boilerplate for a unit test suite setup.
+
+    This file is loosely maintained within TYPO3 testing-framework, extensions
+    are encouraged to not use it directly, but to copy it to an own place,
+    for instance Build/UnitTests.xml.
+    Note UnitTestsBootstrap.php should be copied along the way.
+
+    Functional tests should extend \TYPO3\TestingFramework\Core\Tests\FunctionalTestCase,
+    take a look at this class for further documentation on how to run the suite.
+
+    TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
+    file is located next to this .xml as FunctionalTestsBootstrap.php
+
+    @todo: Make phpunit v9 compatible, add the xml things to phpunit tag, see core versions.
+-->
 <phpunit
-	backupGlobals="true"
-	bootstrap="UnitTestsBootstrap.php"
-	colors="true"
-	convertErrorsToExceptions="true"
-	convertWarningsToExceptions="true"
-	convertNoticesToExceptions="true"
-	forceCoversAnnotation="false"
-	processIsolation="false"
-	stopOnError="false"
-	stopOnFailure="false"
-	stopOnIncomplete="false"
-	stopOnSkipped="false"
-	verbose="false"
-	beStrictAboutTestsThatDoNotTestAnything="false"
+    backupGlobals="true"
+    bootstrap="UnitTestsBootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertWarningsToExceptions="true"
+    convertNoticesToExceptions="true"
+    forceCoversAnnotation="false"
+    processIsolation="false"
+    stopOnError="false"
+    stopOnFailure="false"
+    stopOnIncomplete="false"
+    stopOnSkipped="false"
+    verbose="false"
+    beStrictAboutTestsThatDoNotTestAnything="false"
 >
-	<testsuites>
-		<testsuite name="Core tests">
-			<directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
-		</testsuite>
-	</testsuites>
+    <testsuites>
+        <testsuite name="Unit tests">
+            <!--
+                This path either needs an adaption in extensions, or an extension's
+                test location path needs to be given to phpunit.
+            -->
+            <directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
+        </testsuite>
+    </testsuites>
+    <!-- @todo: change tag to 'coverage' when TF requires phpunit > 9 -->
     <filter>
+        <!-- @todo: change tag to 'include' when TF requires phpunit > 9 -->
         <whitelist>
+            <!--
+                This path needs an adaption in extensions, when coverage statistics are wanted.
+            -->
             <directory>../../../../../../typo3/sysext/*/Classes/</directory>
         </whitelist>
     </filter>

@@ -1,31 +1,42 @@
 <!--
-	Functional test suites setup
+    Boilerplate for a functional test suite setup.
 
-	Functional tests should extend from \TYPO3\TestingFramework\Core\Tests\FunctionalTestCase,
-	take a look at this class for further documentation on how to run the suite.
+    This file is loosely maintained within TYPO3 testing-framework, extensions
+    are encouraged to not use it directly, but to copy it to an own place,
+    for instance Build/FunctionalTests.xml.
+    Note FunctionalTestsBootstrap.php should be copied along the way.
 
-	TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
-	file is located next to this .xml as FunctionalTestsBootstrap.php
+    Functional tests should extend \TYPO3\TestingFramework\Core\Tests\FunctionalTestCase,
+    take a look at this class for further documentation on how to run the suite.
+
+    TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
+    file is located next to this .xml as FunctionalTestsBootstrap.php
+
+    @todo: Make phpunit v9 compatible, compare with core Build/phpunit/ version.
 -->
 <phpunit
-	backupGlobals="true"
-	bootstrap="FunctionalTestsBootstrap.php"
-	colors="true"
-	convertErrorsToExceptions="true"
-	convertWarningsToExceptions="true"
-	forceCoversAnnotation="false"
-	stopOnError="false"
-	stopOnFailure="false"
-	stopOnIncomplete="false"
-	stopOnSkipped="false"
-	verbose="false"
-	beStrictAboutTestsThatDoNotTestAnything="false"
+    backupGlobals="true"
+    bootstrap="FunctionalTestsBootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertWarningsToExceptions="true"
+    forceCoversAnnotation="false"
+    stopOnError="false"
+    stopOnFailure="false"
+    stopOnIncomplete="false"
+    stopOnSkipped="false"
+    verbose="false"
+    beStrictAboutTestsThatDoNotTestAnything="false"
 >
-	<testsuites>
-		<testsuite name="Core tests">
-			<directory>../../../../../../typo3/sysext/*/Tests/Functional/</directory>
-		</testsuite>
-	</testsuites>
+    <testsuites>
+        <testsuite name="Functional tests">
+            <!--
+                This path either needs an adaption in extensions, or an extension's
+                test location path needs to be given to phpunit.
+            -->
+            <directory>../../../../../../typo3/sysext/*/Tests/Functional/</directory>
+        </testsuite>
+    </testsuites>
     <php>
         <const name="TYPO3_MODE" value="BE" />
         <ini name="display_errors" value="1" />
