@@ -987,13 +987,15 @@ abstract class FunctionalTestCase extends BaseTestCase
         $uriString = (string)$uri;
         $uri = new Uri($uriString);
 
-        // build minimal serverParams for normalizedparamsAttribute initialzation
+        // Build minimal serverParams and hand over to ServerRequest. The normalizedParams
+        // attribute relies on these. Note the access to $_SERVER should be dropped when the
+        // above getIndpEnv() can be dropped, too.
         $serverParams = [
-            'SCRIPT_NAME'           => $_SERVER['SCRIPT_NAME'],
-            'HTTP_HOST'             => $_SERVER['HTTP_HOST'],
-            'SERVER_NAME'           => $_SERVER['SERVER_NAME'],
-            'HTTPS'                 => $uri->getScheme() === 'https' ? 'on' : 'off',
-            'REMOTE_ADDR'           => '127.0.0.1',
+            'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
+            'HTTP_HOST'  => $_SERVER['HTTP_HOST'],
+            'SERVER_NAME' => $_SERVER['SERVER_NAME'],
+            'HTTPS' => $uri->getScheme() === 'https' ? 'on' : 'off',
+            'REMOTE_ADDR' => '127.0.0.1',
         ];
 
         $serverRequest = new ServerRequest(
