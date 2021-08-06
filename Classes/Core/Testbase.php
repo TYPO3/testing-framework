@@ -91,6 +91,7 @@ class Testbase
      * Define TYPO3_MODE to BE
      *
      * @return void
+     * @deprecated Will be dropped with 7.x major version.
      */
     public function defineTypo3ModeBe(): void
     {

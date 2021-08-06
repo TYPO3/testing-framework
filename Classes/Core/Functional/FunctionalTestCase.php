@@ -228,6 +228,16 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
+     * Some functional test cases do not need a fully set up database with all tables and fields.
+     * Those tests should set this property to false, which will skip database creation
+     * in setUp(). This significantly speeds up functional test execution and should be done
+     * if possible.
+     *
+     * @var bool
+     */
+    protected $initializeDatabase = true;
+
+    /**
      * @var ContainerInterface
      */
     private $container;
@@ -278,7 +288,9 @@ abstract class FunctionalTestCase extends BaseTestCase
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
-            $testbase->initializeTestDatabaseAndTruncateTables();
+            if ($this->initializeDatabase) {
+                $testbase->initializeTestDatabaseAndTruncateTables();
+            }
             $testbase->loadExtensionTables();
         } else {
             $testbase->removeOldInstanceIfExists($this->instancePath);
@@ -343,13 +355,17 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $this->frameworkExtensionsToLoad
             );
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
-            if ($dbDriver !== 'pdo_sqlite') {
-                $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
-            } else {
-                $testbase->setUpTestDatabase($dbPath, $originalDatabaseName);
+            if ($this->initializeDatabase) {
+                if ($dbDriver !== 'pdo_sqlite') {
+                    $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
+                } else {
+                    $testbase->setUpTestDatabase($dbPath, $originalDatabaseName);
+                }
             }
             $testbase->loadExtensionTables();
-            $testbase->createDatabaseStructure();
+            if ($this->initializeDatabase) {
+                $testbase->createDatabaseStructure();
+            }
         }
     }
 
