@@ -70,21 +70,22 @@ To provide a change to the testing framework, you have to
 
       .. code-block:: bash
 
-         ./Build/Scripts/runTests.sh -s unit -e "--stop-on-failure"
+         ./Build/Scripts/runTests.sh -s unit
 
-   *  TYPO3 Core functional tests (medium ~ an hour):
-
-      .. code-block:: bash
-
-         ./Build/Scripts/runTests.sh -s functional -e "--stop-on-failure"
-
-   *  TYPO3 Core acceptance tests (slow ~ several hours):
+   *  TYPO3 Core functional tests (slow ~ 30-60 minutes):
 
       .. code-block:: bash
 
-         ./Build/Scripts/runTests.sh -s acceptance -e "--fail-fast"
+         ./Build/Scripts/runTests.sh -s functional
 
-   and confirming that all tests are successful,
+   *  TYPO3 Core acceptance tests (slow ~ 30-60 minutes):
+
+      .. code-block:: bash
+
+         ./Build/Scripts/runTests.sh -s acceptance
+
+   and confirming that the test runs have the same result as without the
+   changes,
 
 4. push the change to your fork by
 
