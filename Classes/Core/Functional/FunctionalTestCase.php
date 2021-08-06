@@ -987,11 +987,21 @@ abstract class FunctionalTestCase extends BaseTestCase
         $uriString = (string)$uri;
         $uri = new Uri($uriString);
 
+        // build minimal serverParams for normalizedparamsAttribute initialzation
+        $serverParams = [
+            'SCRIPT_NAME'           => $_SERVER['SCRIPT_NAME'],
+            'HTTP_HOST'             => $_SERVER['HTTP_HOST'],
+            'SERVER_NAME'           => $_SERVER['SERVER_NAME'],
+            'HTTPS'                 => $uri->getScheme() === 'https' ? 'on' : 'off',
+            'REMOTE_ADDR'           => '127.0.0.1',
+        ];
+
         $serverRequest = new ServerRequest(
             $uri,
             $request->getMethod(),
             'php://input',
-            $request->getHeaders()
+            $request->getHeaders(),
+            $serverParams
         );
         $requestUrlParts = [];
         parse_str($uri->getQuery(), $requestUrlParts);
