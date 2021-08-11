@@ -227,8 +227,8 @@ class InternalRequest extends Request implements \JsonSerializable
             );
         }
 
-        $parameters = \GuzzleHttp\Psr7\parse_query($query);
+        $parameters = \GuzzleHttp\Psr7\Query::parse($query);
         $parameters[$parameterName] = $value;
-        return \GuzzleHttp\Psr7\build_query($parameters);
+        return \GuzzleHttp\Psr7\Query::build($parameters);
     }
 }
