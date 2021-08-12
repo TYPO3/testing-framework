@@ -34,7 +34,8 @@
     "typo3/cms-frontend": "10.*.*@dev || 11.*.*@dev",
     "typo3/cms-extbase": "10.*.*@dev || 11.*.*@dev",
     "typo3/cms-fluid": "10.*.*@dev || 11.*.*@dev",
-    "typo3/cms-recordlist": "10.*.*@dev || 11.*.*@dev"
+    "typo3/cms-recordlist": "10.*.*@dev || 11.*.*@dev",
+    "guzzlehttp/psr7": "^1.7 || ^2.0"
   },
   "conflict": {
     "doctrine/dbal": "2.13.0 || 2.13.1"
