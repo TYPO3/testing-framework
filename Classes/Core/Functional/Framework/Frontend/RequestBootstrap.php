@@ -118,7 +118,7 @@ class RequestBootstrap
             'withJsonResponse' => $this->requestArguments['withJsonResponse'] ?? true,
         ];
         $_SERVER['DOCUMENT_ROOT'] = $this->requestArguments['documentRoot'];
-        $_SERVER['HTTP_USER_AGENT'] = 'TYPO3 Functional Test Request';
+        $_SERVER['HTTP_USER_AGENT'] = $this->request->getHeader('User-Agent')[0] ?? 'TYPO3 Functional Test Request';
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
         $_SERVER['SERVER_ADDR'] = $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/index.php';
