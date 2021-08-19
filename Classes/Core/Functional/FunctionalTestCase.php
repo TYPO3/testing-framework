@@ -85,6 +85,13 @@ use TYPO3\TestingFramework\Core\Testbase;
 abstract class FunctionalTestCase extends BaseTestCase
 {
     /**
+     * Flag to control if this test case needs to be a subfolder instance.
+     *
+     * @var bool
+     */
+    protected static $createSubPathInstance = false;
+
+    /**
      * An unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
      *
@@ -93,7 +100,9 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $identifier;
 
     /**
-     * Absolute path to test instance document root. Depends on $identifier.
+     * Absolute path to test instance application root. Depends on $identifier and $createSubpathInstance.
+     * If $createSubpathInstan is false, this is equal to $instanceRootPath, otherwise
+     * $instanteRootPath . $instancePathPrefix.
      * Calculated early in setUp()
      *
      * @var string
@@ -275,11 +284,11 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         $this->identifier = self::getInstanceIdentifier();
-        $this->instancePath = self::getInstancePath();
+        $this->instancePath = self::getInstancePath() . self::getInstancePathPrefix();
         putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
         putenv('TYPO3_PATH_APP=' . $this->instancePath);
 
-        $testbase = new Testbase();
+        $testbase = new Testbase(self::isSubPathInstance());
         $testbase->defineTypo3ModeBe();
         $testbase->setTypo3TestingContext();
 
@@ -293,6 +302,11 @@ abstract class FunctionalTestCase extends BaseTestCase
         // sqlite db path preparation
         $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
         $dbPathSqliteEmpty = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
+        if (self::isSubPathInstance()) {
+            $dbPathSqlite = dirname(dirname($this->instancePath)) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
+            $dbPathSqliteEmpty = dirname(dirname($this->instancePath)) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
+        }
+
 
         if (!$isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
@@ -304,7 +318,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->loadExtensionTables();
         } else {
-            $testbase->removeOldInstanceIfExists($this->instancePath);
+            $testbase->removeOldInstanceIfExists(self::isSubPathInstance() ? dirname($this->instancePath) : $this->instancePath);
             // Basic instance directory structure
             $testbase->createDirectory($this->instancePath . '/fileadmin');
             $testbase->createDirectory($this->instancePath . '/typo3temp/var/transient');
@@ -1098,7 +1112,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
         // See second data provider of UriPrefixRenderingTest
         // @todo: Make TSFE not use getIndpEnv() anymore
-        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['SCRIPT_NAME'] = self::getInstancePathPrefix() . '/index.php';
 
         $requestUrlParts = parse_url($request->getUri());
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
@@ -1138,9 +1152,9 @@ abstract class FunctionalTestCase extends BaseTestCase
         // attribute relies on these. Note the access to $_SERVER should be dropped when the
         // above getIndpEnv() can be dropped, too.
         $serverParams = [
-            'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
-            'HTTP_HOST'  => $_SERVER['HTTP_HOST'],
-            'SERVER_NAME' => $_SERVER['SERVER_NAME'],
+            'SCRIPT_NAME' => self::getInstancePathPrefix() . '/index.php',
+            'HTTP_HOST' => $requestUrlParts['host'] ?? 'localhost',
+            'SERVER_NAME' => $requestUrlParts['host'] ?? 'localhost',
             'HTTPS' => $uri->getScheme() === 'https' ? 'on' : 'off',
             'REMOTE_ADDR' => '127.0.0.1',
         ];
@@ -1256,7 +1270,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             'context' => json_encode($context),
         ];
 
-        $vendorPath = (new Testbase())->getPackagesPath();
+        $vendorPath = (new Testbase(self::isSubPathInstance()))->getPackagesPath();
 
         // @todo Hard switch to class name in if condition after phpunit v9 is minimum requirement
         $templateClass = \Text_Template::class;
@@ -1468,11 +1482,36 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+     * Get absolute instance docroot path.
+     *
      * @return string
      */
     protected static function getInstancePath(): string
     {
         $identifier = self::getInstanceIdentifier();
         return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
+    }
+
+    /**
+     * Get the instance prefix path (subPath), if subpath instances are enabled.
+     * Could be used in dataProviders to create probler calling urls for requests.
+     *
+     * @return string
+     */
+    protected static function getInstancePathPrefix(): string
+    {
+        $pathPrefix = '/' . self::getInstanceIdentifier();
+        return self::isSubPathInstance() ? $pathPrefix : '';
+    }
+
+    /**
+     * State if testcase instance a subpath instance.
+     * Can be used in dataProvider, if needed.
+     *
+     * @return bool
+     */
+    protected static function isSubPathInstance(): bool
+    {
+        return (bool)static::$createSubPathInstance;
     }
 }
