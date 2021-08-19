@@ -45,16 +45,25 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class Testbase
 {
     /**
+     * Flag if current instance is a subpath install. Needed for calculating relative path
+     * for symlink in setUpInstanceCoreLinks.
+     *
+     * @var bool
+     */
+    protected $isSubPathInstance;
+
+    /**
      * This class must be called in CLI environment as a security measure
      * against path disclosures and other stuff. Check this within
      * constructor to make sure this check can't be circumvented.
      */
-    public function __construct()
+    public function __construct(bool $isSubPathInstance = false)
     {
         // Ensure cli only as security measure
         if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
             die('This script supports command line usage only. Please check your command.');
         }
+        $this->isSubpathInstance = (bool)$isSubPathInstance;
     }
 
     /**
@@ -171,7 +180,7 @@ class Testbase
     public function setUpInstanceCoreLinks($instancePath): void
     {
         $linksToSet = [
-            '../../../../' => $instancePath . '/typo3_src',
+            '../../../../' . ($this->isSubpathInstance ? '../' : '' ) => $instancePath . '/typo3_src',
             'typo3_src/typo3' => $instancePath . '/typo3',
             'typo3_src/index.php' => $instancePath . '/index.php',
         ];
@@ -962,6 +971,16 @@ class Testbase
             $webRoot = getcwd();
         }
         return rtrim(strtr($webRoot, '\\', '/'), '/') . '/';
+    }
+
+    /**
+     * Returns if test case instance is subpath instance or not.
+     *
+     * @return bool
+     */
+    public function isSubPathInstance(): bool
+    {
+        return $this->isSubpathInstance;
     }
 
     /**
