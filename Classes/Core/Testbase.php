@@ -627,12 +627,20 @@ class Testbase
      */
     public function initializeTestDatabaseAndTruncateTables(): void
     {
+        /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
-        $schemaManager = $connection->getSchemaManager();
-        foreach ($schemaManager->listTables() as $table) {
-            $connection->truncate($table->getName());
-            self::resetTableSequences($connection, $table->getName());
+
+        $databaseName = $connection->getDatabase();
+        $query = "SHOW TABLE STATUS FROM $databaseName";
+        $result = $connection->executeQuery($query)->fetchAllAssociative();
+        foreach ($result as $tableData) {
+            $isChanged = ((int) $tableData['Auto_increment']) > 1 || ((int) $tableData['Rows']) > 0;
+            if ($isChanged) {
+                $tableName = $tableData['Name'];
+                $connection->truncate($tableName);
+                self::resetTableSequences($connection, $tableName);
+            }
         }
     }
 

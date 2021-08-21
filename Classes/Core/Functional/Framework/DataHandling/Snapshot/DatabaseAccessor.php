@@ -113,7 +113,7 @@ class DatabaseAccessor
             );
         }
 
-        $this->connection->truncate($tableName);
+        $this->truncate($tableName);
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
@@ -122,6 +122,17 @@ class DatabaseAccessor
                 array_combine($columnNames, $item),
                 $columns
             );
+        }
+    }
+
+    private function truncate(string $tableName): void
+    {
+        $databaseName = $this->connection->getDatabase();
+        $query = "SHOW TABLE STATUS FROM $databaseName LIKE '$tableName'";
+        $tableData = $this->connection->executeQuery($query)->fetchAssociative();
+        $isChanged = ((int) $tableData['Auto_increment']) > 1 || ((int) $tableData['Rows']) > 0;
+        if ($isChanged) {
+            $this->connection->truncate($tableName);
         }
     }
 
