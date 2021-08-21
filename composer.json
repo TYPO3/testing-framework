@@ -25,6 +25,7 @@
     "issues": "https://github.com/TYPO3/testing-framework/issues"
   },
   "require": {
+    "php": ">= 7.2",
     "phpunit/phpunit": "^8.4 || ^9.0",
     "psr/container": "^1.0",
     "mikey179/vfsstream": "~1.6.8",
