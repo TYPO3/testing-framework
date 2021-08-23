@@ -30,7 +30,7 @@ Before you begin:
 
       cd vendor/typo3
       rm -rf testing-framework
-      git clone git@github.com:[YOUR_USERNAME]/testing-framework.git
+      git clone git://github.com/[YOUR_USERNAME]/testing-framework.git
 
 4. Confirm that the unit tests of the current TYPO3 CMS code base pass
    successfully, for example by:
@@ -133,7 +133,7 @@ Getting started
 
       cd vendor/typo3
       rm -rf testing-framework
-      git clone git@github.com:[USERNAME_OF_CODER]/testing-framework.git
+      git clone git://github.com/[USERNAME_OF_CODER]/testing-framework.git
       git checkout [BRANCH_OF_CHANGE]
 
 Now you have a working TYPO3 CMS with the changed testing framework at
