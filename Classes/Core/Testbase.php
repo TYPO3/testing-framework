@@ -22,6 +22,7 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -576,6 +577,24 @@ class Testbase
 
         $classLoader = require __DIR__ . '/../../../../autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+
+        // Functional and acceptance test environments are non-composer instances. When
+        // executing functional tests from a composer enabled instance
+        // (eg. tests of ext:styleguide), the "isComposerMode" depends on constant TYPO3_COMPOSER_MODE
+        // which may be set to true already in this context. We can't change this currently,
+        // so the solution for now is to re-init Environment and force composer mode false.
+        Environment::initialize(
+            Environment::getContext(),
+            Environment::isCli(),
+            false,
+            Environment::getProjectPath(),
+            Environment::getPublicPath(),
+            Environment::getVarPath(),
+            Environment::getConfigPath(),
+            Environment::getCurrentScript(),
+            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+        );
+
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
