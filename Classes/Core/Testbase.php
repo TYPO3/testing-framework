@@ -659,17 +659,49 @@ class Testbase
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
 
         $databaseName = $connection->getDatabase();
-        $query = "SHOW TABLE STATUS FROM $databaseName";
+        $tableNames = $connection->getSchemaManager()->listTableNames();
+
+        // no tables to process;
+        if (!$tableNames) {
+            return;
+        }
+
+        // build subselect to get joinable table with information if table has at least one row.
+        // This is needed because information_schema.table_rows is not reliable enough for innodb engine.
+        // see https://dev.mysql.com/doc/mysql-infoschema-excerpt/5.7/en/information-schema-tables-table.html TABLE_ROWS
+        $fromTableUnionSubSelectQuery = [];
+        foreach($tableNames as $tableName) {
+            $fromTableUnionSubSelectQuery[] = sprintf(
+                ' select %s as table_name, exists(select * from %s limit 1) as has_rows',
+                $connection->quote($tableName),
+                $connection->quoteIdentifier($tableName)
+            );
+        }
+        $fromTableUnionSubSelectQuery = implode(' UNION ', $fromTableUnionSubSelectQuery);
+
+        $query = sprintf(
+            "
+                select
+                    table_real_rowcounts.*,
+                    information_schema.tables.AUTO_INCREMENT as auto_increment
+                from (%s) as table_real_rowcounts
+                inner join information_schema.tables ON (
+                        information_schema.tables.TABLE_SCHEMA = %s
+                    and information_schema.tables.TABLE_NAME = table_real_rowcounts.table_name
+                )
+                ",
+            $fromTableUnionSubSelectQuery,
+            $connection->quote($databaseName)
+        );
         // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
         $result = $connection->executeQuery($query)->fetchAll();
-        foreach ($result as $tableData) {
-            $hasChangedAutoIncrement = ((int)$tableData['Auto_increment']) > 1;
-            $hasAtLeastOneRow = ((int)$tableData['Rows']) > 0;
+        foreach($result as $tableData) {
+            $hasChangedAutoIncrement = ((int)$tableData['auto_increment']) > 1;
+            $hasAtLeastOneRow = (bool)$tableData['has_rows'];
             $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
             if ($isChanged) {
-                $tableName = $tableData['Name'];
+                $tableName = $tableData['table_name'];
                 $connection->truncate($tableName);
-                self::resetTableSequences($connection, $tableName);
             }
         }
     }
