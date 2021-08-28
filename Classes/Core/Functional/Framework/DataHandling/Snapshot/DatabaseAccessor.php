@@ -116,11 +116,20 @@ class DatabaseAccessor
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
-            $this->connection->insert(
-                $tableName,
-                array_combine($columnNames, $item),
-                $columns
-            );
+            try {
+                $this->connection->insert(
+                    $tableName,
+                    array_combine($columnNames, $item),
+                    $columns
+                );
+            } catch (UniqueConstraintViolationException $e) {
+                $this->connection->truncate($tableName);
+                $this->connection->insert(
+                    $tableName,
+                    array_combine($columnNames, $item),
+                    $columns
+                );
+            }
         }
     }
 
