@@ -15,6 +15,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
@@ -112,8 +113,6 @@ class DatabaseAccessor
                 1535487373
             );
         }
-
-        $this->connection->truncate($tableName);
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
