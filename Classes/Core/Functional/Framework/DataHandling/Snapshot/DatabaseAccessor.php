@@ -16,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  */
 
 use Doctrine\DBAL\FetchMode;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Connection;
@@ -114,7 +113,7 @@ class DatabaseAccessor
             );
         }
 
-        $this->truncate($tableName);
+        $this->connection->truncate($tableName);
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
@@ -123,41 +122,6 @@ class DatabaseAccessor
                 array_combine($columnNames, $item),
                 $columns
             );
-        }
-    }
-
-    private function truncate(string $tableName): void
-    {
-        $platform = $this->connection->getDatabasePlatform();
-        if ($platform instanceof MySqlPlatform) {
-            $this->truncateForMySql($tableName);
-        } else {
-            // @todo: Optimize truncation for other platforms, too.
-            $this->connection->truncate($tableName);
-        }
-    }
-
-    /**
-     * Truncates a table for MySQL databases in an optimized way.
-     *
-     * This method tries to avoid the (expensive) truncate if possible:
-     * - If the table has an auto-increment value (which usually is the `uid` column`) and that value has changed,
-     *   this method will truncate the table.
-     * - If the table does not have an auto-increment value, but it has at least one row (where the exact number does
-     *   not matter), this method will truncate the table.
-     * - Otherwise, this method will skip the truncate. (For tables without an auto-increment value, this means that
-     *   the table either has not been touched at all beforehand, or that all records have already been deleted).
-     */
-    private function truncateForMySql(string $tableName): void
-    {
-        $databaseName = $this->connection->getDatabase();
-        $query = "SHOW TABLE STATUS FROM $databaseName LIKE '$tableName'";
-        $tableData = $this->connection->executeQuery($query)->fetchAssociative();
-        $hasChangedAutoIncrement = ((int)$tableData['Auto_increment']) > 1;
-        $hasAtLeastOneRow = ((int)$tableData['Rows']) > 0;
-        $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
-        if ($isChanged) {
-            $this->connection->truncate($tableName);
         }
     }
 
