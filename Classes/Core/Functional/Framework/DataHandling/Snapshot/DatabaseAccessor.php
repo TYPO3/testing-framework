@@ -74,8 +74,6 @@ class DatabaseAccessor
      */
     public function import(array $import)
     {
-        $this->connection->beginTransaction();
-
         foreach ($import as $tableImport) {
             $this->importTable(
                 $tableImport['tableName'] ?? '',
@@ -83,8 +81,6 @@ class DatabaseAccessor
                 $tableImport['items'] ?? []
             );
         }
-
-        $this->connection->commit();
     }
 
     /**
