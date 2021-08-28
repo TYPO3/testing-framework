@@ -620,23 +620,19 @@ class Testbase
     }
 
     /**
-     * Truncates all tables.
-     *
-     * For functional tests.
-     *
-     * @throws Exception
+     * Truncates all tables that need truncation.
+     * Used in functional tests for test #2 and further ones to not create
+     * the full database over and over again in between tests.
      */
     public function initializeTestDatabaseAndTruncateTables(): void
     {
         /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
-
         $platform = $connection->getDatabasePlatform();
         if ($platform instanceof MySqlPlatform) {
             $this->truncateAllTablesForMysql();
         } else {
-            // @todo: Optimize truncation for other platforms, too.
             $this->truncateAllTablesForOtherDatabases();
         }
     }
@@ -657,19 +653,47 @@ class Testbase
         /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
-
         $databaseName = $connection->getDatabase();
-        $query = "SHOW TABLE STATUS FROM $databaseName";
+        $tableNames = $connection->getSchemaManager()->listTableNames();
+
+        if (empty($tableNames)) {
+            // No tables to process
+            return;
+        }
+
+        // Build a sub select to get joinable table with information if table has at least one row.
+        // This is needed because information_schema.table_rows is not reliable enough for innodb engine.
+        // see https://dev.mysql.com/doc/mysql-infoschema-excerpt/5.7/en/information-schema-tables-table.html TABLE_ROWS
+        $fromTableUnionSubSelectQuery = [];
+        foreach($tableNames as $tableName) {
+            $fromTableUnionSubSelectQuery[] = sprintf(
+                ' SELECT %s AS table_name, exists(SELECT * FROm %s LIMIT 1) AS has_rows',
+                $connection->quote($tableName),
+                $connection->quoteIdentifier($tableName)
+            );
+        }
+        $fromTableUnionSubSelectQuery = implode(' UNION ', $fromTableUnionSubSelectQuery);
+        $query = sprintf("
+            SELECT
+                table_real_rowcounts.*,
+                information_schema.tables.AUTO_INCREMENT AS auto_increment
+            FROM (%s) AS table_real_rowcounts
+            INNER JOIN information_schema.tables ON (
+                information_schema.tables.TABLE_SCHEMA = %s
+                AND information_schema.tables.TABLE_NAME = table_real_rowcounts.table_name
+            )",
+            $fromTableUnionSubSelectQuery,
+            $connection->quote($databaseName)
+        );
         // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
         $result = $connection->executeQuery($query)->fetchAll();
-        foreach ($result as $tableData) {
-            $hasChangedAutoIncrement = ((int)$tableData['Auto_increment']) > 1;
-            $hasAtLeastOneRow = ((int)$tableData['Rows']) > 0;
+        foreach($result as $tableData) {
+            $hasChangedAutoIncrement = ((int)$tableData['auto_increment']) > 1;
+            $hasAtLeastOneRow = (bool)$tableData['has_rows'];
             $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
             if ($isChanged) {
-                $tableName = $tableData['Name'];
+                $tableName = $tableData['table_name'];
                 $connection->truncate($tableName);
-                self::resetTableSequences($connection, $tableName);
             }
         }
     }
