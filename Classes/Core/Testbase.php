@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -620,7 +621,7 @@ class Testbase
 
     /**
      * Truncate all tables.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @throws Exception
      * @return void
@@ -631,15 +632,29 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
 
-        $databaseName = $connection->getDatabase();
-        $query = "SHOW TABLE STATUS FROM $databaseName";
-        $result = $connection->executeQuery($query)->fetchAllAssociative();
-        foreach ($result as $tableData) {
-            $isChanged = ((int) $tableData['Auto_increment']) > 1 || ((int) $tableData['Rows']) > 0;
-            if ($isChanged) {
-                $tableName = $tableData['Name'];
-                $connection->truncate($tableName);
-                self::resetTableSequences($connection, $tableName);
+        $platform = $connection->getDatabasePlatform();
+        if ($platform instanceof MySqlPlatform) {
+            // Optimized truncation for mysql
+            // * Tables with auto increment (typically uid) > 0 - a row has been inserted, but may have been deleted
+            // * Tables that have rows
+            $databaseName = $connection->getDatabase();
+            $query = "SHOW TABLE STATUS FROM $databaseName";
+            // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
+            $result = $connection->executeQuery($query)->fetchAll();
+            foreach ($result as $tableData) {
+                $isChanged = ((int)$tableData['Auto_increment']) > 1 || ((int)$tableData['Rows']) > 0;
+                if ($isChanged) {
+                    $tableName = $tableData['Name'];
+                    $connection->truncate($tableName);
+                    self::resetTableSequences($connection, $tableName);
+                }
+            }
+        } else {
+            // @todo: Optimize truncation for other platforms, too.
+            $schemaManager = $connection->getSchemaManager();
+            foreach ($schemaManager->listTables() as $table) {
+                $connection->truncate($table->getName());
+                self::resetTableSequences($connection, $table->getName());
             }
         }
     }

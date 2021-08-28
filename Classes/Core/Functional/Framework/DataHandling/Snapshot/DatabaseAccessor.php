@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  */
 
 use Doctrine\DBAL\FetchMode;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Connection;
@@ -127,11 +128,21 @@ class DatabaseAccessor
 
     private function truncate(string $tableName): void
     {
-        $databaseName = $this->connection->getDatabase();
-        $query = "SHOW TABLE STATUS FROM $databaseName LIKE '$tableName'";
-        $tableData = $this->connection->executeQuery($query)->fetchAssociative();
-        $isChanged = ((int) $tableData['Auto_increment']) > 1 || ((int) $tableData['Rows']) > 0;
-        if ($isChanged) {
+        $platform = $this->connection->getDatabasePlatform();
+        if ($platform instanceof MySqlPlatform) {
+            // Optimized truncation for mysql:
+            // * Tables with auto increment (typically uid) > 0 - a row has been inserted here, but may have been deleted
+            // * And tables that have rows
+            $databaseName = $this->connection->getDatabase();
+            $query = "SHOW TABLE STATUS FROM $databaseName LIKE '$tableName'";
+            // @todo: Switch to fetchAssociative() when core v10 compat is dropped.
+            $tableData = $this->connection->executeQuery($query)->fetchAssociative();
+            $isChanged = ((int)$tableData['Auto_increment']) > 1 || ((int)$tableData['Rows']) > 0;
+            if ($isChanged) {
+                $this->connection->truncate($tableName);
+            }
+        } else {
+            // @todo: Optimize truncation for other platforms, too.
             $this->connection->truncate($tableName);
         }
     }
