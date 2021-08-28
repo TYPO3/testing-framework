@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -619,16 +620,69 @@ class Testbase
     }
 
     /**
-     * Truncate all tables.
-     * For functional and acceptance tests.
+     * Truncates all tables.
+     *
+     * For functional tests.
      *
      * @throws Exception
-     * @return void
      */
     public function initializeTestDatabaseAndTruncateTables(): void
     {
+        /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+
+        $platform = $connection->getDatabasePlatform();
+        if ($platform instanceof MySqlPlatform) {
+            $this->truncateAllTablesForMysql();
+        } else {
+            // @todo: Optimize truncation for other platforms, too.
+            $this->truncateAllTablesForOtherDatabases();
+        }
+    }
+
+    /**
+     * Truncates all tables for MySQL databases in an optimized way.
+     *
+     * This method tries to avoid the (expensive) truncate if possible:
+     * - If the table has an auto-increment value (which usually is the `uid` column`) and that value has changed,
+     *   this method will truncate the table.
+     * - If the table does not have an auto-increment value, but it has at least one row (where the exact number does
+     *   not matter), this method will truncate the table.
+     * - Otherwise, this method will skip the truncate. (For tables without an auto-increment value, this means that
+     *   the table either has not been touched at all beforehand, or that all records have already been deleted).
+     */
+    private function truncateAllTablesForMysql(): void
+    {
+        /** @var Connection $connection */
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+
+        $databaseName = $connection->getDatabase();
+        $query = "SHOW TABLE STATUS FROM $databaseName";
+        // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
+        $result = $connection->executeQuery($query)->fetchAll();
+        foreach ($result as $tableData) {
+            $hasChangedAutoIncrement = ((int)$tableData['Auto_increment']) > 1;
+            $hasAtLeastOneRow = ((int)$tableData['Rows']) > 0;
+            $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
+            if ($isChanged) {
+                $tableName = $tableData['Name'];
+                $connection->truncate($tableName);
+                self::resetTableSequences($connection, $tableName);
+            }
+        }
+    }
+
+    /**
+     * Truncates all tables without any database-specific optimizations.
+     */
+    private function truncateAllTablesForOtherDatabases(): void
+    {
+        /** @var Connection $connection */
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+
         $schemaManager = $connection->getSchemaManager();
         foreach ($schemaManager->listTables() as $table) {
             $connection->truncate($table->getName());
