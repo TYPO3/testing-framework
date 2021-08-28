@@ -283,13 +283,17 @@ abstract class FunctionalTestCase extends BaseTestCase
             self::$currestTestCaseClass = $currentTestCaseClass;
         }
 
+        // sqlite db path preparation
+        $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
+        $dbPathSqliteEmpty = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
+
         if (!$isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($this->initializeDatabase) {
-                $testbase->initializeTestDatabaseAndTruncateTables();
+                $testbase->initializeTestDatabaseAndTruncateTables($dbPathSqlite, $dbPathSqliteEmpty);
             }
             $testbase->loadExtensionTables();
         } else {
@@ -311,7 +315,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
 
             $originalDatabaseName = '';
-            $dbPath = '';
             $dbName = '';
             $dbDriver = $localConfiguration['DB']['Connections']['Default']['driver'];
             if ($dbDriver !== 'pdo_sqlite') {
@@ -325,11 +328,12 @@ abstract class FunctionalTestCase extends BaseTestCase
                     $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
                 }
             } else {
-                $dbPath = $this->instancePath . '/test.sqlite';
-                $localConfiguration['DB']['Connections']['Default']['path'] = $dbPath;
+                // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
+                $testbase->createDirectory(dirname($this->instancePath) . '/functional-sqlite-dbs');
+                $localConfiguration['DB']['Connections']['Default']['path'] = $dbPathSqlite;
             }
 
-                // Set some hard coded base settings for the instance. Those could be overruled by
+            // Set some hard coded base settings for the instance. Those could be overruled by
             // $this->configurationToUseInTestInstance if needed again.
             $localConfiguration['SYS']['displayErrors'] = '1';
             $localConfiguration['SYS']['debugExceptionHandler'] = '';
@@ -359,12 +363,17 @@ abstract class FunctionalTestCase extends BaseTestCase
                 if ($dbDriver !== 'pdo_sqlite') {
                     $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
                 } else {
-                    $testbase->setUpTestDatabase($dbPath, $originalDatabaseName);
+                    $testbase->setUpTestDatabase($dbPathSqlite, $originalDatabaseName);
                 }
             }
             $testbase->loadExtensionTables();
             if ($this->initializeDatabase) {
                 $testbase->createDatabaseStructure();
+                if ($dbDriver === 'pdo_sqlite') {
+                    // Copy sqlite file '/path/functional-sqlite-dbs/test_123.sqlite' to
+                    // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consequtive tests.
+                    copy($dbPathSqlite, $dbPathSqliteEmpty);
+                }
             }
         }
     }
