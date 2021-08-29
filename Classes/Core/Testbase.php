@@ -701,6 +701,7 @@ class Testbase
             if ($isChanged) {
                 $tableName = $tableData['table_name'];
                 $connection->truncate($tableName);
+                self::resetTableSequences($connection, $tableName);
             }
         }
     }
