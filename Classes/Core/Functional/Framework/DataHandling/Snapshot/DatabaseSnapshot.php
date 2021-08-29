@@ -132,6 +132,8 @@ class DatabaseSnapshot
         // It's not the exact consumption due to serialization literals... fine
         if (strlen($serialized) <= self::VALUE_IN_MEMORY_THRESHOLD) {
             $this->inMemoryImport = $export;
+        } else {
+            throw new \Exception('too much memory');
         }
 
         file_put_contents($this->snapshotPath, $serialized);
