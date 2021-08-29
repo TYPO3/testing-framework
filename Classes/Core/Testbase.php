@@ -624,8 +624,15 @@ class Testbase
      * Used in functional tests for test #2 and further ones to not create
      * the full database over and over again in between tests.
      */
-    public function initializeTestDatabaseAndTruncateTables(): void
+    public function initializeTestDatabaseAndTruncateTables(string $dbPathSqlite = '', string $dbPathSqliteEmpty = ''): void
     {
+        $driver = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['driver'];
+        if ($driver === 'pdo_sqlite' && $dbPathSqlite && $dbPathSqliteEmpty) {
+            // Optimization for sqlite: Just copy the "empty" file created by first test.
+            copy($dbPathSqliteEmpty, $dbPathSqlite);
+            return;
+        }
+
         /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
