@@ -39,7 +39,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * This class is for internal use only and may change wihtout further notice.
  *
- * Use the classes "UnitTestCase", "FunctionalTestCase" or "AcceptanceCoreEnvironment"
+ * Use the classes `UnitTestCase`, `FunctionalTestCase` or `AcceptanceCoreEnvironment`
  * to indirectly benefit from this class in own extensions.
  */
 class Testbase
@@ -680,7 +680,7 @@ class Testbase
             );
         }
         $fromTableUnionSubSelectQuery = implode(' UNION ', $fromTableUnionSubSelectQuery);
-        $query = sprintf("
+        $query = sprintf('
             SELECT
                 table_real_rowcounts.*,
                 information_schema.tables.AUTO_INCREMENT AS auto_increment
@@ -688,13 +688,13 @@ class Testbase
             INNER JOIN information_schema.tables ON (
                 information_schema.tables.TABLE_SCHEMA = %s
                 AND information_schema.tables.TABLE_NAME = table_real_rowcounts.table_name
-            )",
+            )',
             $fromTableUnionSubSelectQuery,
             $connection->quote($databaseName)
         );
         // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
         $result = $connection->executeQuery($query)->fetchAll();
-        foreach($result as $tableData) {
+        foreach ($result as $tableData) {
             $hasChangedAutoIncrement = ((int)$tableData['auto_increment']) > 1;
             $hasAtLeastOneRow = (bool)$tableData['has_rows'];
             $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
