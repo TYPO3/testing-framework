@@ -15,12 +15,17 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Connection;
+
+/**
+ * @internal Use the helper methods of FunctionalTestCase
+ */
 class DatabaseSnapshot
 {
     /**
-     * Data up to 1 MiB is kept in memory
+     * Data up to 10 MiB is kept in memory
      */
-    private const VALUE_IN_MEMORY_THRESHOLD = 1024**2;
+    private const VALUE_IN_MEMORY_THRESHOLD = 1024**2 * 10;
 
     /**
      * @var static
@@ -30,7 +35,7 @@ class DatabaseSnapshot
     /**
      * @var string
      */
-    private $path;
+    private $sqliteDir;
 
     /**
      * @var string
@@ -38,24 +43,14 @@ class DatabaseSnapshot
     private $identifier;
 
     /**
-     * @var string
-     */
-    private $snapshotPath;
-
-    /**
      * @var array
      */
     private $inMemoryImport;
 
-    /**
-     * @param string $path
-     * @param string $identifier
-     * @return self
-     */
-    public static function initialize(string $path, string $identifier): self
+    public static function initialize(string $sqliteDir, string $identifier): self
     {
         if (self::$instance === null) {
-            self::$instance = new self($path, $identifier);
+            self::$instance = new self($sqliteDir, $identifier);
             return self::$instance;
         }
         throw new \LogicException(
@@ -64,13 +59,9 @@ class DatabaseSnapshot
         );
     }
 
-    /**
-     * @return self
-     */
     public static function instance(): self
     {
         if (self::$instance !== null) {
-            self::assertPath(self::$instance->path);
             return self::$instance;
         }
         throw new \LogicException(
@@ -79,9 +70,6 @@ class DatabaseSnapshot
         );
     }
 
-    /**
-     * @return bool
-     */
     public static function destroy(): bool
     {
         if (self::$instance === null) {
@@ -92,92 +80,60 @@ class DatabaseSnapshot
         return true;
     }
 
-    /**
-     * @param string $path
-     * @param string $identifier
-     */
-    private function __construct(string $path, string $identifier)
+    private function __construct(string $sqliteDir, string $identifier)
     {
-        self::assertPath($path);
-
         $this->identifier = $identifier;
-        $this->path = rtrim($path, '/');
-        $this->snapshotPath = $this->buildPath($identifier);
+        $this->sqliteDir = $sqliteDir;
     }
 
-    /**
-     * @return bool
-     */
     public function exists(): bool
     {
-        return is_file($this->snapshotPath);
+        return !empty($this->inMemoryImport);
     }
 
-    /**
-     * @return bool
-     */
     public function purge(): bool
     {
         unset($this->inMemoryImport);
-        return unlink($this->snapshotPath);
+        return true;
     }
 
-    /**
-     * @param DatabaseAccessor $accessor
-     */
-    public function create(DatabaseAccessor $accessor)
+    public function create(DatabaseAccessor $accessor, Connection $connection): void
     {
-        $export = $accessor->export();
-        $serialized = json_encode($export);
-        // It's not the exact consumption due to serialization literals... fine
-        if (strlen($serialized) <= self::VALUE_IN_MEMORY_THRESHOLD) {
-            $this->inMemoryImport = $export;
-        }
-
-        file_put_contents($this->snapshotPath, $serialized);
-    }
-
-    /**
-     * @param DatabaseAccessor $accessor
-     * @throws \Doctrine\DBAL\ConnectionException
-     */
-    public function restore(DatabaseAccessor $accessor)
-    {
-        $import = $this->inMemoryImport ?? json_decode(
-            file_get_contents($this->snapshotPath),
-            true
-        );
-
-        if (!is_array($import)) {
-            throw new \RuntimeException(
-                'Invalid import data',
-                1535487372
+        if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
+            $connection->close();
+            copy(
+                $this->sqliteDir . 'test_' . $this->identifier . '.sqlite',
+                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite'
             );
+            $this->inMemoryImport = [true];
+        } else {
+            $export = $accessor->export();
+            $serialized = json_encode($export);
+            // It's not the exact consumption due to serialization literals... fine
+            if (strlen($serialized) <= self::VALUE_IN_MEMORY_THRESHOLD) {
+                $this->inMemoryImport = $export;
+            } else {
+                throw new \RuntimeException(
+                    'Export data set too large. Reduce data set or do not use snapshot.',
+                    1630203176
+                );
+            }
         }
-
-        $accessor->import($import);
     }
 
-    /**
-     * @param string $identifier
-     * @return string
-     */
-    private function buildPath(string $identifier): string
+    public function restore(DatabaseAccessor $accessor, Connection $connection): void
     {
-        return sprintf(
-            '%s/%s.snapshot',
-            $this->path,
-            $identifier
-        );
-    }
-
-    private static function assertPath(string $path)
-    {
-        if (!is_dir($path) && !mkdir($path, 0755, true)) {
-            throw new \RuntimeException(
-                sprintf('Snapshot path "%s" not available', $path),
-                1535487371
+        if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
+            $connection->close();
+            copy(
+                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite',
+                $this->sqliteDir . 'test_' . $this->identifier . '.sqlite'
             );
+        } else {
+            if (!is_array($this->inMemoryImport)) {
+                throw new \RuntimeException('Invalid import data', 1535487372);
+            }
+            $accessor->import($this->inMemoryImport);
         }
     }
 }

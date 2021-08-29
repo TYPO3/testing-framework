@@ -1273,10 +1273,10 @@ abstract class FunctionalTestCase extends BaseTestCase
         $snapshot = DatabaseSnapshot::instance();
 
         if ($snapshot->exists()) {
-            $snapshot->restore($accessor);
+            $snapshot->restore($accessor, $connection);
         } else {
             call_user_func($callback);
-            $snapshot->create($accessor);
+            $snapshot->create($accessor, $connection);
         }
     }
 
@@ -1286,7 +1286,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected static function initializeDatabaseSnapshot()
     {
         $snapshot = DatabaseSnapshot::initialize(
-            static::getInstancePath() . '/typo3temp/var/snapshots/',
+            dirname(static::getInstancePath()) . '/functional-sqlite-dbs/',
             static::getInstanceIdentifier()
         );
         if ($snapshot->exists()) {
