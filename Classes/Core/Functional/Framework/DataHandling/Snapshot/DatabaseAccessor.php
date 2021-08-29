@@ -23,6 +23,9 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
 
+/**
+ * @internal Use the helper methods of FunctionalTestCase
+ */
 class DatabaseAccessor
 {
     /**
