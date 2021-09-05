@@ -23,14 +23,15 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
+use TYPO3\CMS\Core\Package\Cache\PackageCacheEntry;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Functional\Framework\Package\PackageArtifactBuilder;
 
 /**
  * This is a helper class used by unit, functional and acceptance test
@@ -453,9 +454,9 @@ class Testbase
     }
 
     /**
-     * Compile typo3conf/PackageStates.php containing default packages like core,
-     * a test specific list of additional core extensions, and a list of
-     * test extensions.
+     * Compile typo3conf/PackageStates.php or var/build/PackageArtifact.php
+     * containing default packages like core, a test specific list of additional core extensions,
+     * and a list of test extensions.
      * For functional and acceptance tests.
      *
      * @param string $instancePath Absolute path to test instance
@@ -507,6 +508,11 @@ class Testbase
             ];
         }
 
+        if ($this->isPackageArtifactNeeded()) {
+            (new PackageArtifactBuilder($instancePath))->writePackageArtifact($packageStates);
+            return;
+        }
+
         $result = file_put_contents(
             $instancePath . '/typo3conf/PackageStates.php',
             '<?php' . chr(10) .
@@ -520,6 +526,18 @@ class Testbase
         if (!$result) {
             throw new Exception('Can not write PackageStates', 1381612729);
         }
+    }
+
+    /**
+     * TYPO3 11 comes with a different way package information is stored in Composer mode.
+     * Since testing e.g. extension results in the installation being marked as Composer managed,
+     * we need to create the package artifact to make the PackageManager happy
+     *
+     * @return bool
+     */
+    private function isPackageArtifactNeeded(): bool
+    {
+        return defined('TYPO3_COMPOSER_MODE') && class_exists(PackageCacheEntry::class);
     }
 
     /**
@@ -587,24 +605,6 @@ class Testbase
 
         $classLoader = require __DIR__ . '/../../../../autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-
-        // Functional and acceptance test environments are non-composer instances. When
-        // executing functional tests from a composer enabled instance
-        // (eg. tests of ext:styleguide), the "isComposerMode" depends on constant TYPO3_COMPOSER_MODE
-        // which may be set to true already in this context. We can't change this currently,
-        // so the solution for now is to re-init Environment and force composer mode false.
-        Environment::initialize(
-            Environment::getContext(),
-            Environment::isCli(),
-            false,
-            Environment::getProjectPath(),
-            Environment::getPublicPath(),
-            Environment::getVarPath(),
-            Environment::getConfigPath(),
-            Environment::getCurrentScript(),
-            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-        );
-
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.

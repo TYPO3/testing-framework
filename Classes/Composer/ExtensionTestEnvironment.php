@@ -16,6 +16,8 @@ namespace TYPO3\TestingFramework\Composer;
  */
 
 use Composer\Script\Event;
+use Composer\Util\Filesystem;
+use TYPO3\CMS\Composer\Plugin\Config;
 
 /**
  * If a TYPO3 extension should be tested, the extension needs to be embedded in
@@ -36,16 +38,6 @@ use Composer\Script\Event;
  *     ]
  *   },
  *
- * It additionally needs the "extension key" (that will become the directory name in
- * typo3conf/ext) and the name of the target directory in the extra section. Example for
- * a extension "my_cool_extension":
- *
- *   "extra": {
- *     "typo3/cms": {
- *       "web-dir": ".Build/Web",
- *       "extension-key": "my_cool_extension"
- *     }
- *   }
  */
 final class ExtensionTestEnvironment
 {
@@ -57,31 +49,21 @@ final class ExtensionTestEnvironment
      */
     public static function prepare(Event $event): void
     {
-        $composerConfigExtraSection = $event->getComposer()->getPackage()->getExtra();
-        if (empty($composerConfigExtraSection['typo3/cms']['extension-key'])
-            || empty($composerConfigExtraSection['typo3/cms']['web-dir'])
-        ) {
+        $composer = $event->getComposer();
+        $rootPackage = $composer->getPackage();
+        if ($rootPackage->getType() !== 'typo3-cms-extension') {
             throw new \RuntimeException(
-                'This script needs properties in composer.json:'
-                    . '"extra" "typo3/cms" "extension-key"'
-                    . ' and "extra" "typo3/cms" "web-dir"',
-                1540644486
+                'This script can only be used for TYPO3 extensions',
+                1630244768
             );
         }
-        $extensionKey = $composerConfigExtraSection['typo3/cms']['extension-key'];
-        $webDir = $composerConfigExtraSection['typo3/cms']['web-dir'];
-        $typo3confExt = __DIR__ . '/../../../../../../' . $webDir . '/typo3conf/ext';
-        if (!is_dir($typo3confExt) &&
-            !mkdir($typo3confExt, 0775, true) &&
-            !is_dir($typo3confExt)
-        ) {
-            throw new \RuntimeException(
-                sprintf('Directory "%s" could not be created', $typo3confExt),
-                1540650485
-            );
-        }
-        if (!is_link($typo3confExt . '/' . $extensionKey)) {
-            symlink(dirname(__DIR__, 6) . '/', $typo3confExt . '/' . $extensionKey);
+        $typo3ExtensionInstallPath = $composer->getInstallationManager()->getInstaller('typo3-cms-extension')->getInstallPath($rootPackage);
+        $pluginConfig = Config::load($composer);
+        $extensionPath = $pluginConfig->get('base-dir');
+        $filesystem = new Filesystem();
+        $filesystem->ensureDirectoryExists(dirname($typo3ExtensionInstallPath));
+        if (!$filesystem->isSymlinkedDirectory($typo3ExtensionInstallPath)) {
+            $filesystem->relativeSymlink($extensionPath, $typo3ExtensionInstallPath);
         }
     }
 }
