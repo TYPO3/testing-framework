@@ -974,10 +974,13 @@ abstract class FunctionalTestCase extends BaseTestCase
         // carry that information.
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] = $context;
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
-        ArrayUtility::mergeRecursiveWithOverrule(
-            $GLOBALS,
-            $context->getGlobalSettings() ?? []
-        );
+        // The $GLOBALS array may not be passed by reference, but its elements may be.
+        $override = $context->getGlobalSettings() ?? [];
+        foreach ($GLOBALS as $k => $v) {
+            if (isset($override[$k])) {
+                ArrayUtility::mergeRecursiveWithOverrule($GLOBALS[$k], $override[$k]);
+            }
+        }
         $result = [
             'status' => 'failure',
             'content' => null,
