@@ -22,6 +22,7 @@ use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
+use TYPO3\TestingFramework\Core\Testbase;
 
 /**
  * @internal Use the helper methods of FunctionalTestCase
@@ -146,6 +147,10 @@ class DatabaseAccessor
                 );
             }
         }
+        // reset table sequences after inserting snapshot data. Dataset contains primary key column data which
+        // leads to out-of-sync sequence values for some dbms platforms, thus resetting sequence values
+        // is needed.
+        Testbase::resetTableSequences($this->connection, $tableName);
     }
 
     /**
