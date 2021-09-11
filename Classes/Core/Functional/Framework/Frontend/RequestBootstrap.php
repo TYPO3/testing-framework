@@ -170,10 +170,13 @@ class RequestBootstrap
             if (Environment::isComposerMode() && ClassLoadingInformation::isClassLoadingInformationAvailable()) {
                 ClassLoadingInformation::registerClassLoadingInformation();
             }
-            ArrayUtility::mergeRecursiveWithOverrule(
-                $GLOBALS,
-                $this->context->getGlobalSettings() ?? []
-            );
+            // The $GLOBALS array may not be passed by reference, but its elements may be.
+            $override = $this->context->getGlobalSettings() ?? [];
+            foreach ($GLOBALS as $k => $v) {
+                if (isset($override[$k])) {
+                    ArrayUtility::mergeRecursiveWithOverrule($GLOBALS[$k], $override[$k]);
+                }
+            }
             $container->get(Application::class)->run();
             $result['status'] = 'success';
             $result['content'] = static::getContent();
