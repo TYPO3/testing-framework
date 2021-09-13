@@ -38,6 +38,9 @@ use TYPO3\CMS\Composer\Plugin\Config;
  *     ]
  *   },
  *
+ * @deprecated Will be dropped with next major version: This helper class is obsolete with core v11,
+ *             referencing this is composer.json can be dropped, core creates symlinks automatically.
+ *             https://forge.typo3.org/issues/94996 and https://review.typo3.org/c/Packages/TYPO3.CMS/+/71029
  */
 final class ExtensionTestEnvironment
 {
