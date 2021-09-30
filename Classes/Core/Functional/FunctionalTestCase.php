@@ -19,6 +19,7 @@ use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Context\Context;
@@ -26,8 +27,10 @@ use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Http\Application;
@@ -434,39 +437,110 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function setUpBackendUser($userUid): BackendUserAuthentication
     {
+        $userRow = $this->getBackendUserRecordFromDatabase($userUid);
+
+        // Can be removed with the next major version
+        if ((new Typo3Version())->getMajorVersion() < 11) {
+            /** @var $backendUser BackendUserAuthentication */
+            $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
+            $sessionId = $backendUser->createSessionId();
+            $_COOKIE['be_typo_user'] = $sessionId;
+            $backendUser->id = $sessionId;
+            $backendUser->sendNoCacheHeaders = false;
+            $backendUser->dontSetCookie = true;
+            $backendUser->createUserSession($userRow);
+
+            $GLOBALS['BE_USER'] = $backendUser;
+            $GLOBALS['BE_USER']->start();
+            if (!is_array($GLOBALS['BE_USER']->user) || !$GLOBALS['BE_USER']->user['uid']) {
+                throw new Exception(
+                    'Can not initialize backend user',
+                    1377095807
+                );
+            }
+            $GLOBALS['BE_USER']->backendCheckLogin();
+            GeneralUtility::makeInstance(Context::class)->setAspect(
+                'backend.user',
+                GeneralUtility::makeInstance(UserAspect::class, $backendUser)
+            );
+        } else {
+            $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
+            $session = $backendUser->createUserSession($userRow);
+            $sessionId = $session->getIdentifier();
+            $request = $this->createServerRequest('https://typo3-testing.local/typo3/');
+            $request = $request->withCookieParams(['be_typo_user' => $sessionId]);
+            $backendUser = $this->authenticateBackendUser($backendUser, $request);
+            // @todo: remove this with the next major version
+            $GLOBALS['BE_USER'] = $backendUser;
+        }
+        return $backendUser;
+    }
+
+    protected function getBackendUserRecordFromDatabase(int $userId): ?array
+    {
         $queryBuilder = $this->getConnectionPool()
             ->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
 
-        $userRow = $queryBuilder->select('*')
+        return $queryBuilder->select('*')
             ->from('be_users')
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userUid, \PDO::PARAM_INT)))
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
             ->execute()
-            ->fetch();
+            ->fetch() ?: null;
+    }
 
-        /** @var $backendUser BackendUserAuthentication */
-        $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
-        $sessionId = $backendUser->createSessionId();
-        $_COOKIE['be_typo_user'] = $sessionId;
-        $backendUser->id = $sessionId;
-        $backendUser->sendNoCacheHeaders = false;
-        $backendUser->dontSetCookie = true;
-        $backendUser->createUserSession($userRow);
+    private function createServerRequest(string $url, string $method = 'GET'): ServerRequestInterface
+    {
+        $requestUrlParts = parse_url($url);
+        $docRoot = '';
+        $serverParams = [
+            'DOCUMENT_ROOT' => $docRoot,
+            'HTTP_USER_AGENT' => 'TYPO3 Functional Test Request',
+            'HTTP_HOST' => $requestUrlParts['host'] ?? 'localhost',
+            'SERVER_NAME' => $requestUrlParts['host'] ?? 'localhost',
+            'SERVER_ADDR' => '127.0.0.1',
+            'REMOTE_ADDR' => '127.0.0.1',
+            'SCRIPT_NAME' => '/typo3/index.php',
+            'PHP_SELF' => '/typo3/index.php',
+            'SCRIPT_FILENAME' => $docRoot . '/index.php',
+            'PATH_TRANSLATED' => $docRoot . '/index.php',
+            'QUERY_STRING' => $requestUrlParts['query'] ?? '',
+            'REQUEST_URI' => $requestUrlParts['path'] . (isset($requestUrlParts['query']) ? '?' . $requestUrlParts['query'] : ''),
+            'REQUEST_METHOD' => $method,
+        ];
+        // Define HTTPS and server port
+        if (isset($requestUrlParts['scheme'])) {
+            if ($requestUrlParts['scheme'] === 'https') {
+                $serverParams['HTTPS'] = 'on';
+                $serverParams['SERVER_PORT'] = '443';
+            } else {
+                $serverParams['SERVER_PORT'] = '80';
+            }
+        }
 
-        $GLOBALS['BE_USER'] = $backendUser;
-        $GLOBALS['BE_USER']->start();
-        if (!is_array($GLOBALS['BE_USER']->user) || !$GLOBALS['BE_USER']->user['uid']) {
+        // Define a port if used in the URL
+        if (isset($requestUrlParts['port'])) {
+            $serverParams['SERVER_PORT'] = $requestUrlParts['port'];
+        }
+        // set up normalizedParams
+        $request = new ServerRequest($url, $method, null, [], $serverParams);
+        return $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
+    }
+
+    protected function authenticateBackendUser(BackendUserAuthentication $backendUser, ServerRequestInterface $request): BackendUserAuthentication
+    {
+        $backendUser->start($request);
+        if (!is_array($backendUser->user) || !$backendUser->user['uid']) {
             throw new Exception(
                 'Can not initialize backend user',
                 1377095807
             );
         }
-        $GLOBALS['BE_USER']->backendCheckLogin();
+        $backendUser->backendCheckLogin();
         GeneralUtility::makeInstance(Context::class)->setAspect(
             'backend.user',
             GeneralUtility::makeInstance(UserAspect::class, $backendUser)
         );
-
         return $backendUser;
     }
 
