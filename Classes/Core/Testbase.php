@@ -589,13 +589,13 @@ class Testbase
     public function setUpBasicTypo3Bootstrap($instancePath): ContainerInterface
     {
         $_SERVER['PWD'] = $instancePath;
-        $_SERVER['argv'][0] = 'index.php';
+        $_SERVER['argv'][0] = 'typo3/index.php';
 
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
         $classLoader = require __DIR__ . '/../../../../autoload.php';
-        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+        SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
