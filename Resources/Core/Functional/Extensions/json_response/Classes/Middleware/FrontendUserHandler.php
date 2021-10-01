@@ -59,7 +59,7 @@ class FrontendUserHandler implements MiddlewareInterface
             $frontendUserAuthentication->user = $frontendUserAuthentication->fetchUserSession();
             // v11+
             if (method_exists($frontendUserAuthentication, 'createUserAspect')) {
-                $frontendUserAuthentication->fetchGroupData();
+                $frontendUserAuthentication->fetchGroupData($request);
                 $userAspect = $frontendUserAuthentication->createUserAspect();
                 GeneralUtility::makeInstance(Context::class)->setAspect('frontend.user', $userAspect);
             } else {
