@@ -492,7 +492,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     private function createServerRequest(string $url, string $method = 'GET'): ServerRequestInterface
     {
         $requestUrlParts = parse_url($url);
-        $docRoot = '';
+        $docRoot = $this->instancePath;
         $serverParams = [
             'DOCUMENT_ROOT' => $docRoot,
             'HTTP_USER_AGENT' => 'TYPO3 Functional Test Request',
