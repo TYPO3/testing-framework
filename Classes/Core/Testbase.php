@@ -85,7 +85,7 @@ class Testbase
             define('ORIGINAL_ROOT', $this->getWebRoot());
         }
 
-        if (!file_exists(ORIGINAL_ROOT . 'typo3/sysext/core/bin/typo3')) {
+        if (!file_exists(ORIGINAL_ROOT . 'index.php')) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
     }
