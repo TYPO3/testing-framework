@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -1032,6 +1033,19 @@ abstract class FunctionalTestCase extends BaseTestCase
         FrameworkState::push();
         FrameworkState::reset();
 
+        // Re-init Environment $currentScript: Entry point to FE calls is /index.php, not /typo3/index.php
+        Environment::initialize(
+            Environment::getContext(),
+            Environment::isCli(),
+            Environment::isComposerMode(),
+            Environment::getProjectPath(),
+            Environment::getPublicPath(),
+            Environment::getVarPath(),
+            Environment::getConfigPath(),
+            Environment::getPublicPath() . '/index.php',
+            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+        );
+
         // Needed for GeneralUtility::getIndpEnv('SCRIPT_NAME') to return correct value
         // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
         // See second data provider of UriPrefixRenderingTest
@@ -1113,6 +1127,20 @@ abstract class FunctionalTestCase extends BaseTestCase
         ob_end_clean();
 
         FrameworkState::pop();
+
+        // Reset Environment $currentScript: Entry point is /typo3/index.php again.
+        Environment::initialize(
+            Environment::getContext(),
+            Environment::isCli(),
+            Environment::isComposerMode(),
+            Environment::getProjectPath(),
+            Environment::getPublicPath(),
+            Environment::getVarPath(),
+            Environment::getConfigPath(),
+            Environment::getPublicPath() . '/typo3/index.php',
+            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+        );
+
         return $content;
     }
 
