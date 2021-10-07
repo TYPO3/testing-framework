@@ -41,7 +41,7 @@ class FrameworkState
     {
         $state = [];
         $state['globals-server'] = $GLOBALS['_SERVER'];
-        $state['globals-beUser'] = $GLOBALS['BE_USER'] ?: null;
+        $state['globals-beUser'] = $GLOBALS['BE_USER'] ?? null;
         // InternalRequestContext->withGlobalSettings() may override globals, especially TYPO3_CONF_VARS
         $state['globals-typo3-conf-vars'] = $GLOBALS['TYPO3_CONF_VARS'] ?: null;
 
