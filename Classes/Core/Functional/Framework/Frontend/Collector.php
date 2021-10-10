@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -201,5 +202,16 @@ class Collector implements SingletonInterface
         $this->structure = [];
         $this->structurePaths = [];
         $this->records = [];
+    }
+
+    /**
+     * This is called from UserContentObject via ContentObjectRenderer->callUserFunction()
+     * for nested menu items - those use a USER content object for getDataAsJson().
+     *
+     * @param ContentObjectRenderer $cObj
+     */
+    public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
+    {
+        $this->cObj = $cObj;
     }
 }

@@ -158,4 +158,15 @@ class Renderer implements SingletonInterface
     {
         return GeneralUtility::makeInstance(Parser::class);
     }
+
+    /**
+     * This is called from UserContentObject via ContentObjectRenderer->callUserFunction()
+     * for nested menu items - those use a USER content object for getDataAsJson().
+     *
+     * @param ContentObjectRenderer $cObj
+     */
+    public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
+    {
+        $this->cObj = $cObj;
+    }
 }
