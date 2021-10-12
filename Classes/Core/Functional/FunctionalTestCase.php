@@ -34,6 +34,7 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
@@ -1120,6 +1121,12 @@ abstract class FunctionalTestCase extends BaseTestCase
                 'message' => $exception->getMessage(),
                 'code' => $exception->getCode(),
             ];
+            // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
+            // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
+            //        TSFE instances *always* shut down after use.
+            if (isset($GLOBALS['TSFE']) && $GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
+                $GLOBALS['TSFE']->releaseLocks();
+            }
         }
         $content['stdout'] = json_encode($result);
 
