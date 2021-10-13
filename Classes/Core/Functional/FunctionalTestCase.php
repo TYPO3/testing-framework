@@ -1073,7 +1073,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         $result = [
             'status' => 'failure',
             'content' => null,
-            'error' => null
         ];
         // Create ServerRequest from testing-framework InternalRequest object
         $uri = $request->getUri();
@@ -1115,18 +1114,13 @@ abstract class FunctionalTestCase extends BaseTestCase
             $result['status'] = 'success';
             $result['content'] = json_decode($jsonResponse->getBody()->__toString(), true);
         } catch (\Exception $exception) {
-            $result['error'] = $exception->__toString();
-            $result['exception'] = [
-                'type' => get_class($exception),
-                'message' => $exception->getMessage(),
-                'code' => $exception->getCode(),
-            ];
             // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
             // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
             //        TSFE instances *always* shut down after use.
             if (isset($GLOBALS['TSFE']) && $GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
                 $GLOBALS['TSFE']->releaseLocks();
             }
+            throw $exception;
         }
         $content['stdout'] = json_encode($result);
 
@@ -1255,6 +1249,9 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
         }
 
+        // @deprecated: Will be removed with next major version: The sub request method does
+        //              not use 'status' and 'exception' anymore, the entire if() can be removed
+        //              when php process forking methods are removed.
         if ($data['status'] === Response::STATUS_Failure) {
             try {
                 $exception = new $data['exception']['type'](
