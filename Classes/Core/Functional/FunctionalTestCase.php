@@ -1121,27 +1121,26 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $GLOBALS['TSFE']->releaseLocks();
             }
             throw $exception;
+        } finally {
+            // Somewhere an ob_start() is called in frontend that is not cleaned. Work around that for now.
+            ob_end_clean();
+
+            FrameworkState::pop();
+
+            // Reset Environment $currentScript: Entry point is /typo3/index.php again.
+            Environment::initialize(
+                Environment::getContext(),
+                Environment::isCli(),
+                Environment::isComposerMode(),
+                Environment::getProjectPath(),
+                Environment::getPublicPath(),
+                Environment::getVarPath(),
+                Environment::getConfigPath(),
+                Environment::getPublicPath() . '/typo3/index.php',
+                Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+            );
         }
         $content['stdout'] = json_encode($result);
-
-        // Somewhere an ob_start() is called in frontend that is not cleaned. Work around that for now.
-        ob_end_clean();
-
-        FrameworkState::pop();
-
-        // Reset Environment $currentScript: Entry point is /typo3/index.php again.
-        Environment::initialize(
-            Environment::getContext(),
-            Environment::isCli(),
-            Environment::isComposerMode(),
-            Environment::getProjectPath(),
-            Environment::getPublicPath(),
-            Environment::getVarPath(),
-            Environment::getConfigPath(),
-            Environment::getPublicPath() . '/typo3/index.php',
-            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-        );
-
         return $content;
     }
 
