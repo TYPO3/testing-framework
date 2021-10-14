@@ -17,6 +17,8 @@ namespace TYPO3\TestingFramework\Core\Functional;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\RiskyTestError;
+use PHPUnit\Util\ErrorHandler;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -408,6 +410,27 @@ abstract class FunctionalTestCase extends BaseTestCase
         unset($this->testExtensionsToLoad, $this->frameworkExtensionsToLoad, $this->pathsToLinkInTestInstance);
         unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
         unset($this->additionalFoldersToCreate, $this->backendUserFixture);
+
+        if ((new Typo3Version())->getMajorVersion() >= 11
+            && defined('TYPO3_TESTING_FUNCTIONAL_REMOVE_ERROR_HANDLER')
+        ) {
+            // Verify no dangling error handler is registered. This might happen when
+            // tests register an own error handler which is not reset again. This error
+            // handler then may "eat" error of subsequent tests.
+            // Register a dummy error handler to retrieve *previous* one and unregister dummy again,
+            // then verify previous is the phpunit error handler. This will mark the one test that
+            // fails to unset/restore it's custom error handler as "risky".
+            // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
+            // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
+            $previousErrorHandler = set_error_handler(function () {});
+            restore_error_handler();
+            if (!$previousErrorHandler instanceof ErrorHandler) {
+                throw new RiskyTestError(
+                    'tearDown() check: A dangling error handler setup has been found. Use restore_error_handler() to unset it.',
+                    1634490417
+                );
+            }
+        }
     }
 
     /**
