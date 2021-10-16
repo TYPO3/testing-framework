@@ -24,7 +24,7 @@ trait AccessibleProxyTrait
         }
         $args = func_get_args();
         array_shift($args);
-        return call_user_func_array([$this, $methodName], $args);
+        return $this->$methodName(...$args);
     }
 
     public function _set($propertyName, $value)

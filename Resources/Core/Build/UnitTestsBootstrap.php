@@ -26,7 +26,7 @@
  * according script within TYPO3 core's Build/Scripts directory and
  * adapt to extensions needs.
  */
-call_user_func(function () {
+(static function () {
     $testbase = new \TYPO3\TestingFramework\Core\Testbase();
 
     // These if's are for core testing (package typo3/cms) only. cms-composer-installer does
@@ -81,4 +81,4 @@ call_user_func(function () {
     $testbase->dumpClassLoadingInformation();
 
     \TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
-});
+})();
