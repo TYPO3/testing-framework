@@ -53,13 +53,13 @@ trait AssignablePropertyTrait
         $data = array_filter($data);
         foreach ($data as $name => $value) {
             $methodName = 'with' . ucfirst($name);
-            if (!method_exists($this, $methodName)) {
+            if (!method_exists($target, $methodName)) {
                 throw new \RuntimeException(
                     sprintf('Method "%s" not found', $methodName),
                     1533632522
                 );
             }
-            $target = call_user_func([$target, $methodName], $value);
+            $target = $target->$methodName($value);
         }
         return $target;
     }

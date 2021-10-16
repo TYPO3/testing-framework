@@ -1396,7 +1396,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         if ($snapshot->exists()) {
             $snapshot->restore($accessor, $connection);
         } else {
-            call_user_func($callback);
+            $callback();
             $snapshot->create($accessor, $connection);
         }
     }
