@@ -42,6 +42,7 @@
         </testsuite>
     </testsuites>
     <php>
+        <!-- @deprecated: will be removed with next major version, constant TYPO3_MODE is deprecated -->
         <const name="TYPO3_MODE" value="BE" />
         <!--
             @deprecated: Set this to not suppress warnings, notices and deprecations in functional tests
