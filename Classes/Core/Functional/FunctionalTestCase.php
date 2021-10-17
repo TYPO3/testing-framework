@@ -426,8 +426,19 @@ abstract class FunctionalTestCase extends BaseTestCase
             restore_error_handler();
             if (!$previousErrorHandler instanceof ErrorHandler) {
                 throw new RiskyTestError(
-                    'tearDown() check: A dangling error handler setup has been found. Use restore_error_handler() to unset it.',
+                    'tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.',
                     1634490417
+                );
+            }
+
+            // Verify no dangling exception handler is registered. Same scenario as with error handlers.
+            // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
+            $previousExceptionHandler = set_exception_handler(function () {});
+            restore_exception_handler();
+            if ($previousExceptionHandler !== null) {
+                throw new RiskyTestError(
+                    'tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.',
+                    1634490418
                 );
             }
         }
