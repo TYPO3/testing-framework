@@ -28,11 +28,6 @@ class CsvWriterStreamFilter extends \php_user_filter
     private const FILTERNAME = 'csv.typo3.testing-framework';
 
     /**
-     * @var array contains 'sequence' key
-     */
-    public $params = [];
-
-    /**
      * Registers stream filter
      */
     public static function register()
