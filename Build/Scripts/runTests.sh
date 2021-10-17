@@ -42,7 +42,7 @@ Options:
             - lint: PHP linting
             - unit (default): PHP unit tests
 
-    -p <7.2|7.3|7.4>
+    -p <7.2|7.3|7.4|8.0|8.1>
         Specifies the PHP minor version to be used
             - 7.2 (default): use PHP 7.2
             - 7.3: use PHP 7.3
