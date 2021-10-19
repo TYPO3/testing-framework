@@ -17,6 +17,7 @@
 <phpunit
     backupGlobals="true"
     bootstrap="FunctionalTestsBootstrap.php"
+    cacheResult="false"
     colors="true"
     convertErrorsToExceptions="true"
     convertWarningsToExceptions="true"

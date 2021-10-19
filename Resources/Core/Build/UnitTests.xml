@@ -17,6 +17,7 @@
 <phpunit
     backupGlobals="true"
     bootstrap="UnitTestsBootstrap.php"
+    cacheResult="false"
     colors="true"
     convertDeprecationsToExceptions="true"
     convertErrorsToExceptions="true"
