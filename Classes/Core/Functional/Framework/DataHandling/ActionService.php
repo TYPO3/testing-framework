@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
@@ -484,10 +485,8 @@ class ActionService
         $liveUid = (int)$liveUid;
         $workspaceId = (int)$this->getBackendUser()->workspace;
 
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable($tableName);
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-
         $statement = $queryBuilder
             ->select('uid')
             ->from($tableName)
@@ -502,19 +501,22 @@ class ActionService
                 )
             )
             ->execute();
-
-        $row = $statement->fetch();
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $row = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $row = $statement->fetch();
+        }
         if (!empty($row['uid'])) {
             return (int)$row['uid'];
         }
+
         // Check if the actual record is a new record created in the draft workspace
         // which contains the state of t3ver_state=1, so we verify this by re-fetching the record
         // from the database
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable($tableName);
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-
-        $row = $queryBuilder
+        $statement = $queryBuilder
             ->select('uid')
             ->from($tableName)
             ->where(
@@ -535,8 +537,13 @@ class ActionService
                     $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)
                 )
             )
-            ->execute()
-            ->fetch();
+            ->execute();
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $row = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $row = $statement->fetch();
+        }
         if (!empty($row)) {
             // This is effectively the same record as $liveUid, but only if the constraints from above match
             return (int)$row['uid'];

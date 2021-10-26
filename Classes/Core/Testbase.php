@@ -28,6 +28,7 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Package\Cache\PackageCacheEntry;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -861,7 +862,7 @@ class Testbase
         if ($platform instanceof PostgreSqlPlatform) {
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->getRestrictions()->removeAll();
-            $row = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
+            $statement = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
                 ->from('pg_class', 'S')
                 ->from('pg_depend', 'D')
                 ->from('pg_class', 'T')
@@ -877,8 +878,13 @@ class Testbase
                     $queryBuilder->expr()->eq('PGT.tablename', $queryBuilder->quote($tableName))
                 )
                 ->setMaxResults(1)
-                ->execute()
-                ->fetch();
+                ->execute();
+            if ((new Typo3Version())->getMajorVersion() >= 11) {
+                $row = $statement->fetchAssociative();
+            } else {
+                // @deprecated: Will be removed with next major version - core v10 compat.
+                $row = $statement->fetch();
+            }
 
             if ($row !== false) {
                 $connection->exec(
