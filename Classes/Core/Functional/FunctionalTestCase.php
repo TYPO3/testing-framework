@@ -531,11 +531,16 @@ abstract class FunctionalTestCase extends BaseTestCase
             ->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
 
-        return $queryBuilder->select('*')
+        $result = $queryBuilder->select('*')
             ->from('be_users')
             ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
-            ->execute()
-            ->fetch() ?: null;
+            ->execute();
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            return $result->fetchAssociative() ?: null;
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            return $result->fetch() ?: null;
+        }
     }
 
     private function createServerRequest(string $url, string $method = 'GET'): ServerRequestInterface
@@ -781,15 +786,31 @@ abstract class FunctionalTestCase extends BaseTestCase
 
         if ($hasUidField) {
             $allRecords = [];
-            while ($record = $statement->fetch()) {
-                $index = $record['uid'];
-                $allRecords[$index] = $record;
+            if ((new Typo3Version())->getMajorVersion() >= 11) {
+                while ($record = $statement->fetchAssociative()) {
+                    $index = $record['uid'];
+                    $allRecords[$index] = $record;
+                }
+            } else {
+                // @deprecated: Will be removed with next major version - core v10 compat.
+                while ($record = $statement->fetch()) {
+                    $index = $record['uid'];
+                    $allRecords[$index] = $record;
+                }
             }
         } else {
             $allRecords = [];
-            while ($record = $statement->fetch()) {
-                $index = $record['hash'];
-                $allRecords[$index] = $record;
+            if ((new Typo3Version())->getMajorVersion() >= 11) {
+                while ($record = $statement->fetchAssociative()) {
+                    $index = $record['hash'];
+                    $allRecords[$index] = $record;
+                }
+            } else {
+                // @deprecated: Will be removed with next major version - core v10 compat.
+                while ($record = $statement->fetch()) {
+                    $index = $record['hash'];
+                    $allRecords[$index] = $record;
+                }
             }
         }
 
@@ -939,9 +960,14 @@ abstract class FunctionalTestCase extends BaseTestCase
     {
         $pageId = (int)$pageId;
 
-        $connection = $this->getConnectionPool()
-            ->getConnectionForTable('pages');
-        $page = $connection->select(['*'], 'pages', ['uid' => $pageId])->fetch();
+        $connection = $this->getConnectionPool()->getConnectionForTable('pages');
+        $statement = $connection->select(['*'], 'pages', ['uid' => $pageId]);
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $page = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $page = $statement->fetch();
+        }
 
         if (empty($page)) {
             $this->fail('Cannot set up frontend root page "' . $pageId . '"');
@@ -1005,10 +1031,15 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function addTypoScriptToTemplateRecord(int $pageId, $typoScript)
     {
-        $connection = $this->getConnectionPool()
-            ->getConnectionForTable('sys_template');
+        $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
+        $statement = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1]);
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $template = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $template = $statement->fetch();
+        }
 
-        $template = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1])->fetch();
         if (empty($template)) {
             $this->fail('Cannot find root template on page with id: "' . $pageId . '"');
         }

@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Authentication\AbstractUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
@@ -49,10 +50,15 @@ class FrontendUserHandler implements MiddlewareInterface
         $frontendUserAuthentication = $request->getAttribute('frontend.user');
         $frontendUserAuthentication->checkPid = 0;
 
-        $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
+        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('fe_users')
-            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
-            ->fetch();
+            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()]);
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $frontendUser = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $frontendUser = $statement->fetch();
+        }
         if (is_array($frontendUser)) {
             $context = GeneralUtility::makeInstance(Context::class);
             $frontendUserAuthentication->createUserSession($frontendUser);

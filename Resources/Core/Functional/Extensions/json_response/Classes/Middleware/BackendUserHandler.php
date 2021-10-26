@@ -24,6 +24,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
@@ -55,10 +56,16 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
         }
 
         $backendUser = $this->createBackendUser();
-        $backendUser->user = GeneralUtility::makeInstance(ConnectionPool::class)
+        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
-            ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()])
-            ->fetch();
+            ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()]);
+        if ((new Typo3Version())->getMajorVersion() >= 11) {
+            $backendUser->user = $statement->fetchAssociative();
+        } else {
+            // @deprecated: Will be removed with next major version - core v10 compat.
+            $backendUser->user = $statement->fetch();
+        }
+
         if (!empty($context->getWorkspaceId())) {
             $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
         }
