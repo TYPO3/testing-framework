@@ -912,7 +912,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         $differentFields = [];
 
         foreach ($assertion as $field => $value) {
-            if (strpos($value, '\\*') === 0) {
+            if (strpos((string)$value, '\\*') === 0) {
                 continue;
             }
 
@@ -920,7 +920,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
             }
 
-            if (strpos($value, '<?xml') === 0) {
+            if (strpos((string)$value, '<?xml') === 0) {
                 try {
                     $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
                 } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
