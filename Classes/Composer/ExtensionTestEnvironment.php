@@ -33,7 +33,7 @@ use TYPO3\CMS\Composer\Plugin\Config;
  *     "post-autoload-dump": [
  *       "@prepare-extension-test-environment"
  *     ],
- *     "prepare-extension-test-structure": [
+ *     "prepare-extension-test-environment": [
  *       "TYPO3\TestingFramework\Composer\ExtensionTestEnvironment::prepare"
  *     ]
  *   },
