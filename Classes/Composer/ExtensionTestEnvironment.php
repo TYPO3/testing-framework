@@ -31,7 +31,7 @@ use Composer\Script\Event;
  *     "post-autoload-dump": [
  *       "@prepare-extension-test-environment"
  *     ],
- *     "prepare-extension-test-structure": [
+ *     "prepare-extension-test-environment": [
  *       "TYPO3\TestingFramework\Composer\ExtensionTestEnvironment::prepare"
  *     ]
  *   },
