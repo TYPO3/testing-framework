@@ -115,7 +115,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * A default list of core extensions is always loaded.
      *
      * @see FunctionalTestCaseUtility $defaultActivatedCoreExtensions
-     * @var array
+     * @var array<int, string>
      */
     protected $coreExtensionsToLoad = [];
 
