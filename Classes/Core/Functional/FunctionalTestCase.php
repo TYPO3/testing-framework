@@ -1113,10 +1113,11 @@ abstract class FunctionalTestCase extends BaseTestCase
         FrameworkState::reset();
 
         // Re-init Environment $currentScript: Entry point to FE calls is /index.php, not /typo3/index.php
+        // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
         Environment::initialize(
             Environment::getContext(),
             Environment::isCli(),
-            Environment::isComposerMode(),
+            false,
             Environment::getProjectPath(),
             Environment::getPublicPath(),
             Environment::getVarPath(),
@@ -1206,10 +1207,11 @@ abstract class FunctionalTestCase extends BaseTestCase
             FrameworkState::pop();
 
             // Reset Environment $currentScript: Entry point is /typo3/index.php again.
+            // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
             Environment::initialize(
                 Environment::getContext(),
                 Environment::isCli(),
-                Environment::isComposerMode(),
+                false,
                 Environment::getProjectPath(),
                 Environment::getPublicPath(),
                 Environment::getVarPath(),

@@ -23,16 +23,13 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
-use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
 use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\Package\Cache\PackageCacheEntry;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Functional\Framework\Package\PackageArtifactBuilder;
 
 /**
  * This is a helper class used by unit, functional and acceptance test
@@ -133,6 +130,38 @@ class Testbase
             throw new Exception('Directory "' . $directory . '" could not be created', 1404038665);
         }
     }
+    /**
+     * Returns PHP code that, when executed in $from, will return the path to $to
+     * Copied from Composer sources and adapted for limited use case here
+     *
+     * @see https://github.com/composer/composer
+     * @throws \InvalidArgumentException
+     */
+    private function findShortestPathCode(string $from, string $to): string
+    {
+        if ($from === $to) {
+            return '__FILE__';
+        }
+
+        $commonPath = $to;
+        while (strpos($from . '/', $commonPath . '/') !== 0 && '/' !== $commonPath && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && '.' !== $commonPath) {
+            $commonPath = str_replace('\\', '/', \dirname($commonPath));
+        }
+
+        if ('/' === $commonPath || '.' === $commonPath || 0 !== strpos($from, $commonPath)) {
+            return var_export($to, true);
+        }
+
+        $commonPath = rtrim($commonPath, '/') . '/';
+        if (strpos($to, $from . '/') === 0) {
+            return '__DIR__ . ' . var_export(substr($to, \strlen($from)), true);
+        }
+        $sourcePathDepth = substr_count(substr($from, \strlen($commonPath)), '/');
+        $commonPathCode = "__DIR__ . '" . str_repeat('/..', $sourcePathDepth) . "'";
+        $relTarget = substr($to, \strlen($commonPath));
+
+        return $commonPathCode . ($relTarget !== '' ? ' . ' . var_export('/' . $relTarget, true) : '');
+    }
 
     /**
      * Remove test instance folder structure if it exists.
@@ -174,10 +203,10 @@ class Testbase
     {
         $linksToSet = [
             '../../../../' => $instancePath . '/typo3_src',
-            'typo3_src/typo3' => $instancePath . '/typo3',
-            'typo3_src/index.php' => $instancePath . '/index.php',
+            'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
         ];
         chdir($instancePath);
+        $this->createDirectory($instancePath . '/typo3');
         foreach ($linksToSet as $from => $to) {
             $success = symlink(realpath($from), $to);
             if (!$success) {
@@ -186,6 +215,39 @@ class Testbase
                     1376657199
                 );
             }
+        }
+
+        // We can't just link the entry scripts here, because acceptance tests will make use of them
+        // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
+        // of the testing framework.
+        $entryPointsToSet = [
+            $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
+            $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
+            $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
+        ];
+        $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
+
+        foreach ($entryPointsToSet as $source => $target) {
+            if (($entryPointContent = file_get_contents($source)) === false) {
+                throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
+            }
+            $entryPointContent = (string)preg_replace(
+                '/__DIR__ \. \'[^\']+\'/',
+                $this->findShortestPathCode($target, $autoloadFile),
+                $entryPointContent
+            );
+            $entryPointContent = (string)preg_replace(
+                '/\\\\TYPO3\\\\CMS\\\\Core\\\\Core\\\\SystemEnvironmentBuilder::run\(/',
+                '\TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(',
+                $entryPointContent
+            );
+            if ($entryPointContent === '') {
+                throw new \UnexpectedValueException(
+                    sprintf('Error while customizing the source file (%s).', $source),
+                    1636244910
+                );
+            }
+            file_put_contents($target, $entryPointContent);
         }
     }
 
@@ -500,11 +562,6 @@ class Testbase
             ];
         }
 
-        if ($this->isPackageArtifactNeeded()) {
-            (new PackageArtifactBuilder($instancePath))->writePackageArtifact($packageStates);
-            return;
-        }
-
         $result = file_put_contents(
             $instancePath . '/typo3conf/PackageStates.php',
             '<?php' . chr(10) .
@@ -518,18 +575,6 @@ class Testbase
         if (!$result) {
             throw new Exception('Can not write PackageStates', 1381612729);
         }
-    }
-
-    /**
-     * TYPO3 11 comes with a different way package information is stored in Composer mode.
-     * Since testing e.g. extension results in the installation being marked as Composer managed,
-     * we need to create the package artifact to make the PackageManager happy
-     *
-     * @return bool
-     */
-    private function isPackageArtifactNeeded(): bool
-    {
-        return defined('TYPO3_COMPOSER_MODE') && class_exists(PackageCacheEntry::class);
     }
 
     /**
