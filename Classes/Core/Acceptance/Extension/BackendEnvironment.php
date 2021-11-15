@@ -263,7 +263,10 @@ abstract class BackendEnvironment extends Extension
         $localConfiguration['SYS']['displayErrors'] = true;
         $localConfiguration['SYS']['devIPmask'] = '*';
         // Same as 'debug' preset from install tool: especially except on warnings!
+        // @todo: This will be set to E_ALL with next major version.
         $localConfiguration['SYS']['exceptionalErrors'] = E_WARNING | E_RECOVERABLE_ERROR | E_DEPRECATED;
+        // @todo: Activate this with next major version.
+        // $localConfiguration['SYS']['errorHandlerErrors'] = E_ALL;
         $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
         $localConfiguration['SYS']['encryptionKey'] = 'iAmInvalid';
         $localConfiguration['SYS']['features']['redirects.hitCount'] = true;
