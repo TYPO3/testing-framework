@@ -17,9 +17,9 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\Http\Application;
+use TYPO3\TestingFramework\Core\SystemEnvironmentBuilder;
 
 /**
  * Bootstrap for direct CLI Request
@@ -167,9 +167,6 @@ class RequestBootstrap
             chdir($_SERVER['DOCUMENT_ROOT']);
             SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_FE);
             $container = Bootstrap::init($this->classLoader);
-            if (Environment::isComposerMode() && ClassLoadingInformation::isClassLoadingInformationAvailable()) {
-                ClassLoadingInformation::registerClassLoadingInformation();
-            }
             // The $GLOBALS array may not be passed by reference, but its elements may be.
             $override = $this->context->getGlobalSettings() ?? [];
             foreach ($GLOBALS as $k => $v) {
