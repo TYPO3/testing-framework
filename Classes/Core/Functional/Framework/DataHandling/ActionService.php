@@ -414,6 +414,7 @@ class ActionService
 
     /**
      * @param int $workspaceId
+     * @deprecated: Will be removed with next major version, workspace swap has been dropped with core v11.
      */
     public function swapWorkspace(int $workspaceId)
     {
