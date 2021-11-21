@@ -98,7 +98,6 @@ class InstallPostgresqlCoreEnvironment extends Extension
         $testbase->removeOldInstanceIfExists($instancePath);
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
         putenv('TYPO3_PATH_APP=' . $instancePath);
-        $testbase->defineTypo3ModeBe();
         $testbase->setTypo3TestingContext();
 
         // Drop db from a previous run if exists

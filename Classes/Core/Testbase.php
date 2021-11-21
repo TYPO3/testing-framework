@@ -89,19 +89,6 @@ class Testbase
     }
 
     /**
-     * Define TYPO3_MODE to BE
-     *
-     * @return void
-     * @deprecated Will be dropped with 7.x major version.
-     */
-    public function defineTypo3ModeBe(): void
-    {
-        if (!defined('TYPO3_MODE')) {
-            define('TYPO3_MODE', 'BE');
-        }
-    }
-
-    /**
      * Sets the environment variable TYPO3_CONTEXT to testing.
      * Needs to be called after each Functional executing a frontend request
      *

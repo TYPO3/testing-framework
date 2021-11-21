@@ -232,7 +232,6 @@ abstract class BackendEnvironment extends Extension
         $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
         putenv('TYPO3_PATH_APP=' . $instancePath);
-        $testbase->defineTypo3ModeBe();
         $testbase->setTypo3TestingContext();
 
         $testbase->removeOldInstanceIfExists($instancePath);
