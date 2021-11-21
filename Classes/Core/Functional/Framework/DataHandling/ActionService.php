@@ -25,7 +25,14 @@ use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
 
 /**
- * DataHandler Actions
+ * This is a helper to run DataHandler actions in tests.
+ *
+ * It is primarily used in core functional tests to execute DataHandler actions.
+ * Hundreds of core tests use this. A typical use case:
+ *
+ * 1. Load a fixture data set into database - for instance some pages and content elements
+ * 2. Run a DataHandler action like "localize this content element" using localizeRecord() below
+ * 3. Verify resulting database state by comparing with a target fixture
  */
 class ActionService
 {
@@ -35,7 +42,10 @@ class ActionService
     protected $dataHandler;
 
     /**
-     * @return DataHandler
+     * A low level method to retrieve the executing DataHandler method after
+     * actions have been performed. Usually only used when "arbitrary" commands
+     * are run via invoke(), and / or some special DataHandler state is checked
+     * after some operation.
      */
     public function getDataHandler(): DataHandler
     {
@@ -43,12 +53,7 @@ class ActionService
     }
 
     /**
-     * Creates the new record and returns an array keyed by table, containing the new id
-     *
-     * @param string $tableName
-     * @param int $pageId
-     * @param array $recordData
-     * @return array
+     * Creates a new record and returns an array keyed by table, containing the new id.
      */
     public function createNewRecord(string $tableName, int $pageId, array $recordData): array
     {
@@ -56,11 +61,7 @@ class ActionService
     }
 
     /**
-     * Creates the records and returns an array keyed by table, containing the new ids
-     *
-     * @param int $pageId
-     * @param array $tableRecordData
-     * @return array
+     * Creates the records and returns an array keyed by table, containing the new ids.
      */
     public function createNewRecords(int $pageId, array $tableRecordData): array
     {
@@ -102,10 +103,11 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @param array $recordData
-     * @param array $deleteTableRecordIds
+     * Modify an existing record.
+     *
+     * Example:
+     * modifyRecord('tt_content', 42, ['hidden' => '1']); // Modify a single record
+     * modifyRecord('tt_content', 42, ['hidden' => '1'], ['tx_irre_table' => [4]]); // Modify a record and delete a child
      */
     public function modifyRecord(string $tableName, int $uid, array $recordData, array $deleteTableRecordIds = null)
     {
@@ -131,8 +133,20 @@ class ActionService
     }
 
     /**
-     * @param int $pageId
-     * @param array $tableRecordData
+     * Modify multiple records on a single page.
+     *
+     * Example:
+     * modifyRecords(
+     *      $pageUid,
+     *      [
+     *          'tt_content' => [
+     *              'uid' => 3,
+     *              'header' => 'Testing #1',
+     *              'tx_irre_hotel' => 5
+     *              self::FIELD_Categories => $categoryNewId,
+     *      ],
+     *      // ... another record on this page
+     * );
      */
     public function modifyRecords(int $pageId, array $tableRecordData)
     {
@@ -169,9 +183,7 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @return array
+     * Delete single record. Typically sets deleted=1 for soft-delete aware tables.
      */
     public function deleteRecord(string $tableName, int $uid): array
     {
@@ -183,8 +195,13 @@ class ActionService
     }
 
     /**
-     * @param array $tableRecordIds
-     * @return array
+     * Delete multiple records in many tables.
+     *
+     * Example:
+     * deleteRecords([
+     *      'tt_content' => [300, 301, 302],
+     *      'other_table' => [42],
+     * ]);
      */
     public function deleteRecords(array $tableRecordIds): array
     {
@@ -204,8 +221,7 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
+     * Discard a single workspace record.
      */
     public function clearWorkspaceRecord(string $tableName, int $uid)
     {
@@ -217,7 +233,13 @@ class ActionService
     }
 
     /**
-     * @param array $tableRecordIds
+     * Discard multiple workspace records.
+     *
+     * Example:
+     * clearWorkspaceRecords([
+     *      'tt_content' => [ 5, 7 ],
+     *      ...
+     * ]);
      */
     public function clearWorkspaceRecords(array $tableRecordIds)
     {
@@ -237,11 +259,10 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @param int $pageId
-     * @param array $recordData
-     * @return array
+     * Copy a record to a different page. Optionally change data of inserted record.
+     *
+     * Example:
+     * copyRecord('tt_content', 42, 5, ['header' => 'Testing #1']);
      */
     public function copyRecord(string $tableName, int $uid, int $pageId, array $recordData = null): array
     {
@@ -266,12 +287,17 @@ class ActionService
     }
 
     /**
+     * Move a record to a different position or page. Optionally change the moved record.
+     *
+     * Example:
+     * moveRecord('tt_content', 42, -5, ['hidden' => '1']);
+     *
      * @param string $tableName
-     * @param int $uid uid of the record you want to move
+     * @param int $uid uid of the record to move
      * @param int $targetUid target uid of a page or record. if positive, means it's PID where the record will be moved into,
-     * negative means record will be placed after record with this uid. In this case it's uid of the record from
-     * the same table, and not a PID.
-     * @param array $recordData
+*                 negative means record will be placed after record with this uid. In this case it's uid of the record from
+     *            the same table, and not a PID.
+     * @param array $recordData Additional record data to change when moving.
      * @return array
      */
     public function moveRecord(string $tableName, int $uid, int $targetUid, array $recordData = null): array
@@ -297,10 +323,9 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @param int $languageId
-     * @return array
+     * Localize a single record so some target language id.
+     * This is the "translate" operation from the page module for a single record, where l10n_parent
+     * is set to the default language record and l10n_source to the id of the source record.
      */
     public function localizeRecord(string $tableName, int $uid, int $languageId): array
     {
@@ -318,10 +343,9 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @param int $languageId
-     * @return array
+     * Copy a single record to some target language id.
+     * This is the "copy" operation from the page module for a single record, where l10n_parent
+     * of the copied record is 0.
      */
     public function copyRecordToLanguage(string $tableName, int $uid, int $languageId): array
     {
@@ -339,10 +363,15 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $uid
-     * @param string $fieldName
-     * @param array $referenceIds
+     * Update relations of a record to a new set of relations.
+     *
+     * Example:
+     * modifyReferences(
+     *      'tt_content',
+     *      42,
+     *      tx_irre_hotels,
+     *      [ 3, 5, 7 ]
+     * );
      */
     public function modifyReferences(string $tableName, int $uid, string $fieldName, array $referenceIds)
     {
@@ -359,9 +388,7 @@ class ActionService
     }
 
     /**
-     * @param string $tableName
-     * @param int $liveUid
-     * @param bool $throwException
+     * Publish a single workspace record. Use the live record id of the workspace record.
      */
     public function publishRecord(string $tableName, $liveUid, bool $throwException = true)
     {
@@ -369,9 +396,13 @@ class ActionService
     }
 
     /**
-     * @param array $tableLiveUids
-     * @param bool $throwException
-     * @throws Exception
+     * Publish multiple records to live.
+     *
+     * Example:
+     * publishRecords([
+     *      'tt_content' => [ 42, 87 ],
+     *      ...
+     * ]
      */
     public function publishRecords(array $tableLiveUids, bool $throwException = true)
     {
@@ -402,7 +433,7 @@ class ActionService
     }
 
     /**
-     * @param int $workspaceId
+     * Publish all records of an entire workspace.
      */
     public function publishWorkspace(int $workspaceId)
     {
@@ -425,8 +456,7 @@ class ActionService
     }
 
     /**
-     * @param array $dataMap
-     * @param array $commandMap
+     * A low level method to invoke an arbitrary DataHandler data and / or command map.
      */
     public function invoke(array $dataMap, array $commandMap, array $suggestedIds = [])
     {
