@@ -26,7 +26,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractI
  * It provides some convenient helper methods like ->withPageId() to easily set up a frontend request.
  * It is later turned into a request implementing PSR-7 ServerRequestInterface.
  */
-class InternalRequest extends Request implements \JsonSerializable
+class InternalRequest extends Request
 {
     use AssignablePropertyTrait;
 
@@ -34,21 +34,6 @@ class InternalRequest extends Request implements \JsonSerializable
      * @var AbstractInstruction[]
      */
     protected $instructions = [];
-
-    /**
-     * @param array $data
-     * @return InternalRequest
-     * @internal
-     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped
-     */
-    public static function fromArray(array $data): InternalRequest
-    {
-        $target = (new static($data['uri'] ?? ''));
-        $target->getBody()->write($data['body'] ?? '');
-        $data['instructions'] = static::buildInstructions($data);
-        unset($data['uri'], $data['body']);
-        return $target->with($data);
-    }
 
     /**
      * @param array $data
@@ -74,22 +59,6 @@ class InternalRequest extends Request implements \JsonSerializable
         }
         $body = new Stream('php://temp', 'rw');
         parent::__construct($uri, 'GET', $body);
-    }
-
-    /**
-     * @return array
-     * @internal
-     * @deprecated Can be removed when retrieveFrontendRequestResult() is dropped, also drop 'implements JsonSerializable'
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'method' => $this->method,
-            'headers' => $this->headers,
-            'uri' => (string)$this->uri,
-            'body' => (string)$this->body,
-            'instructions' => $this->instructions,
-        ];
     }
 
     /**
@@ -141,28 +110,6 @@ class InternalRequest extends Request implements \JsonSerializable
         $target = clone $this;
         $target->uri = $target->uri->withQuery($query);
         return $target;
-    }
-
-    /**
-     * Helper method for with() of AssignablePropertyTrait to allow setting withHeader()
-     * from single $this->headers[] when this object is thawed using fromArray() in
-     * PHP process forking scenarios initiated by executeFrontendRequest().
-     *
-     * NOT relevant for executeFrontendSubRequest() where the request object is directly
-     * hand over to the frontend application.
-     *
-     * @param array $headers
-     * @return InternalRequest
-     * @deprecated Can be removed when retrieveFrontendRequestResult()
-     */
-    private function withHeaders(array $headers): InternalRequest
-    {
-        $request = $this;
-        foreach ($headers as $name => $value) {
-            $request = $request->withHeader($name, $value);
-        }
-
-        return $request;
     }
 
     /**

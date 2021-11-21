@@ -18,11 +18,6 @@ class Encoder implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // Fallback for legacy tests that do not expect JSON response
-        if (!RequestBootstrap::shallUseWithJsonResponse()) {
-            return $handler->handle($request);
-        }
-
         try {
             $response = $handler->handle($request);
         } catch (ImmediateResponseException $exception) {

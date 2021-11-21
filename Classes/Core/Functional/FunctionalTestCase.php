@@ -19,7 +19,6 @@ use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
-use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
@@ -1053,7 +1052,6 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Execute a TYPO3 frontend application request.
-     * Note this needs a core v11 and is experimental for extension developers for now.
      *
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
@@ -1225,93 +1223,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Old method to execute a TYPO3 frontend request. The internals feed
-     * the request to a php child process to isolate the call.
-     * This is needed for tests that run on a TYPO3 core <= v10, for
-     * tests with core v11, ->executeFrontendSubRequest() should be used.
-     *
-     * @param InternalRequest $request
-     * @param InternalRequestContext|null $context
-     * @param bool $followRedirects Whether to follow HTTP location redirects
-     * @return InternalResponse
-     * @deprecated Use executeFrontendSubRequest() instead
-     */
-    protected function executeFrontendRequest(
-        InternalRequest $request,
-        InternalRequestContext $context = null,
-        bool $followRedirects = false
-    ): InternalResponse {
-        if ($context === null) {
-            $context = new InternalRequestContext();
-        }
-
-        $locationHeaders = [];
-
-        do {
-            $result = $this->retrieveFrontendRequestResult($request, $context);
-            $response = $this->reconstituteFrontendRequestResult($result);
-            $locationHeader = $response->getHeaderLine('location');
-            if (in_array($locationHeader, $locationHeaders, true)) {
-                $this->fail(
-                    implode(LF . '* ', array_merge(
-                        ['Redirect loop detected:'],
-                        $locationHeaders,
-                        [$locationHeader]
-                    ))
-                );
-            }
-            $locationHeaders[] = $locationHeader;
-            $request = new InternalRequest($locationHeader);
-        } while ($followRedirects && !empty($locationHeader));
-
-        return $response;
-    }
-
-    /**
-     * Internal implementation of executing a frontend request incapsulated
-     * in a PHP child process.
-     *
-     * @param InternalRequest $request
-     * @param InternalRequestContext $context
-     * @param bool $withJsonResponse
-     * @return array
-     * @deprecated Use executeFrontendSubRequest() instead
-     */
-    protected function retrieveFrontendRequestResult(
-        InternalRequest $request,
-        InternalRequestContext $context,
-        bool $withJsonResponse = true
-    ): array {
-        $arguments = [
-            'withJsonResponse' => $withJsonResponse,
-            'documentRoot' => $this->instancePath,
-            'request' => json_encode($request),
-            'context' => json_encode($context),
-        ];
-
-        $vendorPath = (new Testbase())->getPackagesPath();
-
-        // @todo Hard switch to class name in if condition after phpunit v9 is minimum requirement
-        $templateClass = \Text_Template::class;
-        if (!class_exists($templateClass)) {
-            $templateClass = \SebastianBergmann\Template\Template::class;
-        }
-        $template = new $templateClass($vendorPath . '/typo3/testing-framework/Resources/Core/Functional/Fixtures/Frontend/request.tpl');
-
-        $template->setVar(
-            [
-                'arguments' => var_export($arguments, true),
-                'documentRoot' => $this->instancePath,
-                'originalRoot' => ORIGINAL_ROOT,
-                'vendorPath' => $vendorPath . '/'
-            ]
-        );
-
-        $php = AbstractPhpProcess::factory();
-        return $php->runJob($template->render());
-    }
-
-    /**
      * @param array $result
      * @return InternalResponse
      * @internal Never use directly. May vanish without further notice.
@@ -1348,79 +1259,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
 
         return InternalResponse::fromArray($data['content']);
-    }
-
-    /**
-     * @param int $pageId
-     * @param int $languageId
-     * @param int $backendUserId
-     * @param int $workspaceId
-     * @param bool $failOnFailure
-     * @param int $frontendUserId
-     * @return Response
-     * @deprecated Use executeFrontendSubRequest() instead
-     */
-    protected function getFrontendResponse(
-        $pageId,
-        $languageId = 0,
-        $backendUserId = 0,
-        $workspaceId = 0,
-        $failOnFailure = true,
-        $frontendUserId = 0
-    ) {
-        $result = $this->getFrontendResult(
-            $pageId,
-            $languageId,
-            $backendUserId,
-            $workspaceId,
-            $frontendUserId
-        );
-        if (!empty($result['stderr'])) {
-            $this->fail('Frontend Response is erroneous: ' . LF . $result['stderr']);
-        }
-
-        $data = json_decode($result['stdout'], true);
-
-        if ($data === null) {
-            $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
-        }
-
-        if ($failOnFailure && $data['status'] === Response::STATUS_Failure) {
-            $this->fail('Frontend Response has failure:' . LF . $data['error']);
-        }
-
-        return new Response($data['status'], $data['content'], $data['error']);
-    }
-
-    /**
-     * Retrieves raw HTTP result by simulation a PHP frontend request
-     * using an internal PHP sub process.
-     *
-     * @param int $pageId
-     * @param int $languageId
-     * @param int $backendUserId
-     * @param int $workspaceId
-     * @param int $frontendUserId
-     * @return array containing keys 'stdout' and 'stderr'
-     * @deprecated Use executeFrontendSubRequest() instead
-     */
-    protected function getFrontendResult(
-        $pageId,
-        $languageId = 0,
-        $backendUserId = 0,
-        $workspaceId = 0,
-        $frontendUserId = 0
-    ) {
-        return $this->retrieveFrontendRequestResult(
-            (new InternalRequest())
-                ->withPageId($pageId)
-                ->withLanguageId($languageId),
-            (new InternalRequestContext())
-                ->withBackendUserId($backendUserId)
-                ->withWorkspaceId($workspaceId)
-                ->withFrontendUserId($frontendUserId),
-            false
-        );
     }
 
     /**
