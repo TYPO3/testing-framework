@@ -26,7 +26,7 @@
   },
   "require": {
     "php": "^7.4 || ^8.0",
-    "phpunit/phpunit": "^8.4 || ^9.0",
+    "phpunit/phpunit": "^9.5.10",
     "psr/container": "^1.0",
     "mikey179/vfsstream": "~1.6.10",
     "typo3fluid/fluid": "^2.5|^3",
