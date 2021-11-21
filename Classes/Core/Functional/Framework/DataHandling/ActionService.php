@@ -329,17 +329,33 @@ class ActionService
      */
     public function localizeRecord(string $tableName, int $uid, int $languageId): array
     {
-        $commandMap = [
-            $tableName => [
-                $uid => [
+        return $this->localizeRecords($languageId, [$tableName => [$uid]]);
+    }
+
+    /**
+     * Localize multiple records to some target language id.
+     *
+     * Example:
+     * localizeRecords(self::VALUE_LanguageId, [
+     *      'tt_content' => [ 45, 87 ],
+     * ]);
+     *
+     * @return array An array of new ids ['tt_content'][45] = theNewUid;
+     */
+    public function localizeRecords(int $languageId, array $tableRecordIds): array
+    {
+        $commandMap = [];
+        foreach ($tableRecordIds as $tableName => $ids) {
+            foreach ($ids as $uid) {
+                $commandMap[$tableName][$uid] = [
                     'localize' => $languageId,
-                ],
-            ],
-        ];
+                ];
+            }
+        }
         $this->createDataHandler();
         $this->dataHandler->start([], $commandMap);
         $this->dataHandler->process_cmdmap();
-        return $this->dataHandler->copyMappingArray;
+        return $this->dataHandler->copyMappingArray_merged;
     }
 
     /**
