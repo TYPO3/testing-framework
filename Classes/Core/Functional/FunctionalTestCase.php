@@ -349,7 +349,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $localConfiguration['SYS']['errorHandler'] = '';
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
             $localConfiguration['SYS']['encryptionKey'] = 'i-am-not-a-secure-encryption-key';
-            $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
             $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
             $defaultCoreExtensionsToLoad = [
