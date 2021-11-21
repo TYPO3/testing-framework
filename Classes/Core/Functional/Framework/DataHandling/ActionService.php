@@ -460,18 +460,6 @@ class ActionService
     }
 
     /**
-     * @param int $workspaceId
-     * @deprecated: Will be removed with next major version, workspace swap has been dropped with core v11.
-     */
-    public function swapWorkspace(int $workspaceId)
-    {
-        $commandMap = $this->getWorkspaceService()->getCmdArrayForPublishWS($workspaceId, true);
-        $this->createDataHandler();
-        $this->dataHandler->start([], $commandMap);
-        $this->dataHandler->process_cmdmap();
-    }
-
-    /**
      * A low level method to invoke an arbitrary DataHandler data and / or command map.
      */
     public function invoke(array $dataMap, array $commandMap, array $suggestedIds = [])
