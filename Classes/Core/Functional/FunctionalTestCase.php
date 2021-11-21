@@ -343,19 +343,10 @@ abstract class FunctionalTestCase extends BaseTestCase
             // $this->configurationToUseInTestInstance if needed again.
             $localConfiguration['SYS']['displayErrors'] = '1';
             $localConfiguration['SYS']['debugExceptionHandler'] = '';
-
-            if ((new Typo3Version())->getMajorVersion() >= 11
-                && defined('TYPO3_TESTING_FUNCTIONAL_REMOVE_ERROR_HANDLER')
-            ) {
-                // @deprecated, will *always* be done with next major version: TYPO3 v11
-                // with "<const name="TYPO3_TESTING_FUNCTIONAL_REMOVE_ERROR_HANDLER" value="true" />"
-                // in FunctionalTests.xml does not suppress warnings, notices and deprecations.
-                // By setting errorHandler to empty string, only the phpunit error handler is
-                // registered in functional tests, so settings like convertWarningsToExceptions="true"
-                // in FunctionalTests.xml will let tests fail that throw warnings.
-                $localConfiguration['SYS']['errorHandler'] = '';
-            }
-
+            // By setting errorHandler to empty string, only the phpunit error handler is
+            // registered in functional tests, so settings like convertWarningsToExceptions="true"
+            // in FunctionalTests.xml will let tests fail that throw warnings.
+            $localConfiguration['SYS']['errorHandler'] = '';
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
             $localConfiguration['SYS']['encryptionKey'] = 'i-am-not-a-secure-encryption-key';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
