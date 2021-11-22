@@ -894,7 +894,7 @@ class Testbase
         if ($platform instanceof PostgreSqlPlatform) {
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->getRestrictions()->removeAll();
-            $statement = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
+            $row = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
                 ->from('pg_class', 'S')
                 ->from('pg_depend', 'D')
                 ->from('pg_class', 'T')
@@ -910,14 +910,8 @@ class Testbase
                     $queryBuilder->expr()->eq('PGT.tablename', $queryBuilder->quote($tableName))
                 )
                 ->setMaxResults(1)
-                ->execute();
-            if ((new Typo3Version())->getMajorVersion() >= 11) {
-                $row = $statement->fetchAssociative();
-            } else {
-                // @deprecated: Will be removed with next major version - core v10 compat.
-                $row = $statement->fetch();
-            }
-
+                ->execute()
+                ->fetchAssociative();
             if ($row !== false) {
                 $connection->exec(
                     sprintf(

@@ -522,7 +522,7 @@ class ActionService
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-        $statement = $queryBuilder
+        $row = $queryBuilder
             ->select('uid')
             ->from($tableName)
             ->where(
@@ -535,13 +535,8 @@ class ActionService
                     $queryBuilder->createNamedParameter($workspaceId, \PDO::PARAM_INT)
                 )
             )
-            ->execute();
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $row = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $row = $statement->fetch();
-        }
+            ->execute()
+            ->fetchAssociative();
         if (!empty($row['uid'])) {
             return (int)$row['uid'];
         }
@@ -551,7 +546,7 @@ class ActionService
         // from the database
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-        $statement = $queryBuilder
+        $row = $queryBuilder
             ->select('uid')
             ->from($tableName)
             ->where(
@@ -572,13 +567,8 @@ class ActionService
                     $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)
                 )
             )
-            ->execute();
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $row = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $row = $statement->fetch();
-        }
+            ->execute()
+            ->fetchAssociative();
         if (!empty($row)) {
             // This is effectively the same record as $liveUid, but only if the constraints from above match
             return (int)$row['uid'];
