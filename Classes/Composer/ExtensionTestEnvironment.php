@@ -18,7 +18,7 @@ namespace TYPO3\TestingFramework\Composer;
 use Composer\Script\Event;
 use Composer\Util\Filesystem;
 use TYPO3\CMS\Composer\Plugin\Config;
-use TYPO3\CMS\Core\Composer\PackageArtifactBuilder
+use TYPO3\CMS\Core\Composer\PackageArtifactBuilder;
 
 /**
  * If a TYPO3 extension should be tested, the extension needs to be embedded in
