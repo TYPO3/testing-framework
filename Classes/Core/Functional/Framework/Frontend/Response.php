@@ -37,11 +37,6 @@ class Response
     protected $error;
 
     /**
-     * @var ResponseContent
-     */
-    protected $responseSection;
-
-    /**
      * @param string $status
      * @param string $content
      * @param string $error
@@ -75,27 +70,5 @@ class Response
     public function getError()
     {
         return $this->error;
-    }
-
-    /**
-     * @return ResponseContent
-     * @deprecated use ResponseContent::fromString() instead
-     */
-    public function getResponseContent()
-    {
-        if (!isset($this->responseContent)) {
-            $this->responseContent = ResponseContent::fromString($this->getContent());
-        }
-        return $this->responseContent;
-    }
-
-    /**
-     * @param mixed $sectionIdentifiers
-     * @return NULL|array|ResponseSection[]
-     * @deprecated use ResponseContent::getSections() instead
-     */
-    public function getResponseSections(...$sectionIdentifiers)
-    {
-        return $this->getResponseContent()->getSections(...$sectionIdentifiers);
     }
 }
