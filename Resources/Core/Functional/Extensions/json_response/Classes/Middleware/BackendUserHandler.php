@@ -59,12 +59,7 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
         $statement = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
             ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()]);
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $backendUser->user = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $backendUser->user = $statement->fetch();
-        }
+        $backendUser->user = $statement->fetchAssociative();
 
         if (!empty($context->getWorkspaceId())) {
             $backendUser->setTemporaryWorkspace($context->getWorkspaceId());

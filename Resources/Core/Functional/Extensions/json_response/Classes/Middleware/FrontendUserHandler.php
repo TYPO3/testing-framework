@@ -50,15 +50,10 @@ class FrontendUserHandler implements MiddlewareInterface
         $frontendUserAuthentication = $request->getAttribute('frontend.user');
         $frontendUserAuthentication->checkPid = 0;
 
-        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
+        $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('fe_users')
-            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()]);
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $frontendUser = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $frontendUser = $statement->fetch();
-        }
+            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
+            ->fetchAssociative();
         if (is_array($frontendUser)) {
             $context = GeneralUtility::makeInstance(Context::class);
             $frontendUserAuthentication->createUserSession($frontendUser);
