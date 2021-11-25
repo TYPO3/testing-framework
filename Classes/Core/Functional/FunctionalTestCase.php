@@ -1195,25 +1195,6 @@ abstract class FunctionalTestCase extends BaseTestCase
             $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
         }
 
-        // @deprecated: Will be removed with next major version: The sub request method does
-        //              not use 'status' and 'exception' anymore, the entire if() can be removed
-        //              when php process forking methods are removed.
-        if ($data['status'] === Response::STATUS_Failure) {
-            try {
-                $exception = new $data['exception']['type'](
-                    $data['exception']['message'],
-                    $data['exception']['code']
-                );
-            } catch (\Throwable $throwable) {
-                $exception = new InternalResponseException(
-                    (string)$data['exception']['message'],
-                    (int)$data['exception']['code'],
-                    (string)$data['exception']['type']
-                );
-            }
-            throw $exception;
-        }
-
         return InternalResponse::fromArray($data['content']);
     }
 
