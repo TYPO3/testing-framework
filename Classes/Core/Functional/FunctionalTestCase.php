@@ -35,6 +35,7 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
@@ -594,7 +595,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Import data from a CSV file to database
      * Single file can contain data from multiple tables
      *
-     * @param string $path absolute path to the CSV file containing the data set to load
+     * @param string $path Absolute path to the CSV file containing the data set to load
      */
     public function importCSVDataSet($path)
     {
@@ -643,13 +644,16 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Compare data in database with CSV file
+     * Compare data in database with a CSV file
      *
-     * @param string $path absolute path to the CSV file
+     * @param string $fileName Absolute path to the CSV file
      */
-    protected function assertCSVDataSet($path)
+    protected function assertCSVDataSet($fileName)
     {
-        $fileName = GeneralUtility::getFileAbsFileName($path);
+        if (!PathUtility::isAbsolutePath($fileName)) {
+            // @deprecated: Always feed absolute paths.
+            $fileName = GeneralUtility::getFileAbsFileName($fileName);
+        }
 
         $dataSet = DataSet::read($fileName);
         $failMessages = [];
