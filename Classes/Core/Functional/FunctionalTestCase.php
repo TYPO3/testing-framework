@@ -1075,10 +1075,6 @@ abstract class FunctionalTestCase extends BaseTestCase
                 ArrayUtility::mergeRecursiveWithOverrule($GLOBALS[$k], $override[$k]);
             }
         }
-        $result = [
-            'status' => 'failure',
-            'content' => null,
-        ];
         // Create ServerRequest from testing-framework InternalRequest object
         $uri = $request->getUri();
 
@@ -1106,8 +1102,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         try {
             $frontendApplication = $container->get(Application::class);
             $jsonResponse = $frontendApplication->handle($serverRequest);
-            $result['status'] = 'success';
-            $result['content'] = json_decode($jsonResponse->getBody()->__toString(), true);
+            $result = json_decode($jsonResponse->getBody()->__toString(), true);
         } catch (\Exception $exception) {
             // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
             // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
@@ -1136,7 +1131,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 Environment::isWindows() ? 'WINDOWS' : 'UNIX'
             );
         }
-        return InternalResponse::fromArray($result['content']);
+        return InternalResponse::fromArray($result);
     }
 
     /**
