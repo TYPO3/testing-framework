@@ -11,10 +11,10 @@
 
     TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
     file is located next to this .xml as FunctionalTestsBootstrap.php
-
-    @todo: Make phpunit v9 compatible, add the xml things to phpunit tag, see core versions.
 -->
 <phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
     backupGlobals="true"
     bootstrap="UnitTestsBootstrap.php"
     cacheResult="false"
@@ -43,16 +43,14 @@
             <directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
         </testsuite>
     </testsuites>
-    <!-- @todo: change tag to 'coverage' when TF requires phpunit > 9 -->
-    <filter>
-        <!-- @todo: change tag to 'include' when TF requires phpunit > 9 -->
-        <whitelist>
+    <coverage>
+        <include>
             <!--
                 This path needs an adaption in extensions, when coverage statistics are wanted.
             -->
             <directory>../../../../../../typo3/sysext/*/Classes/</directory>
-        </whitelist>
-    </filter>
+        </include>
+    </coverage>
     <php>
         <ini name="display_errors" value="1" />
         <env name="TYPO3_CONTEXT" value="Testing" />
