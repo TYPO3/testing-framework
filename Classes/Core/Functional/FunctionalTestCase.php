@@ -1136,16 +1136,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 Environment::isWindows() ? 'WINDOWS' : 'UNIX'
             );
         }
-        $content['stdout'] = json_encode($result);
-
-        if (!empty($content['stderr'])) {
-            $this->fail('Frontend Response is erroneous: ' . LF . $content['stderr']);
-        }
-        $data = json_decode($content['stdout'], true);
-        if ($data === null) {
-            $this->fail('Frontend Response is empty: ' . LF . $content['stdout']);
-        }
-        return InternalResponse::fromArray($data['content']);
+        return InternalResponse::fromArray($result['content']);
     }
 
     /**
