@@ -1160,16 +1160,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         // Create ServerRequest from testing-framework InternalRequest object
         $uri = $request->getUri();
 
-        // Implement a side effect: String casting an uri object that has been created from 'https://website.local//'
-        // results in 'https://website.local/' (double slash at end missing). The old executeFrontendRequest() triggered
-        // this since it had to stringify the request to transfer it through the PHP process to later reconstitute it.
-        // We simulate this behavior here. See Test SlugSiteRequestTest->requestsAreRedirectedWithoutHavingDefaultSiteLanguage()
-        // with data set 'https://website.local//' relies on this behavior and leads to a different middleware redirect path
-        // if the double '//' is given.
-        // @todo: Resolve this, probably by a) changing Uri __toString() to not trigger that side effect and b) changing test
-        $uriString = (string)$uri;
-        $uri = new Uri($uriString);
-
         // Build minimal serverParams and hand over to ServerRequest. The normalizedParams
         // attribute relies on these. Note the access to $_SERVER should be dropped when the
         // above getIndpEnv() can be dropped, too.
