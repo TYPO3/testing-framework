@@ -725,9 +725,8 @@ class Testbase
             $fromTableUnionSubSelectQuery,
             $connection->quote($databaseName)
         );
-        // @todo: Switch to fetchAllAssociative() when core v10 compat is dropped.
-        $result = $connection->executeQuery($query)->fetchAll();
-        foreach ($result as $tableData) {
+        $result = $connection->executeQuery($query);
+        while ($tableData = $result->fetchAssociative()) {
             $hasChangedAutoIncrement = ((int)$tableData['auto_increment']) > 1;
             $hasAtLeastOneRow = (bool)$tableData['has_rows'];
             $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
