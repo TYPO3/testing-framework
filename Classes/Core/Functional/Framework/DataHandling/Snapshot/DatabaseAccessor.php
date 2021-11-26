@@ -15,8 +15,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
@@ -123,9 +122,7 @@ class DatabaseAccessor
                     array_combine($columnNames, $item),
                     $columns
                 );
-            } catch (UniqueConstraintViolationException | DBALException $e) {
-                // @todo: DBALException is used here for mssql only, others throw UniqueConstraintViolationException
-                // @todo: At least switch from deprecated DBALException to \Doctrine\DBAL\Exception, when TF is v11 and higher.
+            } catch (Exception $e) {
                 // The scenario solved here: Some tests (eg. ClipboardTest) use the snapshot *after* first rows have
                 // been inserted in setUp(). Those rows are snapshotted too, the second test then tries to insert
                 // those rows from the snapshot again. But they exist already, which leads to an exception.
