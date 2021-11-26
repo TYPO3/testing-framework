@@ -472,41 +472,14 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected function setUpBackendUser($userUid): BackendUserAuthentication
     {
         $userRow = $this->getBackendUserRecordFromDatabase($userUid);
-
-        // Can be removed with the next major version
-        if ((new Typo3Version())->getMajorVersion() < 11) {
-            /** @var $backendUser BackendUserAuthentication */
-            $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
-            $sessionId = $backendUser->createSessionId();
-            $_COOKIE['be_typo_user'] = $sessionId;
-            $backendUser->id = $sessionId;
-            $backendUser->sendNoCacheHeaders = false;
-            $backendUser->dontSetCookie = true;
-            $backendUser->createUserSession($userRow);
-
-            $GLOBALS['BE_USER'] = $backendUser;
-            $GLOBALS['BE_USER']->start();
-            if (!is_array($GLOBALS['BE_USER']->user) || !$GLOBALS['BE_USER']->user['uid']) {
-                throw new Exception(
-                    'Can not initialize backend user',
-                    1377095807
-                );
-            }
-            $GLOBALS['BE_USER']->backendCheckLogin();
-            GeneralUtility::makeInstance(Context::class)->setAspect(
-                'backend.user',
-                GeneralUtility::makeInstance(UserAspect::class, $backendUser)
-            );
-        } else {
-            $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
-            $session = $backendUser->createUserSession($userRow);
-            $sessionId = $session->getIdentifier();
-            $request = $this->createServerRequest('https://typo3-testing.local/typo3/');
-            $request = $request->withCookieParams(['be_typo_user' => $sessionId]);
-            $backendUser = $this->authenticateBackendUser($backendUser, $request);
-            // @todo: remove this with the next major version
-            $GLOBALS['BE_USER'] = $backendUser;
-        }
+        $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
+        $session = $backendUser->createUserSession($userRow);
+        $sessionId = $session->getIdentifier();
+        $request = $this->createServerRequest('https://typo3-testing.local/typo3/');
+        $request = $request->withCookieParams(['be_typo_user' => $sessionId]);
+        $backendUser = $this->authenticateBackendUser($backendUser, $request);
+        // @todo: remove this with the next major version
+        $GLOBALS['BE_USER'] = $backendUser;
         return $backendUser;
     }
 
