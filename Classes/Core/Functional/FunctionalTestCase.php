@@ -998,8 +998,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
         $locationHeaders = [];
         do {
-            $result = $this->retrieveFrontendSubRequestResult($request, $context);
-            $response = $this->reconstituteFrontendRequestResult($result);
+            $response = $this->retrieveFrontendSubRequestResult($request, $context);
             $locationHeader = $response->getHeaderLine('location');
             if (in_array($locationHeader, $locationHeaders, true)) {
                 $this->fail(
@@ -1034,7 +1033,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     private function retrieveFrontendSubRequestResult(
         InternalRequest $request,
         InternalRequestContext $context
-    ): array
+    ): InternalResponse
     {
         FrameworkState::push();
         FrameworkState::reset();
@@ -1138,26 +1137,14 @@ abstract class FunctionalTestCase extends BaseTestCase
             );
         }
         $content['stdout'] = json_encode($result);
-        return $content;
-    }
 
-    /**
-     * @param array $result
-     * @return InternalResponse
-     * @internal Never use directly. May vanish without further notice.
-     */
-    protected function reconstituteFrontendRequestResult(array $result): InternalResponse
-    {
-        if (!empty($result['stderr'])) {
-            $this->fail('Frontend Response is erroneous: ' . LF . $result['stderr']);
+        if (!empty($content['stderr'])) {
+            $this->fail('Frontend Response is erroneous: ' . LF . $content['stderr']);
         }
-
-        $data = json_decode($result['stdout'], true);
-
+        $data = json_decode($content['stdout'], true);
         if ($data === null) {
-            $this->fail('Frontend Response is empty: ' . LF . $result['stdout']);
+            $this->fail('Frontend Response is empty: ' . LF . $content['stdout']);
         }
-
         return InternalResponse::fromArray($data['content']);
     }
 
@@ -1175,11 +1162,9 @@ abstract class FunctionalTestCase extends BaseTestCase
         $connection = $this->getConnectionPool()->getConnectionByName(
             ConnectionPool::DEFAULT_CONNECTION_NAME
         );
-
         if (!$connection instanceof DatabaseConnectionWrapper) {
             return;
         }
-
         $connection->allowIdentityInsert($allowIdentityInsert);
     }
 
