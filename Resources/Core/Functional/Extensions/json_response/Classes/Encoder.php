@@ -9,6 +9,9 @@ use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
+/**
+ * @deprecated This middleware will vanish in v12 compatible testing-framework
+ */
 class Encoder implements MiddlewareInterface
 {
     /**
