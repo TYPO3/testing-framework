@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Unit;
 
 /*
@@ -42,7 +44,7 @@ abstract class UnitTestCase extends BaseTestCase
      *
      * @var bool
      */
-    protected $backupEnvironment = false;
+    protected bool $backupEnvironment = false;
 
     /**
      * If set to true, tearDown() will purge singleton instances created by the test.
@@ -58,7 +60,7 @@ abstract class UnitTestCase extends BaseTestCase
      *
      * @var bool
      */
-    protected $resetSingletonInstances = false;
+    protected bool $resetSingletonInstances = false;
 
     /**
      * Absolute path to files that should be removed after a test.
@@ -67,7 +69,7 @@ abstract class UnitTestCase extends BaseTestCase
      *
      * @var array
      */
-    protected $testFilesToDelete = [];
+    protected array $testFilesToDelete = [];
 
     /**
      * Holds state of TYPO3\CMS\Core\Core\Environment if
@@ -75,7 +77,7 @@ abstract class UnitTestCase extends BaseTestCase
      *
      * @var array
      */
-    private $backedUpEnvironment = [];
+    private array $backedUpEnvironment = [];
 
     /**
      * Generic setUp()
