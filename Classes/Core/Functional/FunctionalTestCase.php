@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional;
 
 /*
@@ -22,7 +24,6 @@ use PHPUnit\Util\ErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -31,8 +32,6 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
-use TYPO3\CMS\Core\Http\Uri;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -48,8 +47,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\FrameworkState;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -87,18 +84,14 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * An unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
-     *
-     * @var string
      */
-    protected $identifier;
+    protected string $identifier;
 
     /**
      * Absolute path to test instance document root. Depends on $identifier.
      * Calculated early in setUp()
-     *
-     * @var string
      */
-    protected $instancePath;
+    protected string $instancePath;
 
     /**
      * Core extensions to load.
@@ -117,7 +110,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @see FunctionalTestCaseUtility $defaultActivatedCoreExtensions
      * @var array<int, string>
      */
-    protected $coreExtensionsToLoad = [];
+    protected array $coreExtensionsToLoad = [];
 
     /**
      * Array of test/fixture extensions paths that should be loaded for a test.
@@ -139,14 +132,14 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string[]
      */
-    protected $testExtensionsToLoad = [];
+    protected array $testExtensionsToLoad = [];
 
     /**
      * Same as $testExtensionsToLoad, but included per default from the testing framework.
      *
      * @var string[]
      */
-    protected $frameworkExtensionsToLoad = [
+    protected array $frameworkExtensionsToLoad = [
         'Resources/Core/Functional/Extensions/json_response',
     ];
 
@@ -176,7 +169,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string[]
      */
-    protected $pathsToLinkInTestInstance = [];
+    protected array $pathsToLinkInTestInstance = [];
 
     /**
      * Similar to $pathsToLinkInTestInstance, with the difference that given
@@ -192,7 +185,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string[]
      */
-    protected $pathsToProvideInTestInstance = [];
+    protected array $pathsToProvideInTestInstance = [];
 
     /**
      * This configuration array is merged with TYPO3_CONF_VARS
@@ -200,7 +193,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var array
      */
-    protected $configurationToUseInTestInstance = [];
+    protected array $configurationToUseInTestInstance = [];
 
     /**
      * Array of folders that should be created inside the test instance document root.
@@ -225,29 +218,22 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var array
      */
-    protected $additionalFoldersToCreate = [];
+    protected array $additionalFoldersToCreate = [];
 
     /**
      * The fixture which is used when initializing a backend user
-     *
-     * @var string
      */
-    protected $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
+    protected string $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
     /**
      * Some functional test cases do not need a fully set up database with all tables and fields.
      * Those tests should set this property to false, which will skip database creation
      * in setUp(). This significantly speeds up functional test execution and should be done
      * if possible.
-     *
-     * @var bool
      */
-    protected $initializeDatabase = true;
+    protected bool $initializeDatabase = true;
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private ContainerInterface $container;
 
     /**
      * This internal variable tracks if the given test is the first test of
@@ -258,7 +244,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @var string
      */
-    private static $currestTestCaseClass;
+    private static string $currestTestCaseClass;
 
     /**
      * Set up creates a test instance and database.
@@ -432,17 +418,11 @@ abstract class FunctionalTestCase extends BaseTestCase
         }
     }
 
-    /**
-     * @return ConnectionPool
-     */
-    protected function getConnectionPool()
+    protected function getConnectionPool(): ConnectionPool
     {
         return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
-    /**
-     * @return ContainerInterface
-     */
     protected function getContainer(): ContainerInterface
     {
         if (!$this->container instanceof ContainerInterface) {
@@ -458,7 +438,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @return BackendUserAuthentication
      * @throws Exception
      */
-    protected function setUpBackendUserFromFixture($userUid)
+    protected function setUpBackendUserFromFixture(int $userUid): BackendUserAuthentication
     {
         $this->importDataSet($this->backendUserFixture);
 
@@ -468,11 +448,10 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Sets up Backend User which is already available in db
      *
-     * @param int $userUid
      * @return BackendUserAuthentication
      * @throws Exception
      */
-    protected function setUpBackendUser($userUid): BackendUserAuthentication
+    protected function setUpBackendUser(int $userUid): BackendUserAuthentication
     {
         $userRow = $this->getBackendUserRecordFromDatabase($userUid);
         $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
@@ -558,10 +537,9 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Imports a data set represented as XML into the test database,
      *
      * @param string $path Absolute path to the XML file containing the data set to load
-     * @return void
      * @throws Exception
      */
-    protected function importDataSet($path)
+    protected function importDataSet(string $path): void
     {
         $testbase = new Testbase();
         $testbase->importXmlDatabaseFixture($path);
@@ -573,7 +551,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @param string $path Absolute path to the CSV file containing the data set to load
      */
-    public function importCSVDataSet($path)
+    public function importCSVDataSet(string $path): void
     {
         $dataSet = DataSet::read($path, true);
 
@@ -624,7 +602,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * @param string $fileName Absolute path to the CSV file
      */
-    protected function assertCSVDataSet($fileName)
+    protected function assertCSVDataSet(string $fileName): void
     {
         if (!PathUtility::isAbsolutePath($fileName)) {
             // @deprecated: Always feed absolute paths.
@@ -723,13 +701,8 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Fetches all records from a database table
      * Helper method for assertCSVDataSet
-     *
-     * @param string $tableName
-     * @param bool $hasUidField
-     * @param bool $hasHashField
-     * @return array
      */
-    protected function getAllRecords($tableName, $hasUidField = false, $hasHashField = false)
+    protected function getAllRecords(string $tableName, bool $hasUidField = false, bool $hasHashField = false): array
     {
         $queryBuilder = $this->getConnectionPool()
             ->getQueryBuilderForTable($tableName);
@@ -762,11 +735,8 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Format array as human readable string. Used to format verbose error messages in assertCSVDataSet
-     *
-     * @param array $array
-     * @return string
      */
-    protected function arrayToString(array $array)
+    protected function arrayToString(array $array): string
     {
         $elements = [];
         foreach ($array as $key => $value) {
@@ -781,12 +751,8 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Format output showing difference between expected and actual db row in a human readable way
      * Used to format verbose error messages in assertCSVDataSet
-     *
-     * @param array $assertion
-     * @param array $record
-     * @return string
      */
-    protected function renderRecords(array $assertion, array $record)
+    protected function renderRecords(array $assertion, array $record): string
     {
         $differentFields = $this->getDifferentFields($assertion, $record);
         $columns = [
@@ -845,10 +811,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Compares two arrays containing db rows and returns array containing column names which don't match
      * It's a helper method used in assertCSVDataSet
-     *
-     * @param array $assertion
-     * @param array $record
-     * @return array
      */
     protected function getDifferentFields(array $assertion, array $record): array
     {
@@ -895,11 +857,8 @@ abstract class FunctionalTestCase extends BaseTestCase
      *    ]`
      *   which allows to define contents for the `contants` and `setup` part
      *   of the TypoScript template record at the same time
-     *
-     * @param int $pageId
-     * @param array $typoScriptFiles
      */
-    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = [], array $templateValues = [])
+    protected function setUpFrontendRootPage(int $pageId, array $typoScriptFiles = [], array $templateValues = []): void
     {
         $pageId = (int)$pageId;
 
@@ -962,11 +921,8 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Adds TypoScript setup snippet to the existing template record
-     *
-     * @param int $pageId
-     * @param string $typoScript
      */
-    protected function addTypoScriptToTemplateRecord(int $pageId, $typoScript)
+    protected function addTypoScriptToTemplateRecord(int $pageId, string $typoScript): void
     {
         $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
         $template = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1])->fetchAssociative();
@@ -984,11 +940,6 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Execute a TYPO3 frontend application request.
-     *
-     * @param InternalRequest $request
-     * @param InternalRequestContext|null $context
-     * @param bool $followRedirects Whether to follow HTTP location redirects
-     * @return InternalResponse
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
@@ -1028,9 +979,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      * to then call the ext:frontend Application.
      * Note this method is in 'early' state and will change over time.
      *
-     * @param InternalRequest $request
-     * @param InternalRequestContext $context
-     * @return array
      * @internal Do not use directly, use ->executeFrontendSubRequest() instead
      */
     private function retrieveFrontendSubRequestResult(
@@ -1143,10 +1091,9 @@ abstract class FunctionalTestCase extends BaseTestCase
      * + true: always allow, e.g. before actually importing data
      * + false: always deny, e.g. when importing data is finished
      *
-     * @param bool|null $allowIdentityInsert
      * @throws DBALException
      */
-    protected function allowIdentityInsert(?bool $allowIdentityInsert)
+    protected function allowIdentityInsert(?bool $allowIdentityInsert): void
     {
         $connection = $this->getConnectionPool()->getConnectionByName(
             ConnectionPool::DEFAULT_CONNECTION_NAME
@@ -1161,10 +1108,9 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Invokes database snapshot and either restores data from existing
      * snapshot or otherwise invokes $callback and creates a new snapshot.
      *
-     * @param callable $callback
      * @throws DBALException
      */
-    protected function withDatabaseSnapshot(callable $callback)
+    protected function withDatabaseSnapshot(callable $callback): void
     {
         $connection = $this->getConnectionPool()->getConnectionByName(
             ConnectionPool::DEFAULT_CONNECTION_NAME
@@ -1183,7 +1129,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Initializes database snapshot and storage.
      */
-    protected static function initializeDatabaseSnapshot()
+    protected static function initializeDatabaseSnapshot(): void
     {
         $snapshot = DatabaseSnapshot::initialize(
             dirname(static::getInstancePath()) . '/functional-sqlite-dbs/',
@@ -1197,24 +1143,19 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * Destroys database snapshot (if available).
      */
-    protected static function destroyDatabaseSnapshot()
+    protected static function destroyDatabaseSnapshot(): void
     {
         DatabaseSnapshot::destroy();
     }
 
     /**
      * Uses a 7 char long hash of class name as identifier.
-     *
-     * @return string
      */
     protected static function getInstanceIdentifier(): string
     {
         return substr(sha1(static::class), 0, 7);
     }
 
-    /**
-     * @return string
-     */
     protected static function getInstancePath(): string
     {
         $identifier = self::getInstanceIdentifier();
