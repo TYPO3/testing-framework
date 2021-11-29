@@ -332,7 +332,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
                 $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
-                if ($dbDriver === 'mysqli') {
+                if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
                     $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
                     $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
                     $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
