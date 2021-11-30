@@ -242,16 +242,15 @@ abstract class FunctionalTestCase extends BaseTestCase
      * database structure again but instead just truncate all tables which
      * is much quicker.
      *
-     * @var string
+     * @var string|null
      */
-    private static string $currestTestCaseClass;
+    private static ?string $currestTestCaseClass = null;
 
     /**
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
-     *
-     * @return void
+     * 
      * @throws \Doctrine\DBAL\DBALException
      */
     protected function setUp(): void
