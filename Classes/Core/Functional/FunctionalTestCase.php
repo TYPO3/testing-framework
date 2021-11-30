@@ -250,7 +250,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
-     * 
+     *
      * @throws \Doctrine\DBAL\DBALException
      */
     protected function setUp(): void
@@ -1008,8 +1008,8 @@ abstract class FunctionalTestCase extends BaseTestCase
         // @todo: Make TSFE not use getIndpEnv() anymore
         $_SERVER['SCRIPT_NAME'] = '/index.php';
 
-        $requestUrlParts = parse_url($request->getUri());
-        $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
+        $requestUrlParts = parse_url((string)$request->getUri());
+        $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $requestUrlParts['host'] ?? 'localhost';
 
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
 
