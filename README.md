@@ -24,7 +24,7 @@ Usage examples within core and for extensions can be found in
 * Branch main is used by core v12, currently not tagged and used as dev-main
   in core for the time being.
 * Branch 7 is used by core v11 and tagged as 7.x.x. Extensions can use this to
-  run tests with core v11 and v12. Supports PHP 7.4 to 8.1.
+  run tests with core v11 and prepare for v12 compatibility. Supports PHP 7.4 to 8.1.
 * Branch 6 is used by core v10 and tagged as 6.x.x. Extensions can use this to
   run tests with core v10 and v11. Supports PHP 7.2 to 8.1
 * Branch 4 is for core v9 and tagged as 4.x.y
