@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Unit;
 
 /*
@@ -39,10 +41,8 @@ abstract class UnitTestCase extends BaseTestCase
      * This is needed for tests that reset state of Environment
      * by calling Environment::init() to for instance fake paths
      * or force windows environment.
-     *
-     * @var bool
      */
-    protected $backupEnvironment = false;
+    protected bool $backupEnvironment = false;
 
     /**
      * If set to true, tearDown() will purge singleton instances created by the test.
@@ -55,27 +55,21 @@ abstract class UnitTestCase extends BaseTestCase
      * information is the reason why tearDown() does not reset singletons automatically.
      * tearDown() will make the test fail if that property has not been set to true
      * and if there are remaining singletons after test execution.
-     *
-     * @var bool
      */
-    protected $resetSingletonInstances = false;
+    protected bool $resetSingletonInstances = false;
 
     /**
      * Absolute path to files that should be removed after a test.
      * Handled in tearDown. Tests can register here to get any files
      * within typo3temp/ or typo3conf/ext cleaned up again.
-     *
-     * @var array
      */
-    protected $testFilesToDelete = [];
+    protected array $testFilesToDelete = [];
 
     /**
      * Holds state of TYPO3\CMS\Core\Core\Environment if
      * $this->backupEnvironment has been set to true in a test case
-     *
-     * @var array
      */
-    private $backedUpEnvironment = [];
+    private array $backedUpEnvironment = [];
 
     /**
      * Generic setUp()
