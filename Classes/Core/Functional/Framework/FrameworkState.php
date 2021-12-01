@@ -40,6 +40,7 @@ class FrameworkState
     public static function push()
     {
         $state = [];
+        $state['locale'] = setlocale(LC_ALL, 0);
         $state['globals-server'] = $GLOBALS['_SERVER'];
         $state['globals-beUser'] = $GLOBALS['BE_USER'] ?? null;
         // InternalRequestContext->withGlobalSettings() may override globals, especially TYPO3_CONF_VARS
@@ -105,6 +106,7 @@ class FrameworkState
     {
         $state = array_pop(self::$state);
 
+        setlocale(LC_ALL, $state['locale']);
         $GLOBALS['_SERVER'] = $state['globals-server'];
         if ($state['globals-beUser'] !== null) {
             $GLOBALS['BE_USER'] = $state['globals-beUser'];
