@@ -250,12 +250,21 @@ abstract class BackendEnvironment extends Extension
         $testbase->linkTestExtensionsToInstance($instancePath, $testExtensionsToLoad);
         $testbase->linkPathsInTestInstance($instancePath, $this->config['pathsToLinkInTestInstance']);
         $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration($this->config);
-        $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
-        // Append the unique identifier to the base database name to end up with a single database per test case
-        $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_at';
-
-        $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
-        $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
+        $dbDriver = $localConfiguration['DB']['Connections']['Default']['driver'];
+        $originalDatabaseName = '';
+        if ($dbDriver !== 'pdo_sqlite') {
+            $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
+            $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
+            // Append the unique identifier to the base database name to end up with a single database per test case
+            $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_at';
+            $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
+        } else {
+            // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
+            $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
+            $testbase->createDirectory(dirname($instancePath) . '/acceptance-sqlite-dbs');
+            $dbPathSqlite = dirname($instancePath) . '/acceptance-sqlite-dbs/test_acceptance.sqlite';
+            $localConfiguration['DB']['Connections']['Default']['path'] = $dbPathSqlite;
+        }
         // Set some hard coded base settings for the instance. Those could be overruled by
         // $this->config['configurationToUseInTestInstance ']if needed again.
         $localConfiguration['BE']['debug'] = true;
@@ -280,7 +289,11 @@ abstract class BackendEnvironment extends Extension
         $testbase->setUpPackageStates($instancePath, [], $coreExtensionsToLoad, $testExtensionsToLoad, $frameworkExtensionPaths);
         $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($coreExtensionsToLoad, $testExtensionsToLoad)));
         $testbase->setUpBasicTypo3Bootstrap($instancePath);
-        $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
+        if ($dbDriver !== 'pdo_sqlite') {
+            $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
+        } else {
+            $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['path'], $originalDatabaseName);
+        }
         $testbase->loadExtensionTables();
         $testbase->createDatabaseStructure();
 
