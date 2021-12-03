@@ -1104,8 +1104,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         $serverRequest = $serverRequest->withQueryParams($requestUrlParts);
         try {
             $frontendApplication = $container->get(Application::class);
-            $jsonResponse = $frontendApplication->handle($serverRequest);
-            $result = json_decode($jsonResponse->getBody()->__toString(), true);
+            $response = $frontendApplication->handle($serverRequest);
         } catch (\Exception $exception) {
             // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
             // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
@@ -1134,7 +1133,11 @@ abstract class FunctionalTestCase extends BaseTestCase
                 Environment::isWindows() ? 'WINDOWS' : 'UNIX'
             );
         }
-        return InternalResponse::fromArray($result);
+        return InternalResponse::fromArray([
+            'statusCode' => $response->getStatusCode(),
+            'headers' => $response->getHeaders(),
+            'body' => $response->getBody()->__toString(),
+        ]);
     }
 
     /**

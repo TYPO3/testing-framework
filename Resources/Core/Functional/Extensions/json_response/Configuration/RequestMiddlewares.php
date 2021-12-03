@@ -11,12 +11,6 @@
  */
 return [
     'frontend' => [
-        'typo3/json-response/encoder' => [
-            'target' => \TYPO3\JsonResponse\Encoder::class,
-            'before' => [
-                'typo3/cms-frontend/timetracker'
-            ]
-        ],
         'typo3/json-response/frontend-user-authentication' => [
             'target' => \TYPO3\JsonResponse\Middleware\FrontendUserHandler::class,
             'after' => [
