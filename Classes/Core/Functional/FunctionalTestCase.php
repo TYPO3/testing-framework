@@ -20,6 +20,7 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
@@ -47,8 +48,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\Datab
 use TYPO3\TestingFramework\Core\Functional\Framework\FrameworkState;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -988,13 +987,12 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
      * @param bool $followRedirects Whether to follow HTTP location redirects
-     * @return InternalResponse
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
         InternalRequestContext $context = null,
         bool $followRedirects = false
-    ): InternalResponse
+    ): ResponseInterface
     {
         if ($context === null) {
             $context = new InternalRequestContext();
@@ -1036,7 +1034,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     private function retrieveFrontendSubRequestResult(
         InternalRequest $request,
         InternalRequestContext $context
-    ): InternalResponse
+    ): ResponseInterface
     {
         FrameworkState::push();
         FrameworkState::reset();
@@ -1133,11 +1131,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 Environment::isWindows() ? 'WINDOWS' : 'UNIX'
             );
         }
-        return InternalResponse::fromArray([
-            'statusCode' => $response->getStatusCode(),
-            'headers' => $response->getHeaders(),
-            'body' => $response->getBody()->__toString(),
-        ]);
+        return $response;
     }
 
     /**
