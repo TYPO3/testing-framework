@@ -14,7 +14,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
@@ -264,7 +264,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * This method should be called with parent::setUp() in your test cases!
      *
      * @return void
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function setUp(): void
     {
@@ -587,7 +587,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                         try {
                             $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
                             $sqlServerIdentityDisabled = true;
-                        } catch (\Doctrine\DBAL\DBALException $e) {
+                        } catch (DBALException $e) {
                             // Some tables like sys_refindex don't have an auto-increment uid field and thus no
                             // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
                             // and catch the possible error that occurs.
