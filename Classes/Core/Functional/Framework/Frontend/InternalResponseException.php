@@ -14,6 +14,9 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+/**
+ * @deprecated Will be removed in v12 compatible testing-framework along with InternalResponse.
+ */
 class InternalResponseException extends \RuntimeException
 {
     /**

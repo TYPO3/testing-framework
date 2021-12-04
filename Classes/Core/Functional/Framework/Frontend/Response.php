@@ -16,6 +16,8 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /**
  * Model of frontend response
+ *
+ * @deprecated Will be removed with core v12 compatible testing-framework
  */
 class Response
 {
