@@ -72,6 +72,8 @@ class InternalRequestContext
 
     /**
      * @return null|array
+     * @deprecated Will be removed in v12 compatible testing-framework. Use FunctionalTestCase
+     *             $configurationToUseInTestInstance to set TYPO3_CONF_VARS of the instance.
      */
     public function getGlobalSettings(): ?array
     {
@@ -114,6 +116,8 @@ class InternalRequestContext
     /**
      * @param array $globalSettings
      * @return InternalRequestContext
+     * @deprecated Will be removed in v12 compatible testing-framework. Use FunctionalTestCase
+     *             $configurationToUseInTestInstance to set TYPO3_CONF_VARS of the instance.
      */
     public function withGlobalSettings(array $globalSettings): InternalRequestContext
     {
