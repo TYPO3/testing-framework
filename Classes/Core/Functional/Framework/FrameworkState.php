@@ -42,7 +42,7 @@ class FrameworkState
         $state = [];
         $state['globals-server'] = $GLOBALS['_SERVER'];
         $state['globals-beUser'] = $GLOBALS['BE_USER'] ?? null;
-        // InternalRequestContext->withGlobalSettings() may override globals, especially TYPO3_CONF_VARS
+        // Might be possible to drop this ...
         $state['globals-typo3-conf-vars'] = $GLOBALS['TYPO3_CONF_VARS'] ?: null;
 
         // Backing up TCA *should* not be needed: TCA is (hopefully) never changed after bootstrap and identical in FE and BE.

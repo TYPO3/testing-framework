@@ -1149,7 +1149,9 @@ abstract class FunctionalTestCase extends BaseTestCase
         // carry that information.
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] = $context;
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
+
         // The $GLOBALS array may not be passed by reference, but its elements may be.
+        // @deprecated Will be removed in v12 compatible testing-framework.
         $override = $context->getGlobalSettings() ?? [];
         foreach ($GLOBALS as $k => $v) {
             if (isset($override[$k])) {
