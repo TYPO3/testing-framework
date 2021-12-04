@@ -14,7 +14,7 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
@@ -789,7 +789,7 @@ class Testbase
      *
      * @param string $path Absolute path to the XML file containing the data set to load
      * @return void
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
@@ -846,7 +846,7 @@ class Testbase
                 try {
                     $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
                     $sqlServerIdentityDisabled = true;
-                } catch (\Doctrine\DBAL\DBALException $e) {
+                } catch (DBALException $e) {
                     // Some tables like sys_refindex don't have an auto-increment uid field and thus no
                     // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
                     // and catch the possible error that occurs.
@@ -885,7 +885,7 @@ class Testbase
      *
      * @param Connection $connection
      * @param string $tableName
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public static function resetTableSequences(Connection $connection, string $tableName): void
     {
