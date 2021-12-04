@@ -111,7 +111,7 @@ class DatabaseConnectionWrapper extends Connection
                 $tableName,
                 $enable ? 'ON' : 'OFF'
             );
-            $this->exec($statement);
+            $this->executeStatement($statement);
             return true;
         } catch (DBALException $e) {
             // Some tables like sys_refindex don't have an auto-increment uid field and thus no
