@@ -19,6 +19,8 @@ use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 
 /**
  * Model of internal frontend response.
+ *
+ * @deprecated Obsolete layer. Do not type hint this class. v12 core compatible testing-framework will return PSR-7 ResponseInterface
  */
 class InternalResponse extends Response
 {
