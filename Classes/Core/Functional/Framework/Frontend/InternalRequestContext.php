@@ -14,8 +14,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
-
 /**
  * Model of internal frontend request context.
  *
@@ -24,8 +22,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
  */
 class InternalRequestContext
 {
-    use AssignablePropertyTrait;
-
     /**
      * @var int
      */
@@ -40,11 +36,6 @@ class InternalRequestContext
      * @var int
      */
     private $workspaceId;
-
-    /**
-     * @var array
-     */
-    private $globalSettings;
 
     /**
      * @return null|int
@@ -68,16 +59,6 @@ class InternalRequestContext
     public function getWorkspaceId(): ?int
     {
         return $this->workspaceId;
-    }
-
-    /**
-     * @return null|array
-     * @deprecated Will be removed in v12 compatible testing-framework. Use FunctionalTestCase
-     *             $configurationToUseInTestInstance to set TYPO3_CONF_VARS of the instance.
-     */
-    public function getGlobalSettings(): ?array
-    {
-        return $this->globalSettings;
     }
 
     /**
@@ -110,22 +91,6 @@ class InternalRequestContext
     {
         $target = clone $this;
         $target->workspaceId = $workspaceId;
-        return $target;
-    }
-
-    /**
-     * @param array $globalSettings
-     * @return InternalRequestContext
-     * @deprecated Will be removed in v12 compatible testing-framework. Use FunctionalTestCase
-     *             $configurationToUseInTestInstance to set TYPO3_CONF_VARS of the instance.
-     */
-    public function withGlobalSettings(array $globalSettings): InternalRequestContext
-    {
-        if (empty($globalSettings)) {
-            return $this;
-        }
-        $target = clone $this;
-        $target->globalSettings = $globalSettings;
         return $target;
     }
 }
