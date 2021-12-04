@@ -24,29 +24,26 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
- * Handler for frontend user
+ * Create a frontend user session if a frontend functional test wants
+ * to run something with a logged in user - InternalRequestContext->withFrontendUserId().
+ * Adds the created cookie value to the Request object.
+ *
+ * This middleware is executed *before* the core frontend user
+ * authentication, which will then find the cookie plus the valid
+ * session and logs in the user.
  */
 class FrontendUserHandler implements MiddlewareInterface
 {
-    /**
-     * Process an incoming server request and return a response, optionally delegating
-     * response creation to a handler.
-     * @param ServerRequestInterface $request
-     * @param RequestHandlerInterface $handler
-     * @return ResponseInterface
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $context = RequestBootstrap::getInternalRequestContext();
         if (empty($context) || empty($context->getFrontendUserId())) {
             return $handler->handle($request);
         }
-
         $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('fe_users')
             ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()])
             ->fetchAssociative();
-
         if (is_array($frontendUser)) {
             $userSessionManager = UserSessionManager::create('FE');
             $userSession = $userSessionManager->createAnonymousSession();
@@ -60,7 +57,6 @@ class FrontendUserHandler implements MiddlewareInterface
                 )
             );
         }
-
         return $handler->handle($request);
     }
 }
