@@ -585,7 +585,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                     $sqlServerIdentityDisabled = false;
                     if ($platform instanceof SQLServerPlatform) {
                         try {
-                            $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                            $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' ON');
                             $sqlServerIdentityDisabled = true;
                         } catch (DBALException $e) {
                             // Some tables like sys_refindex don't have an auto-increment uid field and thus no
@@ -607,7 +607,7 @@ abstract class FunctionalTestCase extends BaseTestCase
 
                     if ($sqlServerIdentityDisabled) {
                         // Reset identity if it has been changed
-                        $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+                        $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
                     }
                 } catch (DBALException $e) {
                     $this->fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());

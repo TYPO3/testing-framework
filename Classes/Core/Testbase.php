@@ -844,7 +844,7 @@ class Testbase
             $sqlServerIdentityDisabled = false;
             if ($platform instanceof SQLServerPlatform) {
                 try {
-                    $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                    $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' ON');
                     $sqlServerIdentityDisabled = true;
                 } catch (DBALException $e) {
                     // Some tables like sys_refindex don't have an auto-increment uid field and thus no
@@ -866,7 +866,7 @@ class Testbase
 
             if ($sqlServerIdentityDisabled) {
                 // Reset identity if it has been changed
-                $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+                $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
             }
 
             static::resetTableSequences($connection, $tableName);
@@ -912,7 +912,7 @@ class Testbase
                 ->execute()
                 ->fetchAssociative();
             if ($row !== false) {
-                $connection->exec(
+                $connection->executeStatement(
                     sprintf(
                         'SELECT SETVAL(%s, COALESCE(MAX(%s), 0)+1, FALSE) FROM %s',
                         $connection->quote($row['schemaname'] . '.' . $row['relname']),
@@ -923,7 +923,7 @@ class Testbase
             }
         } elseif ($platform instanceof SqlitePlatform) {
             // Drop eventually existing sqlite sequence for this table
-            $connection->exec(
+            $connection->executeStatement(
                 sprintf(
                     'DELETE FROM sqlite_sequence WHERE name=%s',
                     $connection->quote($tableName)
