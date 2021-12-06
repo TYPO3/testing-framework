@@ -233,21 +233,17 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected $initializeDatabase = true;
 
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private ?ContainerInterface $container = null;
 
     /**
-     * This internal variable tracks if the given test is the first test of
+     * These two internal variable track if the given test is the first test of
      * that test case. This variable is set to current calling test case class.
      * Consecutive tests then optimize and do not create a full
      * database structure again but instead just truncate all tables which
      * is much quicker.
-     *
-     * @var string
      */
-    private static $currestTestCaseClass;
+    private static string $currestTestCaseClass = '';
+    private bool $isFirstTest = true;
 
     /**
      * Set up creates a test instance and database.
@@ -271,18 +267,19 @@ abstract class FunctionalTestCase extends BaseTestCase
         $testbase = new Testbase();
         $testbase->setTypo3TestingContext();
 
-        $isFirstTest = false;
+        // See if we're the first test of this test case.
         $currentTestCaseClass = get_called_class();
         if (self::$currestTestCaseClass !== $currentTestCaseClass) {
-            $isFirstTest = true;
             self::$currestTestCaseClass = $currentTestCaseClass;
+        } else {
+            $this->isFirstTest = false;
         }
 
         // sqlite db path preparation
         $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
         $dbPathSqliteEmpty = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
 
-        if (!$isFirstTest) {
+        if (!$this->isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
@@ -292,6 +289,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->loadExtensionTables();
         } else {
+            DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
             $testbase->removeOldInstanceIfExists($this->instancePath);
             // Basic instance directory structure
             $testbase->createDirectory($this->instancePath . '/fileadmin');
@@ -1139,48 +1137,46 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Invokes database snapshot and either restores data from existing
+     * Invokes a database snapshot and either restores data from existing
      * snapshot or otherwise invokes $callback and creates a new snapshot.
      *
-     * @param callable $callback
-     * @throws DBALException
+     * Using this can speed up tests when expensive setUp() operations are
+     * needed in all tests of a test case: The first test performs the
+     * expensive operations in $callback, sub sequent tests of this test
+     * case then just import the resulting database rows.
+     *
+     * An example to this are the "SiteHandling" core tests, which create
+     * a starter scenario using DataHandler based on Yaml files.
      */
-    protected function withDatabaseSnapshot(callable $callback)
+    protected function withDatabaseSnapshot(callable $callback): void
     {
         $connection = $this->getConnectionPool()->getConnectionByName(
             ConnectionPool::DEFAULT_CONNECTION_NAME
         );
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
-
-        if ($snapshot->exists()) {
-            $snapshot->restore($accessor, $connection);
-        } else {
+        if ($this->isFirstTest) {
             $callback();
             $snapshot->create($accessor, $connection);
+        } else {
+            $snapshot->restore($accessor, $connection);
         }
     }
 
     /**
-     * Initializes database snapshot and storage.
+     * @deprecated No-op, don't call anymore. Handled by testing-framework internally.
      */
     protected static function initializeDatabaseSnapshot()
     {
-        $snapshot = DatabaseSnapshot::initialize(
-            dirname(static::getInstancePath()) . '/functional-sqlite-dbs/',
-            static::getInstanceIdentifier()
-        );
-        if ($snapshot->exists()) {
-            $snapshot->purge();
-        }
+        // no-op
     }
 
     /**
-     * Destroys database snapshot (if available).
+     * @deprecated No-op, don't call anymore. Handled by testing-framework internally.
      */
     protected static function destroyDatabaseSnapshot()
     {
-        DatabaseSnapshot::destroy();
+        // no-op
     }
 
     /**
