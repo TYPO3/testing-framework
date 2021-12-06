@@ -1164,22 +1164,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * @deprecated No-op, don't call anymore. Handled by testing-framework internally.
-     */
-    protected static function initializeDatabaseSnapshot()
-    {
-        // no-op
-    }
-
-    /**
-     * @deprecated No-op, don't call anymore. Handled by testing-framework internally.
-     */
-    protected static function destroyDatabaseSnapshot()
-    {
-        // no-op
-    }
-
-    /**
      * Uses a 7 char long hash of class name as identifier.
      *
      * @return string
