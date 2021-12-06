@@ -143,6 +143,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Same as $testExtensionsToLoad, but included per default from the testing framework.
      *
      * @var string[]
+     * @deprecated: This property is hard to override due to it's default content. It will vanish in v12 compatible testing-framework.
      */
     protected $frameworkExtensionsToLoad = [
         'Resources/Core/Functional/Extensions/json_response',
