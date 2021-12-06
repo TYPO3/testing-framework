@@ -1057,7 +1057,6 @@ abstract class FunctionalTestCase extends BaseTestCase
         // The testing-framework registers extension 'json_response' that brings some middlewares which
         // allow to eg. log in backend users in frontend application context. These globals are used to
         // carry that information.
-        $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] = $context;
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
 
         // Create ServerRequest from testing-framework InternalRequest object
@@ -1081,6 +1080,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             $request->getHeaders(),
             $serverParams
         );
+        $serverRequest = $serverRequest->withAttribute('typo3.testing.context', $context);
         $requestUrlParts = [];
         parse_str($uri->getQuery(), $requestUrlParts);
         $serverRequest = $serverRequest->withQueryParams($requestUrlParts);

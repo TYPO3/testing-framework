@@ -36,12 +36,4 @@ class RequestBootstrap
     {
         return $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] ?? null;
     }
-
-    /**
-     * @return null|InternalRequestContext
-     */
-    public static function getInternalRequestContext(): ?InternalRequestContext
-    {
-        return $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] ?? null;
-    }
 }
