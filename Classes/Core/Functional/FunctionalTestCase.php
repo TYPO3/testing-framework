@@ -140,16 +140,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     protected $testExtensionsToLoad = [];
 
     /**
-     * Same as $testExtensionsToLoad, but included per default from the testing framework.
-     *
-     * @var string[]
-     * @deprecated: This property is hard to override due to it's default content. It will vanish in v12 compatible testing-framework.
-     */
-    protected $frameworkExtensionsToLoad = [
-        'Resources/Core/Functional/Extensions/json_response',
-    ];
-
-    /**
      * Array of test/fixture folder or file paths that should be linked for a test.
      *
      * This property will stay empty in this abstract, so it is possible
@@ -314,7 +304,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->setUpInstanceCoreLinks($this->instancePath);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
-            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $this->frameworkExtensionsToLoad);
+            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, ['Resources/Core/Functional/Extensions/json_response']);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
@@ -367,7 +357,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $defaultCoreExtensionsToLoad,
                 $this->coreExtensionsToLoad,
                 $this->testExtensionsToLoad,
-                $this->frameworkExtensionsToLoad
+                ['Resources/Core/Functional/Extensions/json_response']
             );
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($this->initializeDatabase) {
@@ -398,7 +388,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         // Test class instances in phpunit are kept until end of run, this sums up.
         unset($this->container);
         unset($this->identifier, $this->instancePath, $this->coreExtensionsToLoad);
-        unset($this->testExtensionsToLoad, $this->frameworkExtensionsToLoad, $this->pathsToLinkInTestInstance);
+        unset($this->testExtensionsToLoad, $this->pathsToLinkInTestInstance);
         unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
         unset($this->additionalFoldersToCreate, $this->backendUserFixture);
 
