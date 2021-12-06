@@ -18,7 +18,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
 use Doctrine\DBAL\Connection;
 
 /**
- * @internal Use the helper methods of FunctionalTestCase
+ * @internal Use FunctionalTestCase->withDatabaseSnapshot() to leverage this.
  */
 class DatabaseSnapshot
 {
@@ -27,74 +27,26 @@ class DatabaseSnapshot
      */
     private const VALUE_IN_MEMORY_THRESHOLD = 1024**2 * 10;
 
-    /**
-     * @var static
-     */
     private static $instance;
-
-    /**
-     * @var string
-     */
     private $sqliteDir;
-
-    /**
-     * @var string
-     */
     private $identifier;
-
-    /**
-     * @var array
-     */
     private $inMemoryImport;
 
-    public static function initialize(string $sqliteDir, string $identifier): self
+    public static function initialize(string $sqliteDir, string $identifier): void
     {
-        if (self::$instance === null) {
-            self::$instance = new self($sqliteDir, $identifier);
-            return self::$instance;
-        }
-        throw new \LogicException(
-            'Snapshot can only be initialized once',
-            1535487361
-        );
+        self::$instance = new self($sqliteDir, $identifier);
     }
 
     public static function instance(): self
     {
-        if (self::$instance !== null) {
-            return self::$instance;
-        }
-        throw new \LogicException(
-            'Snapshot needs to be initialized first',
-            1535487361
-        );
-    }
-
-    public static function destroy(): bool
-    {
-        if (self::$instance === null) {
-            return false;
-        }
-        self::$instance->purge();
-        self::$instance = null;
-        return true;
+        return self::$instance;
     }
 
     private function __construct(string $sqliteDir, string $identifier)
     {
         $this->identifier = $identifier;
         $this->sqliteDir = $sqliteDir;
-    }
-
-    public function exists(): bool
-    {
-        return !empty($this->inMemoryImport);
-    }
-
-    public function purge(): bool
-    {
-        unset($this->inMemoryImport);
-        return true;
+        $this->inMemoryImport = [];
     }
 
     public function create(DatabaseAccessor $accessor, Connection $connection): void
@@ -113,10 +65,7 @@ class DatabaseSnapshot
             if (strlen($serialized) <= self::VALUE_IN_MEMORY_THRESHOLD) {
                 $this->inMemoryImport = $export;
             } else {
-                throw new \RuntimeException(
-                    'Export data set too large. Reduce data set or do not use snapshot.',
-                    1630203176
-                );
+                throw new \RuntimeException('Export data set too large. Reduce data set or do not use snapshot.', 1630203176);
             }
         }
     }
