@@ -43,22 +43,26 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
         $backendUserId = $internalRequestContext->getBackendUserId();
         $workspaceId = $internalRequestContext->getWorkspaceId();
 
-        if ($backendUserId === null) {
+        if ((int)$backendUserId === 0) {
+            // Skip if $backendUserId is invalid, typically null or 0
             return $handler->handle($request);
         }
 
-        $backendUser = GeneralUtility::makeInstance(FrontendBackendUserAuthentication::class);
-        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
+        $row = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
-            ->select(['*'], 'be_users', ['uid' => $backendUserId]);
-        $backendUser->user = $statement->fetchAssociative();
-
-        if ($workspaceId !== null) {
-            $backendUser->setTemporaryWorkspace($workspaceId);
+            ->select(['*'], 'be_users', ['uid' => $backendUserId])
+            ->fetchAssociative();
+        if ($row !== false) {
+            // Init backend user if found in database
+            $backendUser = GeneralUtility::makeInstance(FrontendBackendUserAuthentication::class);
+            $backendUser->user = $row;
+            if ($workspaceId !== null) {
+                // Force backend user into given workspace, can be 0, too.
+                $backendUser->setTemporaryWorkspace($workspaceId);
+            }
+            $GLOBALS['BE_USER'] = $backendUser;
+            $this->setBackendUserAspect(GeneralUtility::makeInstance(Context::class), $backendUser);
         }
-
-        $GLOBALS['BE_USER'] = $backendUser;
-        $this->setBackendUserAspect(GeneralUtility::makeInstance(Context::class), $backendUser);
         return $handler->handle($request);
     }
 
