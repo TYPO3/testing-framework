@@ -24,7 +24,6 @@ use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -373,8 +372,15 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
             $localConfiguration['SYS']['encryptionKey'] = 'i-am-not-a-secure-encryption-key';
-            $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
             $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
+            // Set cache backends to null backend instead of database backend let us save time for creating
+            // database schema for it and reduces selects/inserts to the database for cache operations, which
+            // are generally not really needed for functional tests. Specific tests may restore this in if needed.
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['hash']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['imagesizes']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['pagesection']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
             $defaultCoreExtensionsToLoad = [
                 'core',
