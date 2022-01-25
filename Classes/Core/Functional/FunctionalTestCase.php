@@ -940,13 +940,10 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Execute a TYPO3 frontend application request.
-<<<<<<< HEAD
-=======
      *
      * @param InternalRequest $request
      * @param InternalRequestContext|null $context
      * @param bool $followRedirects Whether to follow HTTP location redirects
->>>>>>> origin/main
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
