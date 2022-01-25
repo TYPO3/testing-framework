@@ -220,7 +220,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected bool $initializeDatabase = true;
 
-    private ?ContainerInterface $container = null;
+    private ContainerInterface $container;
 
     /**
      * These two internal variable track if the given test is the first test of
@@ -421,9 +421,6 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     protected function getContainer(): ContainerInterface
     {
-        if (!$this->container instanceof ContainerInterface) {
-            throw new \RuntimeException('Please invoke parent::setUp() before calling getContainer().', 1589221777);
-        }
         return $this->container;
     }
 
