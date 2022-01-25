@@ -26,58 +26,50 @@ use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
- * Handler for backend user
+ * Middleware to log in a backend user in a frontend functional test
+ * and force this user into a workspace if needed. Similar to
+ * FrontendUserHandler middleware.
  */
 class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, MiddlewareInterface
 {
-    /**
-     * @return FrontendBackendUserAuthentication
-     */
-    protected function createBackendUser()
-    {
-        return GeneralUtility::makeInstance(FrontendBackendUserAuthentication::class);
-    }
-
-    /**
-     * Process an incoming server request and return a response, optionally delegating
-     * response creation to a handler.
-     * @param ServerRequestInterface $request
-     * @param RequestHandlerInterface $handler
-     * @return ResponseInterface
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $context = RequestBootstrap::getInternalRequestContext();
-        if (empty($context) || empty($context->getBackendUserId())) {
+        /** @var InternalRequestContext $internalRequestContext */
+        $internalRequestContext = $request->getAttribute('typo3.testing.context');
+        $backendUserId = $internalRequestContext->getBackendUserId();
+        $workspaceId = $internalRequestContext->getWorkspaceId();
+
+        if ((int)$backendUserId === 0) {
+            // Skip if $backendUserId is invalid, typically null or 0
             return $handler->handle($request);
         }
 
-        $backendUser = $this->createBackendUser();
-        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
+        $row = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
-            ->select(['*'], 'be_users', ['uid' => $context->getBackendUserId()]);
-        $backendUser->user = $statement->fetchAssociative();
-
-        if (!empty($context->getWorkspaceId())) {
-            $backendUser->setTemporaryWorkspace($context->getWorkspaceId());
+            ->select(['*'], 'be_users', ['uid' => $backendUserId])
+            ->fetchAssociative();
+        if ($row !== false) {
+            // Init backend user if found in database
+            $backendUser = GeneralUtility::makeInstance(FrontendBackendUserAuthentication::class);
+            $backendUser->user = $row;
+            if ($workspaceId !== null) {
+                // Force backend user into given workspace, can be 0, too.
+                $backendUser->setTemporaryWorkspace($workspaceId);
+            }
+            $GLOBALS['BE_USER'] = $backendUser;
+            $this->setBackendUserAspect(GeneralUtility::makeInstance(Context::class), $backendUser);
         }
-
-        $GLOBALS['BE_USER'] = $backendUser;
-        $this->setBackendUserAspect(GeneralUtility::makeInstance(Context::class), $backendUser);
         return $handler->handle($request);
     }
 
-
     /**
      * Register the backend user as aspect
-     *
-     * @param Context $context
-     * @param BackendUserAuthentication|null $user
      */
-    protected function setBackendUserAspect(Context $context, BackendUserAuthentication $user)
+    protected function setBackendUserAspect(Context $context, BackendUserAuthentication $user): void
     {
         $context->setAspect('backend.user', GeneralUtility::makeInstance(UserAspect::class, $user));
         $context->setAspect('workspace', GeneralUtility::makeInstance(WorkspaceAspect::class, $user->workspace));

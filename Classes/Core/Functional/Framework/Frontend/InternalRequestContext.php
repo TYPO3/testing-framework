@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -14,74 +16,41 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
-
 /**
- * Model of internal frontend request context.
+ * Helper class to run frontend functional tests with a logged in frontend
+ * or backend user, in a workspaces.
  *
- * Helper class for frontend requests to hand over details like 'a backend user should be logged in'.
- * This is used by testing-framework extension ext:json_response in its middlewares.
+ * An instance of this class can be hand over as second argument to
+ * executeFrontendSubRequest(), after calling withFrontendUserId() or
+ * withBackendUserId() and withWorkspaceId() on it.
+ *
+ * The testing-framework ext:json_response extension middlewares act
+ * on this and creates sessions and state accordingly.
+ *
+ * Matching fe / be / workspace must exist in the database, the test
+ * setup needs to take care of that.
  */
 class InternalRequestContext
 {
-    use AssignablePropertyTrait;
+    private ?int $frontendUserId = null;
+    private ?int $backendUserId = null;
+    private ?int $workspaceId = null;
 
-    /**
-     * @var int
-     */
-    private $frontendUserId;
-
-    /**
-     * @var int
-     */
-    private $backendUserId;
-
-    /**
-     * @var int
-     */
-    private $workspaceId;
-
-    /**
-     * @var array
-     */
-    private $globalSettings;
-
-    /**
-     * @return null|int
-     */
     public function getFrontendUserId(): ?int
     {
         return $this->frontendUserId;
     }
 
-    /**
-     * @return null|int
-     */
     public function getBackendUserId(): ?int
     {
         return $this->backendUserId;
     }
 
-    /**
-     * @return null|int
-     */
     public function getWorkspaceId(): ?int
     {
         return $this->workspaceId;
     }
 
-    /**
-     * @return null|array
-     */
-    public function getGlobalSettings(): ?array
-    {
-        return $this->globalSettings;
-    }
-
-    /**
-     * @param int $frontendUserId
-     * @return InternalRequestContext
-     */
     public function withFrontendUserId(int $frontendUserId): InternalRequestContext
     {
         $target = clone $this;
@@ -89,10 +58,6 @@ class InternalRequestContext
         return $target;
     }
 
-    /**
-     * @param int $backendUserId
-     * @return InternalRequestContext
-     */
     public function withBackendUserId(int $backendUserId): InternalRequestContext
     {
         $target = clone $this;
@@ -100,28 +65,10 @@ class InternalRequestContext
         return $target;
     }
 
-    /**
-     * @param int $workspaceId
-     * @return InternalRequestContext
-     */
     public function withWorkspaceId(int $workspaceId): InternalRequestContext
     {
         $target = clone $this;
         $target->workspaceId = $workspaceId;
-        return $target;
-    }
-
-    /**
-     * @param array $globalSettings
-     * @return InternalRequestContext
-     */
-    public function withGlobalSettings(array $globalSettings): InternalRequestContext
-    {
-        if (empty($globalSettings)) {
-            return $this;
-        }
-        $target = clone $this;
-        $target->globalSettings = $globalSettings;
         return $target;
     }
 }

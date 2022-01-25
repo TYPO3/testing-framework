@@ -15,7 +15,7 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use TYPO3\CMS\Core\Database\Connection;
 
@@ -111,7 +111,7 @@ class DatabaseConnectionWrapper extends Connection
                 $tableName,
                 $enable ? 'ON' : 'OFF'
             );
-            $this->exec($statement);
+            $this->executeStatement($statement);
             return true;
         } catch (DBALException $e) {
             // Some tables like sys_refindex don't have an auto-increment uid field and thus no

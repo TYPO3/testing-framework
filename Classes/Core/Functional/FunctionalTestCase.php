@@ -16,12 +16,13 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
@@ -46,7 +47,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\Datab
 use TYPO3\TestingFramework\Core\Functional\Framework\FrameworkState;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -133,15 +133,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      * @var string[]
      */
     protected array $testExtensionsToLoad = [];
-
-    /**
-     * Same as $testExtensionsToLoad, but included per default from the testing framework.
-     *
-     * @var string[]
-     */
-    protected array $frameworkExtensionsToLoad = [
-        'Resources/Core/Functional/Extensions/json_response',
-    ];
 
     /**
      * Array of test/fixture folder or file paths that should be linked for a test.
@@ -233,25 +224,25 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected bool $initializeDatabase = true;
 
-    private ContainerInterface $container;
+    private ?ContainerInterface $container = null;
 
     /**
-     * This internal variable tracks if the given test is the first test of
+     * These two internal variable track if the given test is the first test of
      * that test case. This variable is set to current calling test case class.
      * Consecutive tests then optimize and do not create a full
      * database structure again but instead just truncate all tables which
      * is much quicker.
-     *
-     * @var string|null
      */
-    private static ?string $currestTestCaseClass = null;
+    private static string $currestTestCaseClass = '';
+    private bool $isFirstTest = true;
 
     /**
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @return void
+     * @throws DBALException
      */
     protected function setUp(): void
     {
@@ -267,18 +258,19 @@ abstract class FunctionalTestCase extends BaseTestCase
         $testbase = new Testbase();
         $testbase->setTypo3TestingContext();
 
-        $isFirstTest = false;
+        // See if we're the first test of this test case.
         $currentTestCaseClass = get_called_class();
         if (self::$currestTestCaseClass !== $currentTestCaseClass) {
-            $isFirstTest = true;
             self::$currestTestCaseClass = $currentTestCaseClass;
+        } else {
+            $this->isFirstTest = false;
         }
 
         // sqlite db path preparation
         $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
         $dbPathSqliteEmpty = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
 
-        if (!$isFirstTest) {
+        if (!$this->isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
@@ -288,6 +280,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->loadExtensionTables();
         } else {
+            DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
             $testbase->removeOldInstanceIfExists($this->instancePath);
             // Basic instance directory structure
             $testbase->createDirectory($this->instancePath . '/fileadmin');
@@ -300,7 +293,7 @@ abstract class FunctionalTestCase extends BaseTestCase
             }
             $testbase->setUpInstanceCoreLinks($this->instancePath);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
-            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $this->frameworkExtensionsToLoad);
+            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, ['Resources/Core/Functional/Extensions/json_response']);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
@@ -315,7 +308,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
                 $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
-                if ($dbDriver === 'mysqli') {
+                if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
                     $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
                     $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
                     $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
@@ -338,6 +331,14 @@ abstract class FunctionalTestCase extends BaseTestCase
             $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
             $localConfiguration['SYS']['encryptionKey'] = 'i-am-not-a-secure-encryption-key';
             $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
+            // Set cache backends to null backend instead of database backend let us save time for creating
+            // database schema for it and reduces selects/inserts to the database for cache operations, which
+            // are generally not really needed for functional tests. Specific tests may restore this in if needed.
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['hash']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['imagesizes']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['pagesection']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+            $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
             $defaultCoreExtensionsToLoad = [
                 'core',
@@ -353,7 +354,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 $defaultCoreExtensionsToLoad,
                 $this->coreExtensionsToLoad,
                 $this->testExtensionsToLoad,
-                $this->frameworkExtensionsToLoad
+                ['Resources/Core/Functional/Extensions/json_response']
             );
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($this->initializeDatabase) {
@@ -384,7 +385,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         // Test class instances in phpunit are kept until end of run, this sums up.
         unset($this->container);
         unset($this->identifier, $this->instancePath, $this->coreExtensionsToLoad);
-        unset($this->testExtensionsToLoad, $this->frameworkExtensionsToLoad, $this->pathsToLinkInTestInstance);
+        unset($this->testExtensionsToLoad, $this->pathsToLinkInTestInstance);
         unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
         unset($this->additionalFoldersToCreate, $this->backendUserFixture);
 
@@ -564,9 +565,9 @@ abstract class FunctionalTestCase extends BaseTestCase
                     $sqlServerIdentityDisabled = false;
                     if ($platform instanceof SQLServerPlatform) {
                         try {
-                            $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' ON');
+                            $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' ON');
                             $sqlServerIdentityDisabled = true;
-                        } catch (\Doctrine\DBAL\DBALException $e) {
+                        } catch (DBALException $e) {
                             // Some tables like sys_refindex don't have an auto-increment uid field and thus no
                             // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
                             // and catch the possible error that occurs.
@@ -586,7 +587,7 @@ abstract class FunctionalTestCase extends BaseTestCase
 
                     if ($sqlServerIdentityDisabled) {
                         // Reset identity if it has been changed
-                        $connection->exec('SET IDENTITY_INSERT ' . $tableName . ' OFF');
+                        $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
                     }
                 } catch (DBALException $e) {
                     $this->fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
@@ -939,12 +940,19 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * Execute a TYPO3 frontend application request.
+<<<<<<< HEAD
+=======
+     *
+     * @param InternalRequest $request
+     * @param InternalRequestContext|null $context
+     * @param bool $followRedirects Whether to follow HTTP location redirects
+>>>>>>> origin/main
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
         InternalRequestContext $context = null,
         bool $followRedirects = false
-    ): InternalResponse
+    ): ResponseInterface
     {
         if ($context === null) {
             $context = new InternalRequestContext();
@@ -983,7 +991,7 @@ abstract class FunctionalTestCase extends BaseTestCase
     private function retrieveFrontendSubRequestResult(
         InternalRequest $request,
         InternalRequestContext $context
-    ): InternalResponse
+    ): ResponseInterface
     {
         FrameworkState::push();
         FrameworkState::reset();
@@ -1016,15 +1024,8 @@ abstract class FunctionalTestCase extends BaseTestCase
         // The testing-framework registers extension 'json_response' that brings some middlewares which
         // allow to eg. log in backend users in frontend application context. These globals are used to
         // carry that information.
-        $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['context'] = $context;
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
-        // The $GLOBALS array may not be passed by reference, but its elements may be.
-        $override = $context->getGlobalSettings() ?? [];
-        foreach ($GLOBALS as $k => $v) {
-            if (isset($override[$k])) {
-                ArrayUtility::mergeRecursiveWithOverrule($GLOBALS[$k], $override[$k]);
-            }
-        }
+
         // Create ServerRequest from testing-framework InternalRequest object
         $uri = $request->getUri();
 
@@ -1046,13 +1047,13 @@ abstract class FunctionalTestCase extends BaseTestCase
             $request->getHeaders(),
             $serverParams
         );
+        $serverRequest = $serverRequest->withAttribute('typo3.testing.context', $context);
         $requestUrlParts = [];
         parse_str($uri->getQuery(), $requestUrlParts);
         $serverRequest = $serverRequest->withQueryParams($requestUrlParts);
         try {
             $frontendApplication = $container->get(Application::class);
-            $jsonResponse = $frontendApplication->handle($serverRequest);
-            $result = json_decode($jsonResponse->getBody()->__toString(), true);
+            $response = $frontendApplication->handle($serverRequest);
         } catch (\Exception $exception) {
             // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
             // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
@@ -1081,7 +1082,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                 Environment::isWindows() ? 'WINDOWS' : 'UNIX'
             );
         }
-        return InternalResponse::fromArray($result);
+        return $response;
     }
 
     /**
@@ -1104,10 +1105,20 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Invokes database snapshot and either restores data from existing
+     * Invokes a database snapshot and either restores data from existing
      * snapshot or otherwise invokes $callback and creates a new snapshot.
      *
+<<<<<<< HEAD
      * @throws DBALException
+=======
+     * Using this can speed up tests when expensive setUp() operations are
+     * needed in all tests of a test case: The first test performs the
+     * expensive operations in $callback, sub sequent tests of this test
+     * case then just import the resulting database rows.
+     *
+     * An example to this are the "SiteHandling" core tests, which create
+     * a starter scenario using DataHandler based on Yaml files.
+>>>>>>> origin/main
      */
     protected function withDatabaseSnapshot(callable $callback): void
     {
@@ -1116,16 +1127,16 @@ abstract class FunctionalTestCase extends BaseTestCase
         );
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
-
-        if ($snapshot->exists()) {
-            $snapshot->restore($accessor, $connection);
-        } else {
+        if ($this->isFirstTest) {
             $callback();
             $snapshot->create($accessor, $connection);
+        } else {
+            $snapshot->restore($accessor, $connection);
         }
     }
 
     /**
+<<<<<<< HEAD
      * Initializes database snapshot and storage.
      */
     protected static function initializeDatabaseSnapshot(): void
@@ -1148,6 +1159,8 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+=======
+>>>>>>> origin/main
      * Uses a 7 char long hash of class name as identifier.
      */
     protected static function getInstanceIdentifier(): string

@@ -25,7 +25,7 @@
     "issues": "https://github.com/TYPO3/testing-framework/issues"
   },
   "require": {
-    "php": "^7.4 || ^8.0",
+    "php": "^8.1",
     "phpunit/phpunit": "^9.5.10",
     "psr/container": "^1.0",
     "mikey179/vfsstream": "~1.6.10",
@@ -44,7 +44,12 @@
   },
   "config": {
     "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin"
+    "bin-dir": ".Build/bin",
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    }
   },
   "autoload": {
     "psr-4": {
