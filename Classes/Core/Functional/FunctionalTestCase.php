@@ -847,8 +847,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function setUpFrontendRootPage(int $pageId, array $typoScriptFiles = [], array $templateValues = []): void
     {
-        $pageId = (int)$pageId;
-
         $connection = $this->getConnectionPool()->getConnectionForTable('pages');
         $page = $connection->select(['*'], 'pages', ['uid' => $pageId])->fetchAssociative();
 
