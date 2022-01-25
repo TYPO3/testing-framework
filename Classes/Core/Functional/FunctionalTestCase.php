@@ -1105,9 +1105,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      * Invokes a database snapshot and either restores data from existing
      * snapshot or otherwise invokes $callback and creates a new snapshot.
      *
-<<<<<<< HEAD
-     * @throws DBALException
-=======
      * Using this can speed up tests when expensive setUp() operations are
      * needed in all tests of a test case: The first test performs the
      * expensive operations in $callback, sub sequent tests of this test
@@ -1115,7 +1112,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      *
      * An example to this are the "SiteHandling" core tests, which create
      * a starter scenario using DataHandler based on Yaml files.
->>>>>>> origin/main
      */
     protected function withDatabaseSnapshot(callable $callback): void
     {
@@ -1133,31 +1129,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-<<<<<<< HEAD
-     * Initializes database snapshot and storage.
-     */
-    protected static function initializeDatabaseSnapshot(): void
-    {
-        $snapshot = DatabaseSnapshot::initialize(
-            dirname(static::getInstancePath()) . '/functional-sqlite-dbs/',
-            static::getInstanceIdentifier()
-        );
-        if ($snapshot->exists()) {
-            $snapshot->purge();
-        }
-    }
-
-    /**
-     * Destroys database snapshot (if available).
-     */
-    protected static function destroyDatabaseSnapshot(): void
-    {
-        DatabaseSnapshot::destroy();
-    }
-
-    /**
-=======
->>>>>>> origin/main
      * Uses a 7 char long hash of class name as identifier.
      */
     protected static function getInstanceIdentifier(): string
