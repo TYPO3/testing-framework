@@ -1076,6 +1076,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      * + false: always deny, e.g. when importing data is finished
      *
      * @throws DBALException
+     * @todo: Seems to be unused. Deprecate in v6 and remove here?
      */
     protected function allowIdentityInsert(?bool $allowIdentityInsert): void
     {
