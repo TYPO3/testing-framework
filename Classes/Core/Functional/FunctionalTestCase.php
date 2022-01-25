@@ -181,8 +181,6 @@ abstract class FunctionalTestCase extends BaseTestCase
     /**
      * This configuration array is merged with TYPO3_CONF_VARS
      * that are set in default configuration and factory configuration
-     *
-     * @var array
      */
     protected array $configurationToUseInTestInstance = [];
 
@@ -206,8 +204,6 @@ abstract class FunctionalTestCase extends BaseTestCase
      * [
      *   'fileadmin/user_upload'
      * ]
-     *
-     * @var array
      */
     protected array $additionalFoldersToCreate = [];
 
@@ -432,24 +428,18 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
-     * Initialize backend user
+     * Initialize backend user.
      *
-     * @param int $userUid uid of the user we want to initialize. This user must exist in the fixture file
-     * @return BackendUserAuthentication
-     * @throws Exception
+     * @param int $userUid uid of the user we want to initialize. This user must exist in the fixture file.
      */
     protected function setUpBackendUserFromFixture(int $userUid): BackendUserAuthentication
     {
         $this->importDataSet($this->backendUserFixture);
-
         return $this->setUpBackendUser($userUid);
     }
 
     /**
      * Sets up Backend User which is already available in db
-     *
-     * @return BackendUserAuthentication
-     * @throws Exception
      */
     protected function setUpBackendUser(int $userUid): BackendUserAuthentication
     {
