@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core;
 
 /**
  * This interface defines the methods provided by TYPO3\TestingFramework\Core\TestCase::getAccessibleMock.
+ * Do not implement this interface in own classes. This should only be implemented by testing-framework classes.
  */
 interface AccessibleObjectInterface
 {
@@ -23,28 +24,24 @@ interface AccessibleObjectInterface
      * Calls the method $method using call_user_func* and returns its return value.
      *
      * @param string $methodName name of method to call, must not be empty
-     *
      * @return mixed the return value from the method $methodName
      */
-    public function _call($methodName);
+    public function _call(string $methodName, mixed ...$methodArguments): mixed;
 
     /**
      * Sets the value of a property.
      *
      * @param string $propertyName name of property to set value for, must not be empty
      * @param mixed $value the new value for the property defined in $propertyName
-     *
      * @return void
      */
-    public function _set($propertyName, $value);
+    public function _set(string $propertyName, mixed $value): void;
 
     /**
      * Gets the value of the given property.
      *
      * @param string $propertyName name of property to return value of, must not be empty
-     *
      * @return mixed the value of the property $propertyName
      */
-    public function _get($propertyName);
-
+    public function _get(string $propertyName): mixed;
 }
