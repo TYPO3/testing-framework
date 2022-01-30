@@ -15,19 +15,20 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+/**
+ * @internal Do not use this trait in own classes.
+ */
 trait AccessibleProxyTrait
 {
-    public function _call($methodName)
+    public function _call(string $methodName, mixed ...$methodArguments): mixed
     {
         if ($methodName === '') {
             throw new \InvalidArgumentException($methodName . ' must not be empty.', 1334663993);
         }
-        $args = func_get_args();
-        array_shift($args);
-        return $this->$methodName(...$args);
+        return $this->$methodName(...$methodArguments);
     }
 
-    public function _set($propertyName, $value)
+    public function _set(string $propertyName, mixed $value): void
     {
         if ($propertyName === '') {
             throw new \InvalidArgumentException($propertyName . ' must not be empty.', 1334664355);
@@ -35,7 +36,7 @@ trait AccessibleProxyTrait
         $this->$propertyName = $value;
     }
 
-    public function _get($propertyName)
+    public function _get(string $propertyName): mixed
     {
         if ($propertyName === '') {
             throw new \InvalidArgumentException($propertyName . ' must not be empty.', 1334664967);
