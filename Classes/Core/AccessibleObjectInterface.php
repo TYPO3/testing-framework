@@ -21,9 +21,10 @@ namespace TYPO3\TestingFramework\Core;
 interface AccessibleObjectInterface
 {
     /**
-     * Calls the method $method using call_user_func* and returns its return value.
+     * Calls $methodName with further $methodArguments and returns its return value.
      *
      * @param string $methodName name of method to call, must not be empty
+     * @param mixed ...$methodArguments additional arguments for method
      * @return mixed the return value from the method $methodName
      */
     public function _call(string $methodName, mixed ...$methodArguments): mixed;
