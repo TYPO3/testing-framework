@@ -15,6 +15,9 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+/**
+ * @internal Do not use this trait in own classes.
+ */
 trait AccessibleProxyTrait
 {
     public function _call($methodName)

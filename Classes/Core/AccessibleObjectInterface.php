@@ -16,6 +16,7 @@ namespace TYPO3\TestingFramework\Core;
 
 /**
  * This interface defines the methods provided by TYPO3\TestingFramework\Core\TestCase::getAccessibleMock.
+ * Do not implement this interface in own classes. This should only be implemented by testing-framework classes.
  */
 interface AccessibleObjectInterface
 {
