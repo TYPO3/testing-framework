@@ -535,7 +535,7 @@ class ActionService
                     $queryBuilder->createNamedParameter($workspaceId, \PDO::PARAM_INT)
                 )
             )
-            ->execute()
+            ->executeQuery()
             ->fetchAssociative();
         if (!empty($row['uid'])) {
             return (int)$row['uid'];
@@ -567,7 +567,7 @@ class ActionService
                     $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)
                 )
             )
-            ->execute()
+            ->executeQuery()
             ->fetchAssociative();
         if (!empty($row)) {
             // This is effectively the same record as $liveUid, but only if the constraints from above match
