@@ -33,7 +33,7 @@ Also used by github actions for test execution.
 
 Usage: $0 [options]
 
-No arguments: Run all unit tests with PHP 7.2
+No arguments: Run all unit tests with PHP 8.1
 
 Options:
     -s <...>
@@ -42,11 +42,9 @@ Options:
             - lint: PHP linting
             - unit (default): PHP unit tests
 
-    -p <7.2|7.3|7.4|8.0|8.1>
+    -p <8.1>
         Specifies the PHP minor version to be used
-            - 7.2 (default): use PHP 7.2
-            - 7.3: use PHP 7.3
-            - 7.4: use PHP 7.4
+            - 8.1 (default): use PHP 8.1
 
     -v
         Enable verbose script output. Shows variables and docker commands.
@@ -58,8 +56,8 @@ Examples:
     # Run unit tests using default PHP version
     ./Build/Scripts/runTests.sh
 
-    # Run unit tests using PHP 7.4
-    ./Build/Scripts/runTests.sh -p 7.4
+    # Run unit tests using PHP 8.1
+    ./Build/Scripts/runTests.sh -p 8.1
 EOF
 
 # Test if docker-compose exists, else exit out with error
@@ -79,7 +77,7 @@ cd ../testing-docker || exit 1
 # Option defaults
 ROOT_DIR=`readlink -f ${PWD}/../../`
 TEST_SUITE="unit"
-PHP_VERSION="7.2"
+PHP_VERSION="8.1"
 SCRIPT_VERBOSE=0
 
 # Option parsing
