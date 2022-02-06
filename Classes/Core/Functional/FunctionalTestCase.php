@@ -461,7 +461,7 @@ abstract class FunctionalTestCase extends BaseTestCase
         $result = $queryBuilder->select('*')
             ->from('be_users')
             ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
-            ->execute();
+            ->executeQuery();
         return $result->fetchAssociative() ?: null;
     }
 
@@ -697,10 +697,10 @@ abstract class FunctionalTestCase extends BaseTestCase
         $statement = $queryBuilder
             ->select('*')
             ->from($tableName)
-            ->execute();
+            ->executeQuery();
 
         if (!$hasUidField && !$hasHashField) {
-            return $statement->fetchAll();
+            return $statement->fetchAllAssociative();
         }
 
         if ($hasUidField) {

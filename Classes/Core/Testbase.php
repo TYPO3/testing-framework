@@ -909,7 +909,7 @@ class Testbase
                     $queryBuilder->expr()->eq('PGT.tablename', $queryBuilder->quote($tableName))
                 )
                 ->setMaxResults(1)
-                ->execute()
+                ->executeQuery()
                 ->fetchAssociative();
             if ($row !== false) {
                 $connection->executeStatement(
