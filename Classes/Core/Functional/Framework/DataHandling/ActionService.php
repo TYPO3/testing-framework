@@ -20,7 +20,6 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
@@ -547,13 +546,8 @@ class ActionService
                     $queryBuilder->createNamedParameter($workspaceId, \PDO::PARAM_INT)
                 )
             )
-            ->execute();
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $row = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $row = $statement->fetch();
-        }
+            ->executeQuery();
+        $row = $statement->fetchAssociative();
         if (!empty($row['uid'])) {
             return (int)$row['uid'];
         }
@@ -584,13 +578,8 @@ class ActionService
                     $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)
                 )
             )
-            ->execute();
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $row = $statement->fetchAssociative();
-        } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $row = $statement->fetch();
-        }
+            ->executeQuery();
+        $row = $statement->fetchAssociative();
         if (!empty($row)) {
             // This is effectively the same record as $liveUid, but only if the constraints from above match
             return (int)$row['uid'];
