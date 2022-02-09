@@ -41,6 +41,9 @@ class FrameworkState
     {
         $state = [];
         $state['globals-server'] = $GLOBALS['_SERVER'];
+        $state['globals-get'] = $_GET;
+        $state['globals-post'] = $_POST;
+        $state['globals-request'] = $_REQUEST;
         $state['globals-beUser'] = $GLOBALS['BE_USER'] ?? null;
         // Might be possible to drop this ...
         $state['globals-typo3-conf-vars'] = $GLOBALS['TYPO3_CONF_VARS'] ?: null;
@@ -106,6 +109,10 @@ class FrameworkState
         $state = array_pop(self::$state);
 
         $GLOBALS['_SERVER'] = $state['globals-server'];
+        $_GET = $state['globals-get'];
+        $_POST = $state['globals-post'];
+        $_REQUEST = $state['globals-request'];
+
         if ($state['globals-beUser'] !== null) {
             $GLOBALS['BE_USER'] = $state['globals-beUser'];
         }
