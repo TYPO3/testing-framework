@@ -1141,6 +1141,18 @@ abstract class FunctionalTestCase extends BaseTestCase
         $requestUrlParts = parse_url($request->getUri());
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = isset($requestUrlParts['host']) ? $requestUrlParts['host'] : 'localhost';
 
+        if (isset($requestUrlParts['query'])) {
+            parse_str($requestUrlParts['query'], $_GET);
+            parse_str($requestUrlParts['query'], $_REQUEST);
+        }
+
+        if ($request->hasHeader('Content-Type')
+            // no further limitation to HTTP method, due to https://www.php.net/manual/en/reserved.variables.post.php
+            && in_array('application/x-www-form-urlencoded', $request->getHeader('Content-Type'))
+        ) {
+            parse_str((string) $this->request->getBody(), $_POST);
+        }
+
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
 
         // The testing-framework registers extension 'json_response' that brings some middlewares which
