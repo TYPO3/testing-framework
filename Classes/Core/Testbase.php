@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -384,15 +385,15 @@ class Testbase
      */
     public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = []): array
     {
-        $databaseName = mb_strtolower(trim($config['typo3DatabaseName'] ?? getenv('typo3DatabaseName')));
-        $databaseHost = trim($config['typo3DatabaseHost'] ?? getenv('typo3DatabaseHost'));
-        $databaseUsername = trim($config['typo3DatabaseUsername'] ?? getenv('typo3DatabaseUsername'));
-        $databasePassword = $config['typo3DatabasePassword'] ?? getenv('typo3DatabasePassword');
+        $databaseName = mb_strtolower(trim($config['typo3DatabaseName'] ?? (getenv('typo3DatabaseName') ?: '')));
+        $databaseHost = trim($config['typo3DatabaseHost'] ?? (getenv('typo3DatabaseHost') ?: ''));
+        $databaseUsername = trim($config['typo3DatabaseUsername'] ?? (getenv('typo3DatabaseUsername') ?: ''));
+        $databasePassword = $config['typo3DatabasePassword'] ?? (getenv('typo3DatabasePassword') ?: '');
         $databasePasswordTrimmed = trim($databasePassword);
-        $databasePort = trim($config['typo3DatabasePort'] ?? getenv('typo3DatabasePort'));
-        $databaseSocket = trim($config['typo3DatabaseSocket'] ?? getenv('typo3DatabaseSocket'));
-        $databaseDriver = trim($config['typo3DatabaseDriver'] ?? getenv('typo3DatabaseDriver'));
-        $databaseCharset = trim($config['typo3DatabaseCharset'] ?? getenv('typo3DatabaseCharset'));
+        $databasePort = trim((string)($config['typo3DatabasePort'] ?? (getenv('typo3DatabasePort') ?: '')));
+        $databaseSocket = trim($config['typo3DatabaseSocket'] ?? (getenv('typo3DatabaseSocket') ?: ''));
+        $databaseDriver = trim($config['typo3DatabaseDriver'] ?? (getenv('typo3DatabaseDriver') ?: ''));
+        $databaseCharset = trim($config['typo3DatabaseCharset'] ?? (getenv('typo3DatabaseCharset') ?: ''));
         if ($databaseName || $databaseHost || $databaseUsername || $databasePassword || $databasePort || $databaseSocket || $databaseDriver || $databaseCharset) {
             // Try to get database credentials from environment variables first
             $originalConfigurationArray = [
