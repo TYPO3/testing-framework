@@ -105,7 +105,7 @@ class InstallMysqlCoreEnvironment extends Extension
         ];
         $this->output->debug("Connecting to MySQL: " . json_encode($connectionParameters));
         $databaseName = $this->config['typo3InstallMysqlDatabaseName'];
-        $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
+        $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
         $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $this->output->debug("Dropping database $databaseName");

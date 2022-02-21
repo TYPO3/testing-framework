@@ -564,7 +564,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                     // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
                     // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                     $types = [];
-                    $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+                    $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
                     foreach ($element as $columnName => $columnValue) {
                         $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
                     }
