@@ -588,7 +588,7 @@ class Testbase
         // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
-        $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
+        $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
 
         if ($schemaManager->getDatabasePlatform()->getName() === 'sqlite') {
             // This is the "path" option in sqlite: one file = one db
@@ -695,7 +695,7 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $databaseName = $connection->getDatabase();
-        $tableNames = $connection->getSchemaManager()->listTableNames();
+        $tableNames = $connection->createSchemaManager()->listTableNames();
 
         if (empty($tableNames)) {
             // No tables to process
@@ -747,7 +747,7 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
 
-        $schemaManager = $connection->getSchemaManager();
+        $schemaManager = $connection->createSchemaManager();
         foreach ($schemaManager->listTables() as $table) {
             $connection->truncate($table->getName());
             self::resetTableSequences($connection, $table->getName());
@@ -857,7 +857,7 @@ class Testbase
             // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
             // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
             $types = [];
-            $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
+            $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
             foreach ($insertArray as $columnName => $columnValue) {
                 $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
             }

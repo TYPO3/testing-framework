@@ -46,7 +46,7 @@ class DatabaseAccessor
      */
     public function export(): array
     {
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->connection->createSchemaManager();
 
         $export = [];
         foreach ($schemaManager->listTables() as $table) {

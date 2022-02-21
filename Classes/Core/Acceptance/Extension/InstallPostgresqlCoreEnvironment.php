@@ -109,7 +109,7 @@ class InstallPostgresqlCoreEnvironment extends Extension
             'user' => $this->config['typo3InstallPostgresqlDatabaseUsername'],
         ];
         $this->output->debug("Connecting to PgSQL: " . json_encode($connectionParameters));
-        $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
+        $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
         $databaseName = $this->config['typo3InstallPostgresqlDatabaseName'];
         $this->output->debug("Database: $databaseName");
         if (in_array($databaseName, $schemaManager->listDatabases(), true)) {
