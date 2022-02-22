@@ -53,7 +53,8 @@
   },
   "autoload": {
     "psr-4": {
-      "TYPO3\\TestingFramework\\": "Classes/"
+      "TYPO3\\TestingFramework\\": "Classes/",
+      "TYPO3\\PrivateContainer\\": "Resources/Core/Functional/Extensions/private_container/Classes/"
     }
   }
 }

@@ -84,7 +84,7 @@ use TYPO3\TestingFramework\Core\Testbase;
  *     --bootstrap components/testing_framework/core/Build/FunctionalTestsBootstrap.php \
  *     typo3/sysext/core/Tests/Functional/DataHandling/DataHandlerTest.php
  */
-abstract class FunctionalTestCase extends BaseTestCase
+abstract class FunctionalTestCase extends BaseTestCase implements ContainerInterface
 {
     /**
      * An unique identifier for this test case. Location of the test
@@ -147,6 +147,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected $frameworkExtensionsToLoad = [
         'Resources/Core/Functional/Extensions/json_response',
+        'Resources/Core/Functional/Extensions/private_container',
     ];
 
     /**
@@ -441,9 +442,43 @@ abstract class FunctionalTestCase extends BaseTestCase
         return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 
+    /**
+     * Returns the default TYPO3 dependency injection container
+     * containing all public services.
+     *
+     * May be used if a class is instantiated that requires
+     * the default container as argument.
+     */
     protected function getContainer(): ContainerInterface
     {
         return $this->container;
+    }
+
+    private function getPrivateContainer(): ContainerInterface
+    {
+        return $this->getContainer()->get('typo3.testing-framework.private-container');
+    }
+
+    /**
+     * Implements ContainerInterface. Can be used by tests to get both public
+     * and non-public services.
+     */
+    public function get(string $id)
+    {
+        if ($this->getContainer()->has($id)) {
+            return $this->getContainer()->get($id);
+        }
+        return $this->getPrivateContainer()->get($id);
+    }
+
+    /**
+     * Implements ContainerInterface. Used to find out if there is such a service.
+     * This will return true if the service is public OR non-public
+     * (non-public = injected into at least one public service).
+     */
+    public function has(string $id): bool
+    {
+        return $this->getContainer()->has($id) || $this->getPrivateContainer()->has($id);
     }
 
     /**
