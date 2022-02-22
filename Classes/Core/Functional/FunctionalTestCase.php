@@ -83,7 +83,7 @@ use TYPO3\TestingFramework\Core\Testbase;
  *     --bootstrap components/testing_framework/core/Build/FunctionalTestsBootstrap.php \
  *     typo3/sysext/core/Tests/Functional/DataHandling/DataHandlerTest.php
  */
-abstract class FunctionalTestCase extends BaseTestCase
+abstract class FunctionalTestCase extends BaseTestCase implements ContainerInterface
 {
     /**
      * An unique identifier for this test case. Location of the test
@@ -150,6 +150,7 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected $frameworkExtensionsToLoad = [
         'Resources/Core/Functional/Extensions/json_response',
+        'Resources/Core/Functional/Extensions/private_container',
     ];
 
     /**
@@ -456,7 +457,12 @@ abstract class FunctionalTestCase extends BaseTestCase
     }
 
     /**
+<<<<<<< HEAD
      * @return ContainerInterface
+=======
+     * @todo: Consider setting this private, too. So consumers have to
+     *        use get() / has().
+>>>>>>> d5d65dd... [FEATURE] Provide access to private services in functional tests
      */
     protected function getContainer(): ContainerInterface
     {
@@ -464,6 +470,32 @@ abstract class FunctionalTestCase extends BaseTestCase
             throw new \RuntimeException('Please invoke parent::setUp() before calling getContainer().', 1589221777);
         }
         return $this->container;
+    }
+
+    private function getPrivateContainer(): ContainerInterface
+    {
+        return $this->getContainer()->get('typo3.testing-framework.private-container');
+    }
+
+    /**
+     * Implements ContainerInterface. Can be used by tests to get both public
+     * and non-public services.
+     */
+    public function get(string $id): mixed
+    {
+        if ($this->getContainer()->has($id)) {
+            return $this->getContainer()->get($id);
+        }
+        return $this->getPrivateContainer()->get($id);
+    }
+
+    /**
+     * Implements ContainerInterface. Used to find out if there is such a service.
+     * This will return true if the container is public OR non-public.
+     */
+    public function has(string $id): bool
+    {
+        return $this->getContainer()->has($id) || $this->getPrivateContainer()->has($id);
     }
 
     /**
