@@ -870,16 +870,16 @@ abstract class FunctionalTestCase extends BaseTestCase
         foreach ($columns as $columnIndex => $column) {
             $columnLength = null;
             foreach ($column as $value) {
-                if (strpos($value, '<?xml') === 0) {
+                if (strpos((string)$value, '<?xml') === 0) {
                     $value = '[see diff]';
                 }
-                $valueLength = strlen($value);
+                $valueLength = strlen((string)$value);
                 if (empty($columnLength) || $valueLength > $columnLength) {
                     $columnLength = $valueLength;
                 }
             }
             foreach ($column as $valueIndex => $value) {
-                if (strpos($value, '<?xml') === 0) {
+                if (strpos((string)$value, '<?xml') === 0) {
                     if ($columnIndex === 'assertion') {
                         try {
                             $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
@@ -890,7 +890,7 @@ abstract class FunctionalTestCase extends BaseTestCase
                     }
                     $value = '[see diff]';
                 }
-                $lines[$valueIndex][$columnIndex] = str_pad($value, $columnLength, ' ');
+                $lines[$valueIndex][$columnIndex] = str_pad((string)$value, $columnLength, ' ');
             }
         }
 
