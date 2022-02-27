@@ -10,3 +10,7 @@ parameters:
   paths:
     - ../../Classes
     - ../../Tests
+
+  excludePaths:
+    # Checking acceptance support files is cumbersome due to codeception dynamic mixin generation
+    - ../../Classes/Core/Acceptance/*
