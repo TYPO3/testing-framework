@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  composer_install:
+  composer_update:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
     volumes:
@@ -15,7 +15,7 @@ services:
           set -x
         fi
         php -v | grep '^PHP';
-        composer install --no-progress --no-interaction;
+        composer update --no-progress --no-interaction;
       "
   lint:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest

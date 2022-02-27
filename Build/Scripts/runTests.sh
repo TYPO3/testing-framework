@@ -38,7 +38,7 @@ No arguments: Run all unit tests with PHP 7.2
 Options:
     -s <...>
         Specifies which test suite to run
-            - composerInstall: "composer install"
+            - composerUpdate: "composer update"
             - lint: PHP linting
             - unit (default): PHP unit tests
 
@@ -142,9 +142,9 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
-    composerInstall)
+    composerUpdate)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install
+        docker-compose run composer_update
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
