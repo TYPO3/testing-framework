@@ -52,7 +52,7 @@ class DataHandlerFactory
     private $suggestedIds = [];
 
     /**
-     * @var int
+     * @var int[]
      */
     private $dynamicIdsPerEntity = [];
 

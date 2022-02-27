@@ -11,16 +11,6 @@ parameters:
 			path: ../../Classes/Core/BaseTestCase.php
 
 		-
-			message: "#^Cannot access offset string on int\\.$#"
-			count: 2
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
-
-		-
-			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:\\$dynamicIdsPerEntity \\(int\\) does not accept default value of type array\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
