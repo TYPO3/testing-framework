@@ -206,11 +206,6 @@ parameters:
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
-			message: "#^Parameter \\#1 \\$callback of function set_error_handler expects \\(callable\\(int, string, string, int, array\\)\\: bool\\)\\|null, Closure\\(\\)\\: void given\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/FunctionalTestCase.php
-
-		-
 			message: "#^Cannot call method fetch\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\.$#"
 			count: 1
 			path: ../../Classes/Core/Testbase.php

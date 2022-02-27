@@ -415,7 +415,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // fails to unset/restore it's custom error handler as "risky".
             // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
             // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
-            $previousErrorHandler = set_error_handler(function () {});
+            $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
             restore_error_handler();
             if (!$previousErrorHandler instanceof ErrorHandler) {
                 throw new RiskyTestError(
