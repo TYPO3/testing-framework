@@ -20,7 +20,7 @@ return [
         'typo3/json-response/frontend-user-authentication' => [
             'target' => \TYPO3\JsonResponse\Middleware\FrontendUserHandler::class,
             'after' => [
-                'typo3/cms-frontend/frontend-user-authentication'
+                'typo3/cms-frontend/backend-user-authentication',
             ],
             'before' => [
                 'typo3/cms-frontend/base-redirect-resolver',
