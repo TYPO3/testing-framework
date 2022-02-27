@@ -56,5 +56,8 @@
       "TYPO3\\TestingFramework\\": "Classes/",
       "TYPO3\\PrivateContainer\\": "Resources/Core/Functional/Extensions/private_container/Classes/"
     }
+  },
+  "require-dev": {
+    "typo3/coding-standards": "^0.5.0"
   }
 }
