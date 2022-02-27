@@ -1,6 +1,16 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMock\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMockForAbstractClass\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
@@ -16,12 +26,62 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
 
 		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Snapshot\\\\DatabaseAccessor\\:\\:createQueryBuilder\\(\\) never returns Doctrine\\\\DBAL\\\\Query\\\\QueryBuilder so it can be removed from the return type\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\Collector\\:\\:\\$tableFields \\(array\\) in isset\\(\\) is not nullable\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/Internal/AbstractInstruction.php
 
 		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 2
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Strict comparison using \\!\\=\\= between null and null will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function set_error_handler expects \\(callable\\(int, string, string, int, array\\)\\: bool\\)\\|null, Closure\\(\\)\\: void given\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of function explode expects string, SimpleXMLElement given\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between SimpleXMLElement and 'yes' will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
 

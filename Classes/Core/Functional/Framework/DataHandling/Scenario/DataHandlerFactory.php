@@ -26,40 +26,30 @@ class DataHandlerFactory
 {
     private const DYNAMIC_ID = 10000;
 
-    /**
-     * @var array
-     */
-    private $settings;
+    private array $settings;
 
     /**
      * @var EntityConfiguration[]
      */
-    private $entityConfigurations = [];
+    private array $entityConfigurations = [];
 
-    /**
-     * @var array
-     */
-    private $dataMapPerWorkspace = [];
-
-    /**
-     * @var array
-     */
-    private $commandMapPerWorkspace = [];
+    private array $dataMapPerWorkspace = [];
+    private array $commandMapPerWorkspace = [];
 
     /**
      * @var bool[]
      */
-    private $suggestedIds = [];
-
-    /**
-     * @var int
-     */
-    private $dynamicIdsPerEntity = [];
+    private array $suggestedIds = [];
 
     /**
      * @var int[]
      */
-    private $staticIdsPerEntity = [];
+    private array $dynamicIdsPerEntity = [];
+
+    /**
+     * @var int[]
+     */
+    private array $staticIdsPerEntity = [];
 
     /**
      * @param string $yamlFile
@@ -284,7 +274,6 @@ class DataHandlerFactory
     }
 
     /**
-     * @param string string $sourceProperty
      * @param EntityConfiguration $entityConfiguration
      * @param array $itemSettings
      * @param string|null $nodeId
@@ -441,20 +430,6 @@ class DataHandlerFactory
 
     /**
      * @param EntityConfiguration $entityConfiguration
-     * @param int $id
-     */
-    private function addStaticId(
-        EntityConfiguration $entityConfiguration,
-        int $id
-    ): void {
-        if (!isset($this->staticIdsPerEntity[$entityConfiguration->getName()])) {
-            $this->staticIdsPerEntity[$entityConfiguration->getName()] = [];
-        }
-        $this->staticIdsPerEntity[$entityConfiguration->getName()][] = $id;
-    }
-
-    /**
-     * @param EntityConfiguration $entityConfiguration
      * @return int
      */
     private function incrementDynamicId(
@@ -462,7 +437,7 @@ class DataHandlerFactory
         int $incrementValue = 1
     ): int {
         if (!isset($this->dynamicIdsPerEntity[$entityConfiguration->getName()])) {
-            $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = static::DYNAMIC_ID;
+            $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = self::DYNAMIC_ID;
         }
         $result = $this->dynamicIdsPerEntity[$entityConfiguration->getName()];
         // increment for next(!) assignment, since current process might create version or language variants
