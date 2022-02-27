@@ -16,11 +16,6 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
 
 		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:addStaticId\\(\\) is unused\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
-
-		-
 			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:\\$dynamicIdsPerEntity \\(int\\) does not accept default value of type array\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php

@@ -440,20 +440,6 @@ class DataHandlerFactory
 
     /**
      * @param EntityConfiguration $entityConfiguration
-     * @param int $id
-     */
-    private function addStaticId(
-        EntityConfiguration $entityConfiguration,
-        int $id
-    ): void {
-        if (!isset($this->staticIdsPerEntity[$entityConfiguration->getName()])) {
-            $this->staticIdsPerEntity[$entityConfiguration->getName()] = [];
-        }
-        $this->staticIdsPerEntity[$entityConfiguration->getName()][] = $id;
-    }
-
-    /**
-     * @param EntityConfiguration $entityConfiguration
      * @return int
      */
     private function incrementDynamicId(
