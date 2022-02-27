@@ -222,7 +222,7 @@ class EntityConfiguration
     /**
      * @param array $values
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return array
      */
     private function assignValueInstructions(array $values, string $name, $value)

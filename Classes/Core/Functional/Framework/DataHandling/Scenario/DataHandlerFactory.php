@@ -284,7 +284,6 @@ class DataHandlerFactory
     }
 
     /**
-     * @param string string $sourceProperty
      * @param EntityConfiguration $entityConfiguration
      * @param array $itemSettings
      * @param string|null $nodeId
@@ -462,7 +461,7 @@ class DataHandlerFactory
         int $incrementValue = 1
     ): int {
         if (!isset($this->dynamicIdsPerEntity[$entityConfiguration->getName()])) {
-            $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = static::DYNAMIC_ID;
+            $this->dynamicIdsPerEntity[$entityConfiguration->getName()] = self::DYNAMIC_ID;
         }
         $result = $this->dynamicIdsPerEntity[$entityConfiguration->getName()];
         // increment for next(!) assignment, since current process might create version or language variants
