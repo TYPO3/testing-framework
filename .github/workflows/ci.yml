@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Composer install
-        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerInstall
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerUpdate
 
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
