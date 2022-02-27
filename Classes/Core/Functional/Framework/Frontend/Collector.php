@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
@@ -132,8 +133,7 @@ class Collector implements SingletonInterface
 
     /**
      * @param string $content
-     * @param NULL|array $configuration
-     * @return void
+     * @param array|null $configuration
      */
     public function attachSection($content, array $configuration = null): void
     {
@@ -195,8 +195,6 @@ class Collector implements SingletonInterface
 
     /**
      * Collector needs to be reset after attaching a section, otherwise records will pile up.
-     *
-     * @return void
      */
     protected function reset(): void
     {

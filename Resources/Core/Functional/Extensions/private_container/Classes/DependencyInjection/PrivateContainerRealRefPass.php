@@ -38,7 +38,7 @@ class PrivateContainerRealRefPass implements CompilerPassInterface
         $privateServices = $privateContainer->getArgument(0);
 
         foreach ($privateServices as $id => $argument) {
-            if (isset($definitions[$target = (string) $argument->getValues()[0]])) {
+            if (isset($definitions[$target = (string)$argument->getValues()[0]])) {
                 $argument->setValues([new Reference($target)]);
             } else {
                 unset($privateServices[$id]);

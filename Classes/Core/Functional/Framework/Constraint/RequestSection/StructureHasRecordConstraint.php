@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Constraint\RequestSection;
 
@@ -60,7 +61,7 @@ class StructureHasRecordConstraint extends AbstractStructureRecordConstraint
         $failureMessage = '';
 
         if (empty($structures)) {
-            $failureMessage .= 'Could not assert all values for "' . $this->recordIdentifier . '.' . $this->recordField . '.' . $this->table . '.' . $this->field .'"' . LF;
+            $failureMessage .= 'Could not assert all values for "' . $this->recordIdentifier . '.' . $this->recordField . '.' . $this->table . '.' . $this->field . '"' . LF;
         }
 
         if (!empty($nonMatchingVariants)) {

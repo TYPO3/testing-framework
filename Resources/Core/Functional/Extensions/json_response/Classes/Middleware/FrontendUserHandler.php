@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\JsonResponse\Middleware;
 
 /*
@@ -22,7 +23,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Session\UserSessionManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
 
 /**
  * Create a frontend user session if a frontend functional test wants
