@@ -1,0 +1,67 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Instantiated class Composer\\\\Util\\\\Filesystem not found\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Parameter \\$event of method TYPO3\\\\TestingFramework\\\\Composer\\\\ExtensionTestEnvironment\\:\\:prepare\\(\\) has invalid type Composer\\\\Script\\\\Event\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerWriter.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Internal/AbstractInstruction.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequestContext.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalResponse.php
+
+		-
+			message: "#^Access to an undefined property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\Response\\:\\:\\$responseContent\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Response.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
+
+		-
+			message: "#^Class Text_Template not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Instantiated class Text_Template not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+

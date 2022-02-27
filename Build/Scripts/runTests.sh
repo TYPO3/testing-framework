@@ -44,6 +44,8 @@ Options:
             - clean: clean up build and testing related files
             - composerUpdate: "composer update"
             - lint: PHP linting
+            - phpstan: phpstan analyze
+            - phpstanGenerateBaseline: regenerate phpstan baseline, handy after phpstan updates
             - unit (default): PHP unit tests
 
     -p <7.4|8.0|8.1>
@@ -176,6 +178,18 @@ case ${TEST_SUITE} in
     lint)
         setUpDockerComposeDotEnv
         docker-compose run lint
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    phpstan)
+        setUpDockerComposeDotEnv
+        docker-compose run phpstan
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    phpstanGenerateBaseline)
+        setUpDockerComposeDotEnv
+        docker-compose run phpstan_generate_baseline
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
