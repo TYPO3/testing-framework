@@ -1,0 +1,27 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerWriter.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Internal/AbstractInstruction.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
+

@@ -18,7 +18,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
  */
 
 use Doctrine\DBAL\Exception as DBALException;
-use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
@@ -902,7 +902,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         }
 
         $databasePlatform = 'mysql';
-        if ($connection->getDatabasePlatform() instanceof PostgreSqlPlatform) {
+        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $databasePlatform = 'postgresql';
         }
 

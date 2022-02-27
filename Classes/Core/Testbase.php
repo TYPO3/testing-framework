@@ -18,8 +18,8 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
-use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Psr\Container\ContainerInterface;
@@ -655,7 +655,7 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $platform = $connection->getDatabasePlatform();
-        if ($platform instanceof MySqlPlatform) {
+        if ($platform instanceof MySQLPlatform) {
             $this->truncateAllTablesForMysql();
         } else {
             $this->truncateAllTablesForOtherDatabases();
