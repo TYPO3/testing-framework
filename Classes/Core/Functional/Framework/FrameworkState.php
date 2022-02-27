@@ -89,7 +89,7 @@ class FrameworkState
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
         $generalUtilityIndpEnvCache->setAccessible(true);
-        $generalUtilityIndpEnvCache = $generalUtilityIndpEnvCache->setValue([]);
+        $generalUtilityIndpEnvCache->setValue([]);
 
         GeneralUtility::resetSingletonInstances([]);
 
