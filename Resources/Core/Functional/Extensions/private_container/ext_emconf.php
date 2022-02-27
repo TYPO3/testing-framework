@@ -1,4 +1,5 @@
 <?php
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Private Container',
     'description' => 'Private Container',
@@ -10,7 +11,7 @@ $EM_CONF[$_EXTKEY] = [
     'author_company' => '',
     'constraints' => [
         'depends' => [
-            'typo3' => '11.0.0-12.99.99'
+            'typo3' => '11.0.0-12.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],

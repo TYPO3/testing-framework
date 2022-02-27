@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -29,7 +30,7 @@ class Response
     protected $status;
 
     /**
-     * @var NULL|string|array
+     * @var string|array|null
      */
     protected $content;
 
@@ -64,7 +65,7 @@ class Response
     }
 
     /**
-     * @return array|NULL|string
+     * @return array|string|null
      */
     public function getContent()
     {
@@ -93,7 +94,7 @@ class Response
 
     /**
      * @param mixed $sectionIdentifiers
-     * @return NULL|array|ResponseSection[]
+     * @return array|ResponseSection[]|null
      * @deprecated use ResponseContent::getSections() instead
      */
     public function getResponseSections(...$sectionIdentifiers)

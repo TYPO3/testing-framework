@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\JsonResponse\Middleware;
 
 /*
@@ -87,5 +88,4 @@ class FrontendUserHandler implements MiddlewareInterface
     {
         $context->setAspect('frontend.user', GeneralUtility::makeInstance(UserAspect::class, $user));
     }
-
 }

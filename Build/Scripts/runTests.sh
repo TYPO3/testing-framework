@@ -51,6 +51,8 @@ Options:
             - 7.2 (default): use PHP 7.2
             - 7.3: use PHP 7.3
             - 7.4: use PHP 7.4
+            - 8.0: use PHP 8.0
+            - 8.1: use PHP 8.1
 
     -x
         Only with -s cgl|unit

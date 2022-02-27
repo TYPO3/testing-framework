@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -15,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 
 use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\Http\Application;
@@ -71,9 +71,6 @@ class RequestBootstrap
         $this->classLoader = require_once __DIR__ . '/../../../../../../../autoload.php';
     }
 
-    /**
-     * @return void
-     */
     private function setGlobalVariables()
     {
         if (empty($this->requestArguments)) {
@@ -105,7 +102,7 @@ class RequestBootstrap
         // Populating $_POST
         $_POST = [];
         if ($this->request->hasHeader('Content-Type') && in_array('application/x-www-form-urlencoded', $this->request->getHeader('Content-Type'))) {
-            parse_str((string) $this->request->getBody(), $_POST);
+            parse_str((string)$this->request->getBody(), $_POST);
         }
         // Populating $_COOKIE
         $_COOKIE = [];
@@ -153,9 +150,6 @@ class RequestBootstrap
         putenv('TYPO3_CONTEXT=Testing/Frontend');
     }
 
-    /**
-     * @return void
-     */
     public function executeAndOutput()
     {
         global $TSFE, $BE_USER;
@@ -191,7 +185,7 @@ class RequestBootstrap
     }
 
     /**
-     * @return null|InternalRequest
+     * @return InternalRequest|null
      */
     public static function getInternalRequest(): ?InternalRequest
     {
@@ -199,7 +193,7 @@ class RequestBootstrap
     }
 
     /**
-     * @return null|InternalRequestContext
+     * @return InternalRequestContext|null
      */
     public static function getInternalRequestContext(): ?InternalRequestContext
     {
@@ -216,7 +210,7 @@ class RequestBootstrap
     }
 
     /**
-     * @return null|string|array
+     * @return string|array|null
      */
     private static function getContent()
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
@@ -17,7 +18,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 use AcceptanceTester;
 use Facebook\WebDriver\Remote\RemoteWebElement;
-use Facebook\WebDriver\WebDriverBy;
 
 /**
  * Helper class to interact with the page tree
@@ -82,7 +82,9 @@ abstract class AbstractPageTree
         $I->see($nodeText, self::$treeItemSelector);
 
         /** @var RemoteWebElement $context */
-        $context = $I->executeInSelenium(function () use ($nodeText, $context
+        $context = $I->executeInSelenium(function () use (
+            $nodeText,
+            $context
         ) {
             return $context->findElement(\Facebook\WebDriver\WebDriverBy::xpath('//*[text()=\'' . $nodeText . '\']/..'));
         });

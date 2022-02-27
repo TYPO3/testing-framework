@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -43,8 +44,13 @@ abstract class BaseTestCase extends TestCase
      * @throws \InvalidArgumentException
      */
     protected function getAccessibleMock(
-        $originalClassName, $methods = [], array $arguments = [], $mockClassName = '',
-        $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true
+        $originalClassName,
+        $methods = [],
+        array $arguments = [],
+        $mockClassName = '',
+        $callOriginalConstructor = true,
+        $callOriginalClone = true,
+        $callAutoload = true
     ) {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1334701880);
@@ -86,11 +92,15 @@ abstract class BaseTestCase extends TestCase
      * @return MockObject|AccessibleObjectInterface&T
      *
      * @throws \InvalidArgumentException
-     *
      */
     protected function getAccessibleMockForAbstractClass(
-        $originalClassName, array $arguments = [], $mockClassName = '',
-        $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true, $mockedMethods = []
+        $originalClassName,
+        array $arguments = [],
+        $mockClassName = '',
+        $callOriginalConstructor = true,
+        $callOriginalClone = true,
+        $callAutoload = true,
+        $mockedMethods = []
     ) {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1384268260);

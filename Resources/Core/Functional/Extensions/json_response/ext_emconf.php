@@ -1,4 +1,5 @@
 <?php
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'JSON Response',
     'description' => 'JSON Response',
@@ -12,7 +13,7 @@ $EM_CONF[$_EXTKEY] = [
     'author_company' => '',
     'constraints' => [
         'depends' => [
-            'typo3' => '9.4.0'
+            'typo3' => '9.4.0',
         ],
         'conflicts' => [],
         'suggests' => [],

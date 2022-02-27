@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\JsonResponse;
 
 use Psr\Http\Message\ResponseInterface;

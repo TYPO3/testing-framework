@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Fluid\Unit\ViewHelpers;
 
 /*
@@ -84,16 +85,13 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
      */
     protected $renderingContext;
 
-    /**
-     * @return void
-     */
     protected function setUp(): void
     {
         $this->viewHelperVariableContainer = $this->prophesize(ViewHelperVariableContainer::class);
         $this->templateVariableContainer = $this->createMock(StandardVariableProvider::class);
         $this->request = $this->prophesize(Request::class);
         $this->controllerContext = $this->createMock(ControllerContext::class);
-        $this->controllerContext->expects($this->any())->method('getRequest')->will($this->returnValue($this->request->reveal()));
+        $this->controllerContext->expects(self::any())->method('getRequest')->willReturn($this->request->reveal());
         $this->arguments = [];
         $this->renderingContext = $this->getMockBuilder(RenderingContext::class)
             ->addMethods(['dummy'])
@@ -106,7 +104,6 @@ abstract class ViewHelperBaseTestcase extends UnitTestCase
 
     /**
      * @param ViewHelperInterface $viewHelper
-     * @return void
      */
     protected function injectDependenciesIntoViewHelper(ViewHelperInterface $viewHelper)
     {

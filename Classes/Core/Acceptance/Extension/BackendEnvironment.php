@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
@@ -21,7 +22,6 @@ use Codeception\Extension;
 use TYPO3\CMS\Core\Cache\Backend\NullBackend;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Styleguide\TcaDataGenerator\Generator;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -166,7 +166,7 @@ abstract class BackendEnvironment extends Extension
      */
     public static $events = [
         Events::SUITE_BEFORE => 'bootstrapTypo3Environment',
-        Events::TEST_BEFORE => 'cleanupTypo3Environment'
+        Events::TEST_BEFORE => 'cleanupTypo3Environment',
     ];
 
     /**
@@ -316,8 +316,6 @@ abstract class BackendEnvironment extends Extension
 
     /**
      * Method executed after each test
-     *
-     * @return void
      */
     public function cleanupTypo3Environment()
     {
