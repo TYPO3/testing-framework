@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Step;
 
@@ -168,7 +169,6 @@ trait FrameSteps
      * @param array $toSelector
      * @param int $offsetX
      * @param int $offsetY
-     * @return void
      *
      * @see \Codeception\Module\WebDriver::scrollTo
      */
@@ -180,7 +180,7 @@ trait FrameSteps
                 $el = $webDriver->findElement($this->getStrictLocator($toSelector));
                 $x = $el->getLocation()->getX() + $offsetX;
                 $y = $el->getLocation()->getY() + $offsetY;
-                $webDriver->executeScript( "$scrollingElement.scrollTo($x, $y)");
+                $webDriver->executeScript("$scrollingElement.scrollTo($x, $y)");
             }
         );
     }
@@ -189,7 +189,6 @@ trait FrameSteps
      * Move the TYPO3 backend frame to top.
      *
      * @param string $scrollingElement
-     * @return void
      */
     protected function scrollFrameToTop(string $scrollingElement): void
     {
@@ -205,7 +204,6 @@ trait FrameSteps
      * Move the TYPO3 backend frame to the bottom.
      *
      * @param string $scrollingElement
-     * @return void
      */
     protected function scrollFrameToBottom(string $scrollingElement): void
     {
@@ -243,7 +241,7 @@ trait FrameSteps
             default:
                 throw new MalformedLocatorException(
                     "$type => $locator",
-                    "Strict locator can be either xpath, css, id, link, class, name: "
+                    'Strict locator can be either xpath, css, id, link, class, name: '
                 );
         }
     }

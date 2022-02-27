@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
@@ -15,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Codeception\Event\SuiteEvent;
 use Codeception\Event\TestEvent;
 use Codeception\Events;
 use Codeception\Extension;
@@ -103,7 +103,7 @@ class InstallMysqlCoreEnvironment extends Extension
             'password' => $this->config['typo3InstallMysqlDatabasePassword'],
             'user' => $this->config['typo3InstallMysqlDatabaseUsername'],
         ];
-        $this->output->debug("Connecting to MySQL: " . json_encode($connectionParameters));
+        $this->output->debug('Connecting to MySQL: ' . json_encode($connectionParameters));
         $databaseName = $this->config['typo3InstallMysqlDatabaseName'];
         $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
         $this->output->debug("Database: $databaseName");

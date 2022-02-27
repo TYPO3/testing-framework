@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
@@ -16,11 +17,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 
 use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Core\ClassLoadingInformation;
-use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Utility\ArrayUtility;
-use TYPO3\CMS\Frontend\Http\Application;
-use TYPO3\TestingFramework\Core\SystemEnvironmentBuilder;
 
 /**
  * Bootstrap for direct CLI Request
@@ -31,7 +27,7 @@ use TYPO3\TestingFramework\Core\SystemEnvironmentBuilder;
 class RequestBootstrap
 {
     /**
-     * @return null|InternalRequest
+     * @return InternalRequest|null
      */
     public static function getInternalRequest(): ?InternalRequest
     {

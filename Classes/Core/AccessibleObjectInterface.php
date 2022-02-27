@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -34,7 +35,6 @@ interface AccessibleObjectInterface
      *
      * @param string $propertyName name of property to set value for, must not be empty
      * @param mixed $value the new value for the property defined in $propertyName
-     * @return void
      */
     public function _set(string $propertyName, mixed $value): void;
 

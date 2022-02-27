@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 /*
@@ -15,11 +16,11 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
 use TYPO3\TestingFramework\Core\Testbase;
 

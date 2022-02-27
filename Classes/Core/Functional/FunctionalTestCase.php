@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional;
@@ -33,7 +34,6 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
-use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -237,13 +237,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * This method should be called with parent::setUp() in your test cases!
      *
-     * @return void
      * @throws DBALException
      */
     protected function setUp(): void
     {
         if (!defined('ORIGINAL_ROOT')) {
-            $this->markTestSkipped('Functional tests must be called through phpunit on CLI');
+            self::markTestSkipped('Functional tests must be called through phpunit on CLI');
         }
 
         $this->identifier = self::getInstanceIdentifier();
@@ -617,7 +616,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                         $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
                     }
                 } catch (DBALException $e) {
-                    $this->fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
+                    self::fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
                 }
             }
             Testbase::resetTableSequences($connection, $tableName);
@@ -677,7 +676,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                     // Unset asserted record
                     unset($records[$result]);
                     // Increase assertion counter
-                    $this->assertTrue($result !== false);
+                    self::assertTrue($result !== false);
                 }
             }
             if (!empty($records)) {
@@ -700,7 +699,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         }
 
         if (!empty($failMessages)) {
-            $this->fail(implode(LF, $failMessages));
+            self::fail(implode(LF, $failMessages));
         }
     }
 
@@ -812,7 +811,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 if (strpos((string)$value, '<?xml') === 0) {
                     if ($columnIndex === 'assertion') {
                         try {
-                            $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
+                            self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
                         } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
                             $linesFromXmlValues[] = 'Diff for field "' . $columns['fields'][$valueIndex] . '":' . PHP_EOL .
                                 $e->getComparisonFailure()->getDiff();
@@ -854,7 +853,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
             if (strpos((string)$value, '<?xml') === 0) {
                 try {
-                    $this->assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
+                    self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
                 } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
                     $differentFields[] = $field;
                 }
@@ -891,7 +890,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $page = $connection->select(['*'], 'pages', ['uid' => $pageId])->fetchAssociative();
 
         if (empty($page)) {
-            $this->fail('Cannot set up frontend root page "' . $pageId . '"');
+            self::fail('Cannot set up frontend root page "' . $pageId . '"');
         }
 
         // migrate legacy definition to support `constants` and `setup`
@@ -953,7 +952,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $template = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1])->fetchAssociative();
 
         if (empty($template)) {
-            $this->fail('Cannot find root template on page with id: "' . $pageId . '"');
+            self::fail('Cannot find root template on page with id: "' . $pageId . '"');
         }
         $updateFields['config'] = $template['config'] . LF . $typoScript;
         $connection->update(
@@ -974,8 +973,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         InternalRequest $request,
         InternalRequestContext $context = null,
         bool $followRedirects = false
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         if ($context === null) {
             $context = new InternalRequestContext();
         }
@@ -984,7 +982,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $response = $this->retrieveFrontendSubRequestResult($request, $context);
             $locationHeader = $response->getHeaderLine('location');
             if (in_array($locationHeader, $locationHeaders, true)) {
-                $this->fail(
+                self::fail(
                     implode(LF . '* ', array_merge(
                         ['Redirect loop detected:'],
                         $locationHeaders,
@@ -1013,8 +1011,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     private function retrieveFrontendSubRequestResult(
         InternalRequest $request,
         InternalRequestContext $context
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         FrameworkState::push();
         FrameworkState::reset();
 
