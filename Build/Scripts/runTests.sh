@@ -22,8 +22,10 @@ setUpDockerComposeDotEnv() {
     # Your local user
     echo "ROOT_DIR"=${ROOT_DIR} >> .env
     echo "HOST_USER=${USER}" >> .env
+    echo "PHP_XDEBUG_ON=${PHP_XDEBUG_ON}" >> .env
     echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}" >> .env
     echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}" >> .env
+    echo "CGLCHECK_DRY_RUN=${CGLCHECK_DRY_RUN}" >> .env
 }
 
 # Load help text into $HELP
@@ -38,6 +40,7 @@ No arguments: Run all unit tests with PHP 8.1
 Options:
     -s <...>
         Specifies which test suite to run
+            - cgl: test and fix all php files
             - clean: clean up build and testing related files
             - composerUpdate: "composer update"
             - lint: PHP linting
@@ -46,6 +49,16 @@ Options:
     -p <8.1>
         Specifies the PHP minor version to be used
             - 8.1 (default): use PHP 8.1
+
+    -x
+        Only with -s cgl|unit
+        Send information to host instance for test or system under test break points. This is especially
+        useful if a local PhpStorm instance is listening on default xdebug port 9003. A different port
+        can be selected with -y
+
+    -n
+        Only with -s cgl
+        Activate dry-run in CGL check that does not actively change files and only prints broken ones.
 
     -v
         Enable verbose script output. Shows variables and docker commands.
@@ -79,7 +92,9 @@ cd ../testing-docker || exit 1
 ROOT_DIR=`readlink -f ${PWD}/../../`
 TEST_SUITE="unit"
 PHP_VERSION="8.1"
+PHP_XDEBUG_ON=0
 SCRIPT_VERBOSE=0
+CGLCHECK_DRY_RUN=""
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
@@ -87,7 +102,7 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":s:p:hv" OPT; do
+while getopts ":s:p:hxnv" OPT; do
     case ${OPT} in
         s)
             TEST_SUITE=${OPTARG}
@@ -99,8 +114,14 @@ while getopts ":s:p:hv" OPT; do
             echo "${HELP}"
             exit 0
             ;;
+        n)
+            CGLCHECK_DRY_RUN="-n"
+            ;;
         v)
             SCRIPT_VERBOSE=1
+            ;;
+        x)
+            PHP_XDEBUG_ON=1
             ;;
         \?)
             INVALID_OPTIONS+=(${OPTARG})
@@ -134,7 +155,7 @@ case ${TEST_SUITE} in
     cgl)
         # Active dry-run for cgl needs not "-n" but specific options
         if [[ ! -z ${CGLCHECK_DRY_RUN} ]]; then
-            CGLCHECK_DRY_RUN="--dry-run --diff --diff-format udiff"
+            CGLCHECK_DRY_RUN="--dry-run --diff"
         fi
         setUpDockerComposeDotEnv
         docker-compose run cgl
