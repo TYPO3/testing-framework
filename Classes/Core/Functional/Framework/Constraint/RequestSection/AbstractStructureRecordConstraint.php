@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Constraint\RequestSection;
 
 /*

@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -35,8 +36,7 @@ class Renderer implements SingletonInterface
 
     /**
      * @param string $content
-     * @param NULL|array $configuration
-     * @return void
+     * @param array|null $configuration
      */
     public function parseValues($content, array $configuration = null)
     {
@@ -94,7 +94,7 @@ class Renderer implements SingletonInterface
 
     /**
      * @param array $section
-     * @param NULL|string $as
+     * @param string|null $as
      */
     public function addSection(array $section, $as = null)
     {
@@ -107,7 +107,7 @@ class Renderer implements SingletonInterface
 
     /**
      * @param string $content
-     * @param NULL|array $configuration
+     * @param array|null $configuration
      * @return string
      */
     public function renderSections($content, array $configuration = null)
@@ -133,8 +133,7 @@ class Renderer implements SingletonInterface
     {
         $renderedValues = [];
 
-        foreach ($values as $propertyName => $propertyInstruction)
-        {
+        foreach ($values as $propertyName => $propertyInstruction) {
             $plainPropertyName = rtrim($propertyName, '.');
             if (!empty($propertyInstruction['children.'])) {
                 $renderedValues[$plainPropertyName] = $this->stdWrapValues(

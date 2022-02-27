@@ -14,8 +14,8 @@ return [
         'typo3/json-response/encoder' => [
             'target' => \TYPO3\JsonResponse\Encoder::class,
             'before' => [
-                'typo3/cms-frontend/timetracker'
-            ]
+                'typo3/cms-frontend/timetracker',
+            ],
         ],
         'typo3/json-response/frontend-user-authentication' => [
             'target' => \TYPO3\JsonResponse\Middleware\FrontendUserHandler::class,
@@ -29,11 +29,11 @@ return [
         'typo3/json-response/backend-user-authentication' => [
             'target' => \TYPO3\JsonResponse\Middleware\BackendUserHandler::class,
             'after' => [
-                'typo3/cms-frontend/backend-user-authentication'
+                'typo3/cms-frontend/backend-user-authentication',
             ],
             'before' => [
                 'typo3/cms-frontend/base-redirect-resolver',
             ],
         ],
-    ]
+    ],
 ];

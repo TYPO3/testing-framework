@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -21,7 +21,6 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
-use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -29,6 +28,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 if (PHP_SAPI !== 'cli') {
     die('Script must be called from command line.' . chr(10));
@@ -87,7 +87,7 @@ class SplitFunctionalTests extends NodeVisitorAbstract
             ->sortByName()
         ;
 
-        $parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
         $testStats = [];
         foreach ($testFiles as $file) {
             /** @var $file SplFileInfo */
@@ -113,7 +113,7 @@ class SplitFunctionalTests extends NodeVisitorAbstract
                 if (isset($test['dataProvider'])) {
                     // Test uses a data provider - get number of data sets
                     $dataProviderMethodName = $test['dataProvider'];
-                    $methods = (new $fqcn)->$dataProviderMethodName();
+                    $methods = (new $fqcn())->$dataProviderMethodName();
                     if ($methods instanceof Generator) {
                         $numberOfDataSets = iterator_count($methods);
                     } else {

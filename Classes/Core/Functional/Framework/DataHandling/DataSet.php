@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
@@ -221,7 +222,7 @@ class DataSet
 
     /**
      * @param string $tableName
-     * @return NULL|array
+     * @return array|null
      */
     public function getFields(string $tableName)
     {
@@ -234,7 +235,7 @@ class DataSet
 
     /**
      * @param string $tableName
-     * @return NULL|int
+     * @return int|null
      */
     public function getIdIndex(string $tableName)
     {
@@ -247,7 +248,7 @@ class DataSet
 
     /**
      * @param string $tableName
-     * @return NULL|int
+     * @return int|null
      */
     public function getHashIndex(string $tableName): ?int
     {
@@ -260,7 +261,7 @@ class DataSet
 
     /**
      * @param string $tableName
-     * @return NULL|array
+     * @return array|null
      */
     public function getElements(string $tableName)
     {
@@ -273,7 +274,7 @@ class DataSet
 
     /**
      * @param string $fileName
-     * @param null|int $padding
+     * @param int|null $padding
      */
     public function persist(string $fileName, int $padding = null)
     {
@@ -302,7 +303,7 @@ class DataSet
 
     /**
      * @param array $values
-     * @param null|int $padding
+     * @param int|null $padding
      * @return array
      */
     protected function pad(array $values, int $padding = null): array

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
@@ -16,9 +17,7 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Codeception\Module;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
-use TYPO3\CMS\Core\Tests\Acceptance\Support\InstallTester;
 use TYPO3\CMS\Core\Tests\Functional\SiteHandling\SiteBasedTestTrait;
 
 /**
@@ -26,7 +25,6 @@ use TYPO3\CMS\Core\Tests\Functional\SiteHandling\SiteBasedTestTrait;
  */
 abstract class AbstractSiteConfiguration
 {
-
     use SiteBasedTestTrait;
 
     /**
@@ -64,7 +62,7 @@ abstract class AbstractSiteConfiguration
             ],
         ];
 
-       $siteConfiguration = new SiteConfiguration($sitesDir);
-       $siteConfiguration->write($identifer, $configuration);
+        $siteConfiguration = new SiteConfiguration($sitesDir);
+        $siteConfiguration->write($identifer, $configuration);
     }
 }
