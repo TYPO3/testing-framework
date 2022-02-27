@@ -26,40 +26,30 @@ class DataHandlerFactory
 {
     private const DYNAMIC_ID = 10000;
 
-    /**
-     * @var array
-     */
-    private $settings;
+    private array $settings;
 
     /**
      * @var EntityConfiguration[]
      */
-    private $entityConfigurations = [];
+    private array $entityConfigurations = [];
 
-    /**
-     * @var array
-     */
-    private $dataMapPerWorkspace = [];
-
-    /**
-     * @var array
-     */
-    private $commandMapPerWorkspace = [];
+    private array $dataMapPerWorkspace = [];
+    private array $commandMapPerWorkspace = [];
 
     /**
      * @var bool[]
      */
-    private $suggestedIds = [];
+    private array $suggestedIds = [];
 
     /**
      * @var int[]
      */
-    private $dynamicIdsPerEntity = [];
+    private array $dynamicIdsPerEntity = [];
 
     /**
      * @var int[]
      */
-    private $staticIdsPerEntity = [];
+    private array $staticIdsPerEntity = [];
 
     /**
      * @param string $yamlFile
