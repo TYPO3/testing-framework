@@ -38,7 +38,7 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callOriginalClone whether to call the __clone method
      * @param bool $callAutoload whether to call any autoload function
      *
-     * @return MockObject|AccessibleObjectInterface&T
+     * @return MockObject&AccessibleObjectInterface&T
      *         a mock of $originalClassName with access methods added
      *
      * @throws \InvalidArgumentException
@@ -89,7 +89,7 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callOriginalClone
      * @param bool $callAutoload
      * @param array $mockedMethods
-     * @return MockObject|AccessibleObjectInterface&T
+     * @return MockObject&AccessibleObjectInterface&T
      *
      * @throws \InvalidArgumentException
      */
