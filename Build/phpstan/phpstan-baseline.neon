@@ -1,16 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Class TYPO3\\\\CMS\\\\Workspaces\\\\Service\\\\WorkspaceService not found\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/ActionService.php
-
-		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\ActionService\\:\\:getWorkspaceService\\(\\) has invalid return type TYPO3\\\\CMS\\\\Workspaces\\\\Service\\\\WorkspaceService\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/ActionService.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
