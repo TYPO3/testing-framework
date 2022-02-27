@@ -1,14 +1,79 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Call to method ensureDirectoryExists\\(\\) on an unknown class Composer\\\\Util\\\\Filesystem\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Call to method getComposer\\(\\) on an unknown class Composer\\\\Script\\\\Event\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Call to method getIO\\(\\) on an unknown class Composer\\\\Script\\\\Event\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Call to method isSymlinkedDirectory\\(\\) on an unknown class Composer\\\\Util\\\\Filesystem\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Call to method relativeSymlink\\(\\) on an unknown class Composer\\\\Util\\\\Filesystem\\.$#"
+			count: 1
+			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
 			message: "#^Instantiated class Composer\\\\Util\\\\Filesystem not found\\.$#"
 			count: 1
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
 			message: "#^Parameter \\$event of method TYPO3\\\\TestingFramework\\\\Composer\\\\ExtensionTestEnvironment\\:\\:prepare\\(\\) has invalid type Composer\\\\Script\\\\Event\\.$#"
-			count: 1
+			count: 2
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMock\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMockForAbstractClass\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
+			message: "#^Parameter \\#1 \\$prefix of function uniqid expects string, int given\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
+			message: "#^Cannot access offset string on int\\.$#"
+			count: 2
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:addStaticId\\(\\) is unused\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^PHPDoc tag @param has invalid value \\(string string \\$sourceProperty\\)\\: Unexpected token \"string\", expected variable at offset 25$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:\\$dynamicIdsPerEntity \\(int\\) does not accept default value of type array\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Unsafe access to private constant TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Scenario\\\\DataHandlerFactory\\:\\:DYNAMIC_ID through static\\:\\:\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
@@ -26,9 +91,74 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
 
 		-
+			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Connection\\:\\:truncate\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
+
+		-
+			message: "#^Instanceof between Doctrine\\\\DBAL\\\\Query\\\\QueryBuilder and TYPO3\\\\CMS\\\\Core\\\\Database\\\\Query\\\\QueryBuilder will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\Snapshot\\\\DatabaseAccessor\\:\\:createQueryBuilder\\(\\) never returns TYPO3\\\\CMS\\\\Core\\\\Database\\\\Query\\\\QueryBuilder so it can be removed from the return type\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
+
+		-
+			message: "#^Parameter \\#1 \\$connection of static method TYPO3\\\\TestingFramework\\\\Core\\\\Testbase\\:\\:resetTableSequences\\(\\) expects TYPO3\\\\CMS\\\\Core\\\\Database\\\\Connection, Doctrine\\\\DBAL\\\\Connection given\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
+
+		-
+			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
+			message: "#^Elseif branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
+			message: "#^Instanceof between \\*NEVER\\* and TYPO3\\\\CMS\\\\Core\\\\Resource\\\\FileReference will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\Collector\\:\\:\\$tableFields \\(array\\) in isset\\(\\) is not nullable\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Collector.php
+
+		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/Internal/AbstractInstruction.php
+
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 2
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Strict comparison using \\!\\=\\= between null and null will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
+
+		-
+			message: "#^Unsafe call to private method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\InternalRequest\\:\\:buildInstructions\\(\\) through static\\:\\:\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/InternalRequest.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
@@ -46,6 +176,21 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/Frontend/InternalResponse.php
 
 		-
+			message: "#^PHPDoc tag @param has invalid value \\(array\\|null \\$this\\-\\>requestArguments\\)\\: Unexpected token \"\\$this\", expected variable at offset 64$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/RequestBootstrap.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\RequestBootstrap\\:\\:\\$documentRoot is never read, only written\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/RequestBootstrap.php
+
+		-
+			message: "#^Unsafe call to private method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\RequestBootstrap\\:\\:getContent\\(\\) through static\\:\\:\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/RequestBootstrap.php
+
+		-
 			message: "#^Access to an undefined property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\Response\\:\\:\\$responseContent\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/Response.php
@@ -61,8 +206,28 @@ parameters:
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
+			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Driver\\\\ResultStatement\\:\\:fetchAssociative\\(\\)\\.$#"
+			count: 2
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Call to method render\\(\\) on an unknown class SebastianBergmann\\\\Template\\\\Template\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Call to method setVar\\(\\) on an unknown class SebastianBergmann\\\\Template\\\\Template\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
 			message: "#^Call to protected static method getClassLoader\\(\\) of class TYPO3\\\\CMS\\\\Core\\\\Core\\\\ClassLoadingInformation\\.$#"
 			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Cannot call method fetchAssociative\\(\\) on Doctrine\\\\DBAL\\\\Driver\\\\ResultStatement\\|int\\.$#"
+			count: 3
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
@@ -74,4 +239,39 @@ parameters:
 			message: "#^Instantiated class SebastianBergmann\\\\Template\\\\Template not found\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Method TYPO3\\\\CMS\\\\Core\\\\Authentication\\\\AbstractUserAuthentication\\:\\:start\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^PHPDoc tag @var has invalid value \\(\\$backendUser BackendUserAuthentication\\)\\: Unexpected token \"\\$backendUser\", expected type at offset 9$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function set_error_handler expects \\(callable\\(int, string, string, int, array\\)\\: bool\\)\\|null, Closure\\(\\)\\: void given\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Cannot call method fetchAssociative\\(\\) on Doctrine\\\\DBAL\\\\Driver\\\\ResultStatement\\|int\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between SimpleXMLElement and 'yes' will always evaluate to false\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Fluid\\\\Unit\\\\ViewHelpers\\\\ViewHelperBaseTestcase\\:\\:\\$request \\(TYPO3\\\\CMS\\\\Extbase\\\\Mvc\\\\Request\\) does not accept Prophecy\\\\Prophecy\\\\ObjectProphecy\\.$#"
+			count: 1
+			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
 

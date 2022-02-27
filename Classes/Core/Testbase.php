@@ -798,6 +798,7 @@ class Testbase
         }
 
         $fileContent = file_get_contents($path);
+        $previousValueOfEntityLoader = false;
         if (PHP_MAJOR_VERSION < 8) {
             // Disables the functionality to allow external entities to be loaded when parsing the XML, must be kept
             $previousValueOfEntityLoader = libxml_disable_entity_loader(true);
