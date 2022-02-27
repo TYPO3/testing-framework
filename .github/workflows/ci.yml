@@ -27,5 +27,9 @@ jobs:
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
 
+      - name: Phpstan
+        if: startsWith(matrix.php, '7.2')
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s phpstan
+
       - name: Unit Tests
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s unit

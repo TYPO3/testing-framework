@@ -1,0 +1,16 @@
+includes:
+  - phpstan-baseline.neon
+
+parameters:
+  level: 0
+
+  # Use local cache dir instead of /tmp
+  tmpDir: ../../.Build/.cache/phpstan
+
+  paths:
+    - ../../Classes
+    - ../../Tests
+
+  excludePaths:
+    # Checking acceptance support files is cumbersome due to codeception dynamic mixin generation
+    - ../../Classes/Core/Acceptance/*
