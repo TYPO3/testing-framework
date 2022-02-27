@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario;
 
@@ -31,17 +32,17 @@ class EntityConfiguration
     private $isNode = false;
 
     /**
-     * @var null|string
+     * @var string|null
      */
     private $tableName;
 
     /**
-     * @var null|string
+     * @var string|null
      */
     private $parentColumnName;
 
     /**
-     * @var null|string
+     * @var string|null
      */
     private $nodeColumnName;
 
@@ -151,7 +152,7 @@ class EntityConfiguration
     }
 
     /**
-     * @return null|string
+     * @return string|null
      */
     public function getNodeColumnName(): ?string
     {

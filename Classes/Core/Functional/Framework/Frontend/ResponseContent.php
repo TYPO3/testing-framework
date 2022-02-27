@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -73,7 +74,7 @@ class ResponseContent
 
     /**
      * @param string $sectionIdentifier
-     * @return null|ResponseSection
+     * @return ResponseSection|null
      * @throws \RuntimeException
      */
     public function getSection($sectionIdentifier)

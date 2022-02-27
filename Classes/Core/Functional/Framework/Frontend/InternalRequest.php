@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -127,7 +128,7 @@ class InternalRequest extends Request implements \JsonSerializable
      * Adds or overrides parameter on existing query.
      *
      * @param string $parameterName
-     * @param null|int|float|string $value
+     * @param int|float|string|null $value
      * @return InternalRequest
      */
     public function withQueryParameter(string $parameterName, $value): InternalRequest
@@ -205,7 +206,7 @@ class InternalRequest extends Request implements \JsonSerializable
 
     /**
      * @param string $identifier
-     * @return null|AbstractInstruction
+     * @return AbstractInstruction|null
      */
     public function getInstruction(string $identifier): ?AbstractInstruction
     {
@@ -215,7 +216,7 @@ class InternalRequest extends Request implements \JsonSerializable
     /**
      * @param string $query
      * @param string $parameterName
-     * @param null|int|float|string $value
+     * @param int|float|string|null $value
      * @return string
      */
     private function modifyQueryParameter(string $query, string $parameterName, $value): string

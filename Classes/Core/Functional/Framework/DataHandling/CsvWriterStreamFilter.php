@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
@@ -73,7 +74,7 @@ class CsvWriterStreamFilter extends \php_user_filter
                 }
                 $value = $sequence . $value;
             }
-            unset ($value); // de-reference
+            unset($value); // de-reference
             return $element;
         };
     }

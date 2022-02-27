@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core;
 
@@ -25,9 +26,9 @@ use TYPO3\CMS\Core\Database\Connection;
 class DatabaseConnectionWrapper extends Connection
 {
     /**
-     * @var null|bool
+     * @var bool|null
      */
-    private $allowIdentityInsert = null;
+    private $allowIdentityInsert;
 
     /**
      * Whether to allow modification of IDENTITY_INSERT for SQL Server platform.

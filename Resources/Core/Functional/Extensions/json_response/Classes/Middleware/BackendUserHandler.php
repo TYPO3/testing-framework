@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\JsonResponse\Middleware;
 
 /*
@@ -75,7 +76,6 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
         }
         return $handler->handle($request);
     }
-
 
     /**
      * Register the backend user as aspect

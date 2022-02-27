@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -68,7 +69,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return null|int
+     * @return int|null
      */
     public function getFrontendUserId(): ?int
     {
@@ -76,7 +77,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return null|int
+     * @return int|null
      */
     public function getBackendUserId(): ?int
     {
@@ -84,7 +85,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return null|int
+     * @return int|null
      */
     public function getWorkspaceId(): ?int
     {
@@ -92,7 +93,7 @@ class InternalRequestContext implements \JsonSerializable
     }
 
     /**
-     * @return null|array
+     * @return array|null
      * @deprecated Will be removed in v12 compatible testing-framework. Use FunctionalTestCase
      *             $configurationToUseInTestInstance to set TYPO3_CONF_VARS of the instance.
      */

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
@@ -109,7 +110,7 @@ class InstallPostgresqlCoreEnvironment extends Extension
             'password' => $this->config['typo3InstallPostgresqlDatabasePassword'],
             'user' => $this->config['typo3InstallPostgresqlDatabaseUsername'],
         ];
-        $this->output->debug("Connecting to PgSQL: " . json_encode($connectionParameters));
+        $this->output->debug('Connecting to PgSQL: ' . json_encode($connectionParameters));
         $schemaManager = DriverManager::getConnection($connectionParameters)->getSchemaManager();
         $databaseName = $this->config['typo3InstallPostgresqlDatabaseName'];
         $this->output->debug("Database: $databaseName");

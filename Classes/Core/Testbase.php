@@ -1,4 +1,5 @@
 <?php
+
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -59,8 +60,6 @@ class Testbase
     /**
      * Sets $_SERVER['SCRIPT_NAME'].
      * For unit tests only
-     *
-     * @return void
      */
     public function defineSitePath(): void
     {
@@ -74,8 +73,6 @@ class Testbase
      * Defines the constant ORIGINAL_ROOT for the path to the original TYPO3 document root.
      * For functional / acceptance tests only
      * If ORIGINAL_ROOT already is defined, this method is a no-op.
-     *
-     * @return void
      */
     public function defineOriginalRootPath(): void
     {
@@ -91,7 +88,6 @@ class Testbase
     /**
      * Define TYPO3_MODE to BE
      *
-     * @return void
      * @deprecated Will be dropped with 7.x major version.
      */
     public function defineTypo3ModeBe(): void
@@ -104,8 +100,6 @@ class Testbase
     /**
      * Sets the environment variable TYPO3_CONTEXT to testing.
      * Needs to be called after each Functional executing a frontend request
-     *
-     * @return void
      */
     public function setTypo3TestingContext(): void
     {
@@ -116,7 +110,6 @@ class Testbase
      * Creates directories, recursively if required.
      *
      * @param string $directory Absolute path to directories to create
-     * @return void
      * @throws Exception
      */
     public function createDirectory($directory): void
@@ -168,7 +161,6 @@ class Testbase
      * This may happen if a functional test before threw a fatal or is too old
      *
      * @param string $instancePath Absolute path to test instance
-     * @return void
      * @throws Exception
      */
     public function removeOldInstanceIfExists($instancePath): void
@@ -197,7 +189,6 @@ class Testbase
      *
      * @param string $instancePath Absolute path to test instance
      * @throws Exception
-     * @return void
      */
     public function setUpInstanceCoreLinks($instancePath): void
     {
@@ -258,7 +249,6 @@ class Testbase
      * @param string $instancePath Absolute path to test instance
      * @param array $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
-     * @return void
      */
     public function linkTestExtensionsToInstance($instancePath, array $extensionPaths): void
     {
@@ -288,7 +278,6 @@ class Testbase
      * @param string $instancePath Absolute path to test instance
      * @param array $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
-     * @return void
      */
     public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths): void
     {
@@ -319,7 +308,6 @@ class Testbase
      * @param string $instancePath Absolute path to test instance
      * @param array $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
      * @throws Exception if a source path could not be found and on failing creating the symlink
-     * @return void
      */
     public function linkPathsInTestInstance($instancePath, array $pathsToLinkInTestInstance): void
     {
@@ -412,7 +400,7 @@ class Testbase
                 'DB' => [
                     'Connections' => [
                         'Default' => [
-                            'driver' => 'mysqli'
+                            'driver' => 'mysqli',
                         ],
                     ],
                 ],
@@ -485,7 +473,6 @@ class Testbase
      * @param array $configuration Base configuration array
      * @param array $overruleConfiguration Overrule factory and base configuration
      * @throws Exception
-     * @return void
      */
     public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration): void
     {
@@ -535,14 +522,14 @@ class Testbase
         // Register default list of extensions and set active
         foreach ($defaultCoreExtensionsToLoad as $extensionName) {
             $packageStates['packages'][$extensionName] = [
-                'packagePath' => 'typo3/sysext/' . $extensionName . '/'
+                'packagePath' => 'typo3/sysext/' . $extensionName . '/',
             ];
         }
 
         // Register additional core extensions and set active
         foreach ($additionalCoreExtensionsToLoad as $extensionName) {
             $packageStates['packages'][$extensionName] = [
-                'packagePath' => 'typo3/sysext/' . $extensionName . '/'
+                'packagePath' => 'typo3/sysext/' . $extensionName . '/',
             ];
         }
 
@@ -550,7 +537,7 @@ class Testbase
         foreach ($testExtensionPaths as $extensionPath) {
             $extensionName = basename($extensionPath);
             $packageStates['packages'][$extensionName] = [
-                'packagePath' => 'typo3conf/ext/' . $extensionName . '/'
+                'packagePath' => 'typo3conf/ext/' . $extensionName . '/',
             ];
         }
 
@@ -558,7 +545,7 @@ class Testbase
         foreach ($frameworkExtensionPaths as $extensionPath) {
             $extensionName = basename($extensionPath);
             $packageStates['packages'][$extensionName] = [
-                'packagePath' => 'typo3conf/ext/' . $extensionName . '/'
+                'packagePath' => 'typo3conf/ext/' . $extensionName . '/',
             ];
         }
 
@@ -584,7 +571,6 @@ class Testbase
      * @param string $databaseName Database name of this test instance
      * @param string $originalDatabaseName Original database name before suffix was added
      * @throws \TYPO3\TestingFramework\Core\Exception
-     * @return void
      */
     public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
@@ -654,8 +640,6 @@ class Testbase
 
     /**
      * Dump class loading information
-     *
-     * @return void
      */
     public function dumpClassLoadingInformation(): void
     {
@@ -718,7 +702,7 @@ class Testbase
         // This is needed because information_schema.table_rows is not reliable enough for innodb engine.
         // see https://dev.mysql.com/doc/mysql-infoschema-excerpt/5.7/en/information-schema-tables-table.html TABLE_ROWS
         $fromTableUnionSubSelectQuery = [];
-        foreach($tableNames as $tableName) {
+        foreach ($tableNames as $tableName) {
             $fromTableUnionSubSelectQuery[] = sprintf(
                 ' SELECT %s AS table_name, exists(SELECT * FROm %s LIMIT 1) AS has_rows',
                 $connection->quote($tableName),
@@ -726,7 +710,8 @@ class Testbase
             );
         }
         $fromTableUnionSubSelectQuery = implode(' UNION ', $fromTableUnionSubSelectQuery);
-        $query = sprintf('
+        $query = sprintf(
+            '
             SELECT
                 table_real_rowcounts.*,
                 information_schema.tables.AUTO_INCREMENT AS auto_increment
@@ -770,8 +755,6 @@ class Testbase
     /**
      * Load ext_tables.php files.
      * For functional and acceptance tests.
-     *
-     * @return void
      */
     public function loadExtensionTables(): void
     {
@@ -781,8 +764,6 @@ class Testbase
     /**
      * Create tables and import static rows.
      * For functional and acceptance tests.
-     *
-     * @return void
      */
     public function createDatabaseStructure(): void
     {
@@ -802,7 +783,6 @@ class Testbase
      * Imports a data set represented as XML into the test database,
      *
      * @param string $path Absolute path to the XML file containing the data set to load
-     * @return void
      * @throws \Doctrine\DBAL\DBALException
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
@@ -1033,7 +1013,7 @@ class Testbase
         }
 
         if (strpos($path, 'PACKAGE:') === 0) {
-            return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '',$path);
+            return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '', $path);
         }
         return $path;
     }
