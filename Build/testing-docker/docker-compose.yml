@@ -68,6 +68,38 @@ services:
         find . -name \\*.php ! -path "./.Build/\\*" ! -path "./public/\\*" -print0 | xargs -0 -n1 -P4 php -dxdebug.mode=off -l >/dev/null
       "
 
+  phpstan:
+      image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+      user: "${HOST_UID}"
+      volumes:
+          - ${ROOT_DIR}:${ROOT_DIR}
+      working_dir: ${ROOT_DIR}
+      command: >
+          /bin/sh -c "
+            if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+              set -x
+            fi
+            mkdir -p .Build/.cache
+            php -v | grep '^PHP';
+            php -dxdebug.mode=off .Build/bin/phpstan analyze -c Build/phpstan/phpstan.neon --no-progress --no-interaction
+          "
+
+  phpstan_generate_baseline:
+      image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+      user: "${HOST_UID}"
+      volumes:
+          - ${ROOT_DIR}:${ROOT_DIR}
+      working_dir: ${ROOT_DIR}
+      command: >
+          /bin/sh -c "
+            if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+              set -x
+            fi
+            mkdir -p .Build/.cache
+            php -v | grep '^PHP';
+            php -dxdebug.mode=off .Build/bin/phpstan analyze -c Build/phpstan/phpstan.neon --no-progress --no-interaction --generate-baseline=Build/phpstan/phpstan-baseline.neon
+          "
+
   unit:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
