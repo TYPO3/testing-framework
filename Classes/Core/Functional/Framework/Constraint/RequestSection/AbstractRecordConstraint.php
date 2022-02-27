@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Constraint\RequestSection;
 
@@ -48,7 +49,7 @@ abstract class AbstractRecordConstraint extends Constraint
      */
     protected $values;
 
-    public function setTable($table) :self
+    public function setTable($table): self
     {
         $this->table = $table;
         return $this;

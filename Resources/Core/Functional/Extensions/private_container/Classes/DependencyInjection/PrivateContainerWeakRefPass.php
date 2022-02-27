@@ -20,7 +20,6 @@ namespace TYPO3\PrivateContainer\DependencyInjection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
@@ -50,7 +49,7 @@ class PrivateContainerWeakRefPass implements CompilerPassInterface
 
         foreach ($aliases as $id => $alias) {
             if ($id && $id[0] !== '.' && (!$alias->isPublic() || $alias->isPrivate())) {
-                while (isset($aliases[$target = (string) $alias])) {
+                while (isset($aliases[$target = (string)$alias])) {
                     $alias = $aliases[$target];
                 }
                 if (isset($definitions[$target]) && !$definitions[$target]->hasErrors() && !$definitions[$target]->isAbstract()) {
@@ -60,7 +59,7 @@ class PrivateContainerWeakRefPass implements CompilerPassInterface
         }
 
         if ($privateServices) {
-            $id = (string) ServiceLocatorTagPass::register($container, $privateServices);
+            $id = (string)ServiceLocatorTagPass::register($container, $privateServices);
             $container->setDefinition('typo3.testing-framework.private-container', $container->getDefinition($id))->setPublic(true);
             $container->removeDefinition($id);
         }

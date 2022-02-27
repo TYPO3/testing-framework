@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
@@ -19,7 +20,6 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 use TYPO3\TestingFramework\Core\Exception;
@@ -249,7 +249,7 @@ class ActionService
                 $commandMap[$tableName][$uid] = [
                     'version' => [
                         'action' => 'clearWSID',
-                    ]
+                    ],
                 ];
             }
         }
@@ -396,7 +396,7 @@ class ActionService
                 $uid => [
                     $fieldName => implode(',', $referenceIds),
                 ],
-            ]
+            ],
         ];
         $this->createDataHandler();
         $this->dataHandler->start($dataMap, []);
@@ -429,9 +429,8 @@ class ActionService
                 if (empty($versionedUid)) {
                     if ($throwException) {
                         throw new Exception('Versioned UID could not be determined', 1476049592);
-                    } else {
-                        continue;
                     }
+                    continue;
                 }
 
                 $commandMap[$tableName][$liveUid] = [
@@ -473,7 +472,7 @@ class ActionService
 
     /**
      * @param array $recordData
-     * @param NULL|string|int $previousUid
+     * @param string|int|null $previousUid
      * @return array
      */
     protected function resolvePreviousUid(array $recordData, $previousUid): array
@@ -492,7 +491,7 @@ class ActionService
 
     /**
      * @param array $recordData
-     * @param NULL|string|int $nextUid
+     * @param string|int|null $nextUid
      * @return array
      */
     protected function resolveNextUid(array $recordData, $nextUid): array
@@ -512,7 +511,7 @@ class ActionService
     /**
      * @param string $tableName
      * @param int|string $liveUid
-     * @return NULL|int
+     * @return int|null
      */
     protected function getVersionedId(string $tableName, $liveUid)
     {

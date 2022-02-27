@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
@@ -29,7 +30,7 @@ class Login extends Module
      * @var array Filled by .yml config with valid sessions per role
      */
     protected $config = [
-        'sessions' => []
+        'sessions' => [],
     ];
 
     /**

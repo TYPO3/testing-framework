@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario;
 
@@ -98,7 +99,8 @@ class DataHandlerFactory
     public function getDataMapTableNames(): array
     {
         return array_unique(array_merge(
-            [], ...array_map('array_keys', $this->dataMapPerWorkspace)
+            [],
+            ...array_map('array_keys', $this->dataMapPerWorkspace)
         ));
     }
 
@@ -543,7 +545,7 @@ class DataHandlerFactory
     /**
      * @param int $workspaceId
      * @param string $tableName
-     * @param null|int|string $pageId
+     * @param int|string|null $pageId
      * @return array
      */
     private function filterDataMapByPageId(
@@ -569,8 +571,8 @@ class DataHandlerFactory
 
     /**
      * @param int $workspaceId
-     * @param null|int|string $pageId
-     * @return null|int|string
+     * @param int|string|null $pageId
+     * @return int|string|null
      */
     private function resolveDataMapPageId(int $workspaceId, $pageId)
     {
