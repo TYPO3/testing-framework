@@ -2,10 +2,13 @@ includes:
   - phpstan-baseline.neon
 
 parameters:
-  level: 0
+  level: 1
 
   # Use local cache dir instead of /tmp
   tmpDir: ../../.Build/.cache/phpstan
+
+  bootstrapFiles:
+    - phpstan-constants.php
 
   paths:
     - ../../Classes
