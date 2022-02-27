@@ -38,6 +38,7 @@ No arguments: Run all unit tests with PHP 7.2
 Options:
     -s <...>
         Specifies which test suite to run
+            - clean: clean up build and testing related files
             - composerUpdate: "composer update"
             - lint: PHP linting
             - unit (default): PHP unit tests
@@ -141,6 +142,9 @@ case ${TEST_SUITE} in
         docker-compose run cgl
         SUITE_EXIT_CODE=$?
         docker-compose down
+        ;;
+    clean)
+        rm -rf ../../composer.lock ../../.Build/ ../../public
         ;;
     composerUpdate)
         setUpDockerComposeDotEnv
