@@ -1,0 +1,87 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to static method cssSelector\\(\\) on an unknown class Facebook\\\\WebDriver\\\\WebDriverBy\\.$#"
+			count: 3
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Call to static method xpath\\(\\) on an unknown class Facebook\\\\WebDriver\\\\WebDriverBy\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Caught class Facebook\\\\WebDriver\\\\Exception\\\\ElementNotInteractableException not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Caught class Facebook\\\\WebDriver\\\\Exception\\\\ElementNotVisibleException not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Caught class Facebook\\\\WebDriver\\\\Exception\\\\NoSuchElementException not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Parameter \\$context of method TYPO3\\\\TestingFramework\\\\Core\\\\Acceptance\\\\Helper\\\\AbstractPageTree\\:\\:ensureTreeNodeIsOpen\\(\\) has invalid type Facebook\\\\WebDriver\\\\Remote\\\\RemoteWebElement\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Parameter \\$webdriver of anonymous function has invalid type Facebook\\\\WebDriver\\\\Remote\\\\RemoteWebDriver\\.$#"
+			count: 1
+			path: ../../Classes/Core/Acceptance/Helper/AbstractPageTree.php
+
+		-
+			message: "#^Class TYPO3\\\\CMS\\\\Workspaces\\\\Service\\\\WorkspaceService not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/ActionService.php
+
+		-
+			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\DataHandling\\\\ActionService\\:\\:getWorkspaceService\\(\\) has invalid return type TYPO3\\\\CMS\\\\Workspaces\\\\Service\\\\WorkspaceService\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/ActionService.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerWriter.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/Internal/AbstractInstruction.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
+
+		-
+			message: "#^Class Doctrine\\\\DBAL\\\\Platforms\\\\PostgreSqlPlatform not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: "#^Class Doctrine\\\\DBAL\\\\Platforms\\\\MySqlPlatform not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
+		-
+			message: "#^Class Doctrine\\\\DBAL\\\\Platforms\\\\PostgreSqlPlatform not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Testbase.php
+
