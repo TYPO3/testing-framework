@@ -480,7 +480,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Implements ContainerInterface. Can be used by tests to get both public
      * and non-public services.
      */
-    public function get(string $id): mixed
+    public function get(string $id)
     {
         if ($this->getContainer()->has($id)) {
             return $this->getContainer()->get($id);
