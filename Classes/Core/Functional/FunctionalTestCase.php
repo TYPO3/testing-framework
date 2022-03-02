@@ -1062,7 +1062,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $serverRequest = new ServerRequest(
             $uri,
             $request->getMethod(),
-            'php://input',
+            $request->getBody(),
             $request->getHeaders(),
             $serverParams
         );
@@ -1070,6 +1070,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $requestUrlParts = [];
         parse_str($uri->getQuery(), $requestUrlParts);
         $serverRequest = $serverRequest->withQueryParams($requestUrlParts);
+        $parsedBody = $request->getParsedBody();
+        if (empty($parsedBody) && $request->getBody() !== null && in_array($request->getMethod(), ['PUT', 'PATCH', 'DELETE'])) {
+            parse_str((string)$request->getBody(), $parsedBody);
+        }
+        $serverRequest = $serverRequest->withParsedBody($parsedBody);
         try {
             $frontendApplication = $container->get(Application::class);
             $response = $frontendApplication->handle($serverRequest);
