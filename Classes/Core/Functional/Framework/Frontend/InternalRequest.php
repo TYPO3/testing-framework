@@ -36,6 +36,8 @@ class InternalRequest extends Request implements \JsonSerializable
      */
     protected $instructions = [];
 
+    protected ?array $parsedBody = null;
+
     /**
      * @param array $data
      * @return InternalRequest
@@ -211,6 +213,18 @@ class InternalRequest extends Request implements \JsonSerializable
     public function getInstruction(string $identifier): ?AbstractInstruction
     {
         return $this->instructions[$identifier] ?? null;
+    }
+
+    public function withParsedBody(?array $parsedBody=null): InternalRequest
+    {
+        $target = clone $this;
+        $target->parsedBody = $parsedBody;
+        return $target;
+    }
+
+    public function getParsedBody(): ?array
+    {
+        return $this->parsedBody;
     }
 
     /**
