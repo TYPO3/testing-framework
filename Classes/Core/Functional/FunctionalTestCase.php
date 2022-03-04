@@ -1177,7 +1177,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // no further limitation to HTTP method, due to https://www.php.net/manual/en/reserved.variables.post.php
             && in_array('application/x-www-form-urlencoded', $request->getHeader('Content-Type'))
         ) {
-            parse_str((string)$this->request->getBody(), $_POST);
+            parse_str((string)$request->getBody(), $_POST);
         }
 
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
