@@ -196,11 +196,6 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
 
 		-
-			message: "#^Access to an undefined property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\FunctionalTestCase\\:\\:\\$request\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/FunctionalTestCase.php
-
-		-
 			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Driver\\\\ResultStatement\\:\\:fetchAssociative\\(\\)\\.$#"
 			count: 2
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
