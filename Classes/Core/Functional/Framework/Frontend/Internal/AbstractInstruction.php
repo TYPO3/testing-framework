@@ -29,10 +29,6 @@ abstract class AbstractInstruction implements \JsonSerializable
      */
     protected $identifier;
 
-    /**
-     * @param array $data
-     * @return static
-     */
     public static function fromArray(array $data): self
     {
         if (empty($data['__type'])) {
@@ -61,6 +57,7 @@ abstract class AbstractInstruction implements \JsonSerializable
         if (self::class === static::class) {
             return $data['__type']::fromArray($data);
         }
+        /** @phpstan-ignore-next-line Avoid 'Unsafe usage of new static' error. This is needed by design and considerable safe with the above checks*/
         $target = new static($data['identifier']);
         unset($data['__type'], $data['identifier']);
         return $target->with($data);
