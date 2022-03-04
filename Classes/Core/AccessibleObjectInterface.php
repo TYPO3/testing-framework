@@ -25,10 +25,10 @@ interface AccessibleObjectInterface
      * Calls the method $method using call_user_func* and returns its return value.
      *
      * @param string $methodName name of method to call, must not be empty
-     *
+     * @param mixed ...$methodArguments additional arguments for method
      * @return mixed the return value from the method $methodName
      */
-    public function _call($methodName);
+    public function _call($methodName, ...$methodArguments);
 
     /**
      * Sets the value of a property.
