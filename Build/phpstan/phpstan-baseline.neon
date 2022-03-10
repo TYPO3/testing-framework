@@ -71,7 +71,7 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
 
 		-
-			message: "#^Cannot call method fetchAll\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\.$#"
+			message: "#^Cannot call method fetchAll\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\|string\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
 
