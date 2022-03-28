@@ -115,7 +115,7 @@ abstract class UnitTestCase extends BaseTestCase
             GeneralUtility::resetSingletonInstances([]);
             self::assertEmpty(
                 $singletonInstances,
-                'tearDown() integrity check found left over singleton instances in GeneralUtilily::makeInstance()'
+                'tearDown() integrity check found left over singleton instances in GeneralUtility::makeInstance()'
                 . ' instance list. The test should probably set \'$this->resetSingletonInstances = true;\' to'
                 . ' reset this framework state change. Found singletons: ' . implode(', ', array_keys($singletonInstances))
             );
