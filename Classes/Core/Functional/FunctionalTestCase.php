@@ -19,7 +19,6 @@ namespace TYPO3\TestingFramework\Core\Functional;
 
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
 use Psr\Container\ContainerInterface;
@@ -41,7 +40,6 @@ use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
-use TYPO3\TestingFramework\Core\DatabaseConnectionWrapper;
 use TYPO3\TestingFramework\Core\Exception;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseAccessor;
@@ -306,7 +304,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 // Append the unique identifier to the base database name to end up with a single database per test case
                 $dbName = $originalDatabaseName . '_ft' . $this->identifier;
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
-                $localConfiguration['DB']['Connections']['Default']['wrapperClass'] = DatabaseConnectionWrapper::class;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
                 if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
                     $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
@@ -587,22 +584,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 try {
-                    // With mssql, hard setting uid auto-increment primary keys is only allowed if
-                    // the table is prepared for such an operation beforehand
-                    $platform = $connection->getDatabasePlatform();
-                    $sqlServerIdentityDisabled = false;
-                    if ($platform instanceof SQLServerPlatform) {
-                        try {
-                            $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' ON');
-                            $sqlServerIdentityDisabled = true;
-                        } catch (DBALException $e) {
-                            // Some tables like sys_refindex don't have an auto-increment uid field and thus no
-                            // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
-                            // and catch the possible error that occurs.
-                        }
-                    }
-
-                    // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
+                    // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
                     // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                     $types = [];
                     $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
@@ -612,11 +594,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
                     // Insert the row
                     $connection->insert($tableName, $element, $types);
-
-                    if ($sqlServerIdentityDisabled) {
-                        // Reset identity if it has been changed
-                        $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
-                    }
                 } catch (DBALException $e) {
                     self::fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
                 }
@@ -1118,26 +1095,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             );
         }
         return $response;
-    }
-
-    /**
-     * Whether to allow modification of IDENTITY_INSERT for SQL Server platform.
-     * + null: unspecified, decided later during runtime (based on 'uid' & $TCA)
-     * + true: always allow, e.g. before actually importing data
-     * + false: always deny, e.g. when importing data is finished
-     *
-     * @throws DBALException
-     * @todo: Seems to be unused. Deprecate in v6 and remove here?
-     */
-    protected function allowIdentityInsert(?bool $allowIdentityInsert): void
-    {
-        $connection = $this->getConnectionPool()->getConnectionByName(
-            ConnectionPool::DEFAULT_CONNECTION_NAME
-        );
-        if (!$connection instanceof DatabaseConnectionWrapper) {
-            return;
-        }
-        $connection->allowIdentityInsert($allowIdentityInsert);
     }
 
     /**

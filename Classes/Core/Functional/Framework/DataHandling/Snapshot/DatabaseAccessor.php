@@ -102,8 +102,6 @@ class DatabaseAccessor
      * @param string $tableName
      * @param array $columns [columnName => columnType]
      * @param array $items
-     *
-     * @see \TYPO3\TestingFramework\Core\DatabaseConnectionWrapper handling IDENTITY_INSERT
      */
     private function importTable(string $tableName, array $columns, array $items)
     {
