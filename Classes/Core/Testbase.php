@@ -21,7 +21,6 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
@@ -427,6 +426,18 @@ class Testbase
                 1397406356
             );
         }
+
+        // Instead of letting code run and retrieving mysterious result and errors, check for dropped sql driver
+        // support and throw a corresponding exception with a proper message.
+        // @todo Remove this in core v13 compatible testing-framework.
+        if (in_array($originalConfigurationArray['DB']['Connections']['Default']['driver'] ?? '', ['sqlsrv', 'pdo_sqlsrv'], true)) {
+            throw new \RuntimeException(
+                'Microsoft SQL Server support has been dropped for TYPO3 v12 and testing-framework.'
+                . ' Therefore driver "' . $databaseDriver . '" is invalid.',
+                1651335681
+            );
+        }
+
         return $originalConfigurationArray['DB'];
     }
 
@@ -820,22 +831,7 @@ class Testbase
             $tableName = $table->getName();
             $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
 
-            // With mssql, hard setting uid auto-increment primary keys is only allowed if
-            // the table is prepared for such an operation beforehand
-            $platform = $connection->getDatabasePlatform();
-            $sqlServerIdentityDisabled = false;
-            if ($platform instanceof SQLServerPlatform) {
-                try {
-                    $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' ON');
-                    $sqlServerIdentityDisabled = true;
-                } catch (DBALException $e) {
-                    // Some tables like sys_refindex don't have an auto-increment uid field and thus no
-                    // IDENTITY column. Instead of testing existance, we just try to set IDENTITY ON
-                    // and catch the possible error that occurs.
-                }
-            }
-
-            // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
+            // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
             // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
             $types = [];
             $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
@@ -845,14 +841,7 @@ class Testbase
 
             // Insert the row
             $connection->insert($tableName, $insertArray, $types);
-
-            if ($sqlServerIdentityDisabled) {
-                // Reset identity if it has been changed
-                $connection->executeStatement('SET IDENTITY_INSERT ' . $tableName . ' OFF');
-            }
-
             static::resetTableSequences($connection, $tableName);
-
             if (isset($table['id'])) {
                 $elementId = (string)$table['id'];
                 $foreignKeys[$tableName][$elementId] = $connection->lastInsertId($tableName);
