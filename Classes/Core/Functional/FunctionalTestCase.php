@@ -711,7 +711,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * @param array $actualRecords
      * @return bool|int|string false if record is not found or some column value doesn't match
      */
-    protected function assertInRecords(array $expectedRecord, array $actualRecords)
+    protected function assertInRecords(array $expectedRecord, array $actualRecords): bool|int|string
     {
         foreach ($actualRecords as $index => $record) {
             $differentFields = $this->getDifferentFields($expectedRecord, $record);

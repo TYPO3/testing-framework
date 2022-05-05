@@ -45,14 +45,14 @@ abstract class BaseTestCase extends TestCase
      * @throws \InvalidArgumentException
      */
     protected function getAccessibleMock(
-        $originalClassName,
-        $methods = [],
+        string $originalClassName,
+        array|null $methods = [],
         array $arguments = [],
-        $mockClassName = '',
-        $callOriginalConstructor = true,
-        $callOriginalClone = true,
-        $callAutoload = true
-    ) {
+        string $mockClassName = '',
+        bool $callOriginalConstructor = true,
+        bool $callOriginalClone = true,
+        bool $callAutoload = true
+    ): MockObject&AccessibleObjectInterface {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1334701880);
         }
@@ -95,14 +95,14 @@ abstract class BaseTestCase extends TestCase
      * @throws \InvalidArgumentException
      */
     protected function getAccessibleMockForAbstractClass(
-        $originalClassName,
+        string $originalClassName,
         array $arguments = [],
-        $mockClassName = '',
-        $callOriginalConstructor = true,
-        $callOriginalClone = true,
-        $callAutoload = true,
-        $mockedMethods = []
-    ) {
+        string $mockClassName = '',
+        bool $callOriginalConstructor = true,
+        bool $callOriginalClone = true,
+        bool $callAutoload = true,
+        array $mockedMethods = []
+    ): MockObject&AccessibleObjectInterface {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1384268260);
         }
@@ -125,7 +125,7 @@ abstract class BaseTestCase extends TestCase
      * @param string $className Name of class to make available, must not be empty
      * @return string Fully qualified name of the built class, will not be empty
      */
-    protected function buildAccessibleProxy($className)
+    protected function buildAccessibleProxy(string $className): string
     {
         $accessibleClassName = $this->getUniqueId('Tx_Phpunit_AccessibleProxy');
         $reflectionClass = new \ReflectionClass($className);
@@ -147,7 +147,7 @@ abstract class BaseTestCase extends TestCase
      * @param string $prefix
      * @return string
      */
-    protected function getUniqueId($prefix = '')
+    protected function getUniqueId(string $prefix = ''): string
     {
         $uniqueId = uniqid((string)mt_rand(), true);
         return $prefix . str_replace('.', '', $uniqueId);
