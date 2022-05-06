@@ -20,12 +20,16 @@ use Codeception\Exception\ConfigurationException;
 use Codeception\Module;
 use Codeception\Module\WebDriver;
 use Codeception\Util\Locator;
+use TYPO3\CMS\Core\Security\JwtTrait;
+use TYPO3\CMS\Core\Session\UserSession;
 
 /**
  * Helper class to log in backend users and load backend.
  */
 class Login extends Module
 {
+    use JwtTrait;
+
     /**
      * @var array Filled by .yml config with valid sessions per role
      */
@@ -114,8 +118,16 @@ class Login extends Module
      */
     public function _createSession($userSessionId)
     {
+        $sessionJwt = self::encodeHashSignedJwt(
+            [
+                'identifier' => $userSessionId,
+                'time' => (new \DateTimeImmutable())->format(\DateTimeImmutable::RFC3339),
+            ],
+            // relies on $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']
+            self::createSigningKeyFromEncryptionKey(UserSession::class)
+        );
         $webDriver = $this->getWebDriver();
-        $webDriver->setCookie('be_typo_user', $userSessionId);
+        $webDriver->setCookie('be_typo_user', $sessionJwt);
         $webDriver->setCookie('be_lastLoginProvider', '1433416747');
         $webDriver->saveSessionSnapshot('login');
     }
