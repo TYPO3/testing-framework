@@ -18,3 +18,5 @@ parameters:
   excludePaths:
     # Checking acceptance support files is cumbersome due to codeception dynamic mixin generation
     - ../../Classes/Core/Acceptance/*
+    # phpstan does not work well with multi core testing and existing/non existing classes and traits, exclude it
+    - ../../Classes/Core/Jwt/SessionHelperTwelve.php
