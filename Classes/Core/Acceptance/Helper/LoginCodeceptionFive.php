@@ -21,11 +21,14 @@ use Codeception\Exception\ConfigurationException;
 use Codeception\Module;
 use Codeception\Module\WebDriver;
 use Codeception\Util\Locator;
+use TYPO3\TestingFramework\Core\Jwt\SessionHelper;
 
 /**
  * Helper class to log in backend users and load backend.
  *
  * Core v12 / codeception 5 compatible version.
+ *
+ * @internal Compat layer for testing-framework v7 only.
  */
 class LoginCodeceptionFive extends Module
 {
@@ -118,7 +121,7 @@ class LoginCodeceptionFive extends Module
     public function _createSession($userSessionId)
     {
         $webDriver = $this->getWebDriver();
-        $webDriver->setCookie('be_typo_user', $userSessionId);
+        $webDriver->setCookie('be_typo_user', (new SessionHelper())->createSessionCookieValue($userSessionId));
         $webDriver->setCookie('be_lastLoginProvider', '1433416747');
         $webDriver->saveSessionSnapshot('login');
     }

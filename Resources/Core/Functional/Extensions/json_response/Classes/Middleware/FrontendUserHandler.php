@@ -24,9 +24,12 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Session\UserSessionManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\RequestBootstrap;
+use TYPO3\TestingFramework\Core\Jwt\SessionHelper;
 
 /**
  * Handler for frontend user
@@ -42,39 +45,57 @@ class FrontendUserHandler implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $context = RequestBootstrap::getInternalRequestContext();
-        if (empty($context) || empty($context->getFrontendUserId())) {
-            return $handler->handle($request);
-        }
+        if ((new Typo3Version())->getMajorVersion() >= 12) {
+            /** @var InternalRequestContext $internalRequestContext */
+            $internalRequestContext = $request->getAttribute('typo3.testing.context');
+            $frontendUserId = $internalRequestContext->getFrontendUserId();
 
-        /** @var FrontendUserAuthentication $frontendUserAuthentication */
-        $frontendUserAuthentication = $request->getAttribute('frontend.user');
-        $frontendUserAuthentication->checkPid = 0;
+            if ($frontendUserId === null) {
+                // Skip if test does not use a logged in user
+                return $handler->handle($request);
+            }
 
-        $statement = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('fe_users')
-            ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()]);
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            $frontendUser = $statement->fetchAssociative();
+            $frontendUser = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('fe_users')
+                ->select(['*'], 'fe_users', ['uid' => $frontendUserId])
+                ->fetchAssociative();
+            if (is_array($frontendUser)) {
+                $userSessionManager = UserSessionManager::create('FE');
+                $userSession = $userSessionManager->createAnonymousSession();
+                $userSessionManager->elevateToFixatedUserSession($userSession, $frontendUserId);
+                $sessionHelper = new SessionHelper();
+                $request = $request->withCookieParams(
+                    array_replace(
+                        $request->getCookieParams(),
+                        [
+                            'fe_typo_user' => $sessionHelper->resolveSessionCookieValue($userSession),
+                        ]
+                    )
+                );
+            }
         } else {
-            // @deprecated: Will be removed with next major version - core v10 compat.
-            $frontendUser = $statement->fetch();
-        }
-        if (is_array($frontendUser)) {
-            $context = GeneralUtility::makeInstance(Context::class);
-            $frontendUserAuthentication->createUserSession($frontendUser);
-            $frontendUserAuthentication->user = $frontendUserAuthentication->fetchUserSession();
-            // v11+
-            if (method_exists($frontendUserAuthentication, 'createUserAspect')) {
+            $context = RequestBootstrap::getInternalRequestContext();
+            if (empty($context) || empty($context->getFrontendUserId())) {
+                return $handler->handle($request);
+            }
+
+            /** @var FrontendUserAuthentication $frontendUserAuthentication */
+            $frontendUserAuthentication = $request->getAttribute('frontend.user');
+            $frontendUserAuthentication->checkPid = 0;
+
+            $statement = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('fe_users')
+                ->select(['*'], 'fe_users', ['uid' => $context->getFrontendUserId()]);
+            $frontendUser = $statement->fetchAssociative();
+            if (is_array($frontendUser)) {
+                $context = GeneralUtility::makeInstance(Context::class);
+                $frontendUserAuthentication->createUserSession($frontendUser);
+                $frontendUserAuthentication->user = $frontendUserAuthentication->fetchUserSession();
                 $frontendUserAuthentication->fetchGroupData($request);
                 $userAspect = $frontendUserAuthentication->createUserAspect();
                 GeneralUtility::makeInstance(Context::class)->setAspect('frontend.user', $userAspect);
-            } else {
-                // v10
-                $this->setFrontendUserAspect($context, $frontendUserAuthentication);
             }
         }
-
         return $handler->handle($request);
     }
 

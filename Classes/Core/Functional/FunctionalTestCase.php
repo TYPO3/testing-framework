@@ -53,6 +53,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestCon
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponse;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalResponseException;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Response;
+use TYPO3\TestingFramework\Core\Jwt\SessionHelper;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -548,9 +549,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         } else {
             $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
             $session = $backendUser->createUserSession($userRow);
-            $sessionId = $session->getIdentifier();
             $request = $this->createServerRequest('https://typo3-testing.local/typo3/');
-            $request = $request->withCookieParams(['be_typo_user' => $sessionId]);
+            $request = $request->withCookieParams(['be_typo_user' => (new SessionHelper())->resolveSessionCookieValue($session)]);
             $backendUser = $this->authenticateBackendUser($backendUser, $request);
             // @todo: remove this with the next major version
             $GLOBALS['BE_USER'] = $backendUser;
