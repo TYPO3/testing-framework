@@ -256,7 +256,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * database structure again but instead just truncate all tables which
      * is much quicker.
      */
-    private static $currestTestCaseClass = '';
+    private static $currentTestCaseClass = '';
     private $isFirstTest = true;
 
     /**
@@ -283,8 +283,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
         // See if we're the first test of this test case.
         $currentTestCaseClass = get_called_class();
-        if (self::$currestTestCaseClass !== $currentTestCaseClass) {
-            self::$currestTestCaseClass = $currentTestCaseClass;
+        if (self::$currentTestCaseClass !== $currentTestCaseClass) {
+            self::$currentTestCaseClass = $currentTestCaseClass;
         } else {
             $this->isFirstTest = false;
         }
