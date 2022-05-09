@@ -1411,6 +1411,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * @throws DBALException
      * @todo: Seems to be unused. Deprecate in v6 and remove here?
+     * @deprecated Don't call anymore. Removed in core >= v12 compatible testing-framework.
      */
     protected function allowIdentityInsert(?bool $allowIdentityInsert): void
     {
