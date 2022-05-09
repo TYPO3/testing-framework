@@ -34,7 +34,9 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
@@ -1034,47 +1036,56 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         // See second data provider of UriPrefixRenderingTest
         // @todo: Make TSFE not use getIndpEnv() anymore
         $_SERVER['SCRIPT_NAME'] = '/index.php';
-
-        $requestUrlParts = parse_url((string)$request->getUri());
-        $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $requestUrlParts['host'] ?? 'localhost';
+        $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $request->getUri()->getHost() ?: 'localhost';
 
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
 
         // The testing-framework registers extension 'json_response' that brings some middlewares which
         // allow to eg. log in backend users in frontend application context. These globals are used to
         // carry that information.
+        // @todo This global can be removed, after Instructions are handled using the ServerRequest
+        //       directly instead of loading the RequestBootstrap and thus this global handover.
         $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
 
-        // Create ServerRequest from testing-framework InternalRequest object
-        $uri = $request->getUri();
+        /** @var InternalRequest $serverRequest */
+        $serverRequest = $request->withAttribute('typo3.testing.context', $context);
 
-        // Build minimal serverParams and hand over to ServerRequest. The normalizedParams
-        // attribute relies on these. Note the access to $_SERVER should be dropped when the
-        // above getIndpEnv() can be dropped, too.
-        $serverParams = [
-            'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
-            'HTTP_HOST'  => $_SERVER['HTTP_HOST'],
-            'SERVER_NAME' => $_SERVER['SERVER_NAME'],
-            'HTTPS' => $uri->getScheme() === 'https' ? 'on' : 'off',
-            'REMOTE_ADDR' => '127.0.0.1',
-        ];
-
-        $serverRequest = new ServerRequest(
-            $uri,
-            $request->getMethod(),
-            $request->getBody(),
-            $request->getHeaders(),
-            $serverParams
-        );
-        $serverRequest = $serverRequest->withAttribute('typo3.testing.context', $context);
-        $requestUrlParts = [];
-        parse_str($uri->getQuery(), $requestUrlParts);
-        $serverRequest = $serverRequest->withQueryParams($requestUrlParts);
-        $parsedBody = $request->getParsedBody();
-        if (empty($parsedBody) && $request->getBody() !== null && in_array($request->getMethod(), ['PUT', 'PATCH', 'DELETE'])) {
-            parse_str((string)$request->getBody(), $parsedBody);
+        // If no serverParams are set, fallback to to old ServerRequest build behaviour and
+        // fill needed stuff. This has been historically be done to create ServerRequest from
+        // InternalRequest which is now directly used.
+        if ($serverRequest->getServerParams() === []) {
+            $serverRequest = $serverRequest
+                ->withServerParams(
+                    [
+                        'SCRIPT_NAME' => '/index.php',
+                        'HTTP_HOST'  => $serverRequest->getUri()->getHost(),
+                        'SERVER_NAME' => $serverRequest->getUri()->getHost(),
+                        'HTTPS' => $serverRequest->getUri()->getScheme() === 'https' ? 'on' : 'off',
+                        'REMOTE_ADDR' => '127.0.0.1',
+                    ]
+                );
         }
-        $serverRequest = $serverRequest->withParsedBody($parsedBody);
+
+        // Ensure that query parameters in request uri and parsed queryParameters are in sync.
+        $queryParams = [];
+        parse_str($serverRequest->getUri()->getQuery(), $queryParams);
+        $queryParams = array_replace($serverRequest->getQueryParams(), $queryParams);
+        $serverRequest = $serverRequest->withQueryParams($queryParams);
+        $serverRequest = $serverRequest->withUri($serverRequest->getUri()->withQuery(HttpUtility::buildQueryString($queryParams)));
+
+        // Ensure that parsedBody and body are in sync. If this is not the case, prepare it accordingly.
+        /** @var Stream $body */
+        $body = $serverRequest->getBody();
+        $parsedBody = $serverRequest->getParsedBody();
+        if (!empty($parsedBody) && empty((string)$body)) {
+            $body->write(\GuzzleHttp\Psr7\Query::build($parsedBody));
+            $serverRequest = $serverRequest->withBody($body);
+        }
+        if (empty($parsedBody) && !empty((string)$body) && in_array($serverRequest->getMethod(), ['PUT', 'PATCH', 'POST', 'DELETE'])) {
+            parse_str((string)$body, $parsedBody);
+            $serverRequest = $serverRequest->withParsedBody($parsedBody);
+        }
+
         try {
             $frontendApplication = $container->get(Application::class);
             $response = $frontendApplication->handle($serverRequest);
