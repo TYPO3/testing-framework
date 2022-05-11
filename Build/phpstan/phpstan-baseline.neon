@@ -1,16 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMock\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMockForAbstractClass\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
