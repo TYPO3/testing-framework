@@ -84,12 +84,16 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     /**
      * An unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
+     *
+     * @var non-empty-string
      */
     protected string $identifier;
 
     /**
      * Absolute path to test instance document root. Depends on $identifier.
      * Calculated early in setUp()
+     *
+     * @var non-empty-string
      */
     protected string $instancePath;
 
@@ -108,7 +112,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * A default list of core extensions is always loaded.
      *
      * @see FunctionalTestCaseUtility $defaultActivatedCoreExtensions
-     * @var array<int, string>
+     *
+     * @var non-empty-string[]
      */
     protected array $coreExtensionsToLoad = [];
 
@@ -130,7 +135,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Extensions in this array are linked to the test instance, loaded
      * and their ext_tables.sql will be applied.
      *
-     * @var string[]
+     * @var non-empty-string[]
      */
     protected array $testExtensionsToLoad = [];
 
@@ -158,7 +163,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * To be able to link from my_own_ext the extension path needs also to be registered in
      * property $testExtensionsToLoad
      *
-     * @var string[]
+     * @var array<string, non-empty-string>
      */
     protected array $pathsToLinkInTestInstance = [];
 
@@ -174,13 +179,15 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *   'typo3/sysext/lowlevel/Tests/Functional/Fixtures/testImage/someImage.jpg' => 'fileadmin/_processed_/0/a/someImage.jpg',
      * ]
      *
-     * @var string[]
+     * @var array<string, non-empty-string>
      */
     protected array $pathsToProvideInTestInstance = [];
 
     /**
      * This configuration array is merged with TYPO3_CONF_VARS
      * that are set in default configuration and factory configuration
+     *
+     * @var array<string, mixed>
      */
     protected array $configurationToUseInTestInstance = [];
 
@@ -204,11 +211,15 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * [
      *   'fileadmin/user_upload'
      * ]
+     *
+     * @var non-empty-string[]
      */
     protected array $additionalFoldersToCreate = [];
 
     /**
      * The fixture which is used when initializing a backend user
+     *
+     * @var non-empty-string
      */
     protected string $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
@@ -561,7 +572,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     /**
      * Imports a data set represented as XML into the test database,
      *
-     * @param string $path Absolute path to the XML file containing the data set to load
+     * @param non-empty-string $path Absolute path to the XML file containing the data set to load
      * @throws Exception
      */
     protected function importDataSet(string $path): void
@@ -1126,12 +1137,17 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
     /**
      * Uses a 7 char long hash of class name as identifier.
+     *
+     * @return non-empty-string
      */
     protected static function getInstanceIdentifier(): string
     {
         return substr(sha1(static::class), 0, 7);
     }
 
+    /**
+     * @return non-empty-string
+     */
     protected static function getInstancePath(): string
     {
         $identifier = self::getInstanceIdentifier();
