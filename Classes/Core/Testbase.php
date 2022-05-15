@@ -147,7 +147,7 @@ class Testbase
      * Remove test instance folder structure if it exists.
      * This may happen if a functional test before threw a fatal or is too old
      *
-     * @param string $instancePath Absolute path to test instance
+     * @param non-empty-string $instancePath Absolute path to test instance
      * @throws Exception
      */
     public function removeOldInstanceIfExists($instancePath): void
@@ -174,7 +174,7 @@ class Testbase
      * Link TYPO3 CMS core from "parent" instance.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
+     * @param non-empty-string $instancePath Absolute path to test instance
      * @throws Exception
      */
     public function setUpInstanceCoreLinks($instancePath): void
@@ -233,8 +233,8 @@ class Testbase
      * Link test extensions to the typo3conf/ext folder of the instance.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
-     * @param array $extensionPaths Contains paths to extensions relative to document root
+     * @param non-empty-string $instancePath Absolute path to test instance
+     * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
      */
     public function linkTestExtensionsToInstance($instancePath, array $extensionPaths): void
@@ -262,8 +262,8 @@ class Testbase
      * Link framework extensions to the typo3conf/ext folder of the instance.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
-     * @param array $extensionPaths Contains paths to extensions relative to document root
+     * @param non-empty-string $instancePath Absolute path to test instance
+     * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
      */
     public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths): void
@@ -292,8 +292,8 @@ class Testbase
      * test instance fileadmin folder.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
-     * @param array $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
+     * @param non-empty-string $instancePath Absolute path to test instance
+     * @param array<string, non-empty-string> $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
      * @throws Exception if a source path could not be found and on failing creating the symlink
      */
     public function linkPathsInTestInstance($instancePath, array $pathsToLinkInTestInstance): void
@@ -325,8 +325,8 @@ class Testbase
      *
      * For functional and acceptance tests.
      *
-     * @param string $instancePath
-     * @param array $pathsToProvideInTestInstance
+     * @param non-empty-string $instancePath
+     * @param array<string, non-empty-string> $pathsToProvideInTestInstance
      * @throws Exception
      */
     public function providePathsInTestInstance(string $instancePath, array $pathsToProvideInTestInstance): void
@@ -468,7 +468,7 @@ class Testbase
      * Create LocalConfiguration.php file of the test instance.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
+     * @param non-empty-string $instancePath Absolute path to test instance
      * @param array $configuration Base configuration array
      * @param array $overruleConfiguration Overrule factory and base configuration
      * @throws Exception
@@ -499,11 +499,11 @@ class Testbase
      * and a list of test extensions.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
-     * @param array $defaultCoreExtensionsToLoad Default list of core extensions to load
-     * @param array $additionalCoreExtensionsToLoad Additional core extensions to load
-     * @param array $testExtensionPaths Paths to test extensions relative to document root
-     * @param array $frameworkExtensionPaths Paths to framework extensions relative to testing framework package
+     * @param non-empty-string $instancePath Absolute path to test instance
+     * @param non-empty-string[] $defaultCoreExtensionsToLoad Default list of core extensions to load
+     * @param non-empty-string[] $additionalCoreExtensionsToLoad Additional core extensions to load
+     * @param non-empty-string[] $testExtensionPaths Paths to test extensions relative to document root
+     * @param non-empty-string[] $frameworkExtensionPaths Paths to framework extensions relative to testing framework package
      * @throws Exception
      */
     public function setUpPackageStates(
@@ -614,7 +614,7 @@ class Testbase
      * Bootstrap basic TYPO3. This bootstraps TYPO3 far enough to initialize database afterwards.
      * For functional and acceptance tests.
      *
-     * @param string $instancePath Absolute path to test instance
+     * @param non-empty-string $instancePath Absolute path to test instance
      * @return ContainerInterface
      */
     public function setUpBasicTypo3Bootstrap($instancePath): ContainerInterface
@@ -780,7 +780,7 @@ class Testbase
     /**
      * Imports a data set represented as XML into the test database,
      *
-     * @param string $path Absolute path to the XML file containing the data set to load
+     * @param non-empty-string $path Absolute path to the XML file containing the data set to load
      * @throws DBALException
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
