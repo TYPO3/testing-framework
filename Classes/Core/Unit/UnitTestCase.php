@@ -65,7 +65,7 @@ abstract class UnitTestCase extends BaseTestCase
      * Handled in tearDown. Tests can register here to get any files
      * within typo3temp/ or typo3conf/ext cleaned up again.
      *
-     * @var array
+     * @var non-empty-string[]
      */
     protected $testFilesToDelete = [];
 
@@ -73,7 +73,7 @@ abstract class UnitTestCase extends BaseTestCase
      * Holds state of TYPO3\CMS\Core\Core\Environment if
      * $this->backupEnvironment has been set to true in a test case
      *
-     * @var array
+     * @var array<string, mixed>
      */
     private $backedUpEnvironment = [];
 
