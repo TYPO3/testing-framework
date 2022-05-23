@@ -148,7 +148,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     /**
      * Same as $testExtensionsToLoad, but included per default from the testing framework.
      *
-     * @var string[]
+     * @var non-empty-string[]
      * @deprecated: This property is hard to override due to it's default content. It will vanish in v12 compatible testing-framework.
      */
     protected $frameworkExtensionsToLoad = [
