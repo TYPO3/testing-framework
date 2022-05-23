@@ -36,16 +36,6 @@ parameters:
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMock\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
-			message: "#^Method TYPO3\\\\TestingFramework\\\\Core\\\\BaseTestCase\\:\\:getAccessibleMockForAbstractClass\\(\\) should return PHPUnit\\\\Framework\\\\MockObject\\\\MockObject&T&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface but returns PHPUnit\\\\Framework\\\\MockObject\\\\MockObject\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
 			message: "#^Parameter \\#1 \\$prefix of function uniqid expects string, int given\\.$#"
 			count: 1
 			path: ../../Classes/Core/BaseTestCase.php

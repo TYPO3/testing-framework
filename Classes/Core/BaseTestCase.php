@@ -29,8 +29,8 @@ abstract class BaseTestCase extends TestCase
     /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
-     * @template T
-     * @param class-string<T> $originalClassName name of class to create the mock object of, must not be empty
+     * @template T of object
+     * @param class-string<T> $originalClassName name of class to create the mock object of
      * @param string[]|null $methods name of the methods to mock, null for "mock no methods"
      * @param array $arguments arguments to pass to constructor
      * @param string $mockClassName the class name to use for the mock class
@@ -38,8 +38,7 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callOriginalClone whether to call the __clone method
      * @param bool $callAutoload whether to call any autoload function
      *
-     * @return MockObject&AccessibleObjectInterface&T
-     *         a mock of $originalClassName with access methods added
+     * @return MockObject&AccessibleObjectInterface&T a mock of `$originalClassName` with access methods added
      *
      * @throws \InvalidArgumentException
      */
@@ -81,7 +80,7 @@ abstract class BaseTestCase extends TestCase
      * of protected properties. Concrete methods to mock can be specified with
      * the last parameter
      *
-     * @template T
+     * @template T of object
      * @param class-string<T> $originalClassName Full qualified name of the original class
      * @param array $arguments
      * @param string $mockClassName
@@ -121,8 +120,9 @@ abstract class BaseTestCase extends TestCase
      * Creates a proxy class of the specified class which allows
      * for calling even protected methods and access of protected properties.
      *
-     * @param string $className Name of class to make available, must not be empty
-     * @return string Fully qualified name of the built class, will not be empty
+     * @template T of object
+     * @param class-string<T> $className Name of class to make available
+     * @return class-string<AccessibleObjectInterface&T> Fully qualified name of the built class
      */
     protected function buildAccessibleProxy($className)
     {
