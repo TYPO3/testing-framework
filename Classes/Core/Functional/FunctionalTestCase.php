@@ -367,7 +367,49 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                     'Resources/Core/Functional/Extensions/private_container',
                 ]
             );
+
+            // Cache the Dependency Injection Container, which is dependent on the PackageStates file
+            $pstate_file = $this->instancePath. '/typo3conf/PackageStates.php';
+
+            // make sure, to only cache the same combination of Packages
+            $package_md5 = md5(file_get_contents($pstate_file));
+
+            // set cache Path next to function Testing Folder
+            $cache_dir = dirname($this->instancePath).'/cache';
+            $cached_di = $cache_dir.'/di_'.$package_md5.'.php';
+
+            // load modification Time (which is different, since it was just created)
+            $mTime = @filemtime($pstate_file);
+
+            // generate cache identifer, the same way typo3 does
+            $cacheIdentifier = md5((string)(new Typo3Version()) . $pstate_file . $mTime);
+            $baseIdentifier = sha1((new Typo3Version())->getVersion() . $this->instancePath . $cacheIdentifier);
+            $current_cache_identifier = 'DependencyInjectionContainer_'.$baseIdentifier;
+
+            // if there is a cache file, copy it over
+            if (is_file($cached_di)) {
+                // create DI container cache folder
+                mkdir($this->instancePath.'/typo3temp/var/cache/code/di/', 0755, true);
+
+                // load cache and replace IDENTIFIER with current Identifier
+                $cache = file_get_contents($cached_di);
+                file_put_contents($this->instancePath.'/typo3temp/var/cache/code/di/'. $current_cache_identifier.'.php', str_replace('######CACHE_IDENTIFIER######', $current_cache_identifier, $cache));
+                unset($cache);
+            }
+
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+
+            // if there was no cache file, copy the generated over
+            if (!is_file($cached_di)) {
+                // create cache directory if not present
+                if (!is_dir($cache_dir)) mkdir($cache_dir, 0755, true);
+
+                // replace current identifier with Placeholder
+                $cache = file_get_contents($this->instancePath.'/typo3temp/var/cache/code/di/'. $current_cache_identifier.'.php');
+                file_put_contents($cached_di, str_replace($current_cache_identifier, '######CACHE_IDENTIFIER######', $cache));
+                unset($cache);
+            }
+
             if ($this->initializeDatabase) {
                 if ($dbDriver !== 'pdo_sqlite') {
                     $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
