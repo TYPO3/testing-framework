@@ -369,14 +369,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             );
 
             // Cache the Dependency Injection Container, which is dependent on the PackageStates file
-            $pstateFile = $this->instancePath. '/typo3conf/PackageStates.php';
+            $pstateFile = $this->instancePath . '/typo3conf/PackageStates.php';
 
             // make sure, to only cache the same combination of Packages
             $packageMd5 = md5(file_get_contents($pstateFile));
 
             // set cache Path next to function Testing Folder
-            $cacheDir = dirname($this->instancePath).'/cache';
-            $cachedDi = $cacheDir.'/di_'.$packageMd5.'.php';
+            $cacheDir = dirname($this->instancePath) . '/cache';
+            $cachedDi = $cacheDir . '/di_' . $packageMd5 . '.php';
 
             // load modification Time (which is different, since it was just created)
             $mTime = @filemtime($pstateFile);
@@ -384,16 +384,16 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // generate cache identifer, the same way typo3 does
             $cacheIdentifier = md5((string)(new Typo3Version()) . $pstateFile . $mTime);
             $baseIdentifier = sha1((new Typo3Version())->getVersion() . $this->instancePath . $cacheIdentifier);
-            $currentCacheIdentifier = 'DependencyInjectionContainer_'.$baseIdentifier;
+            $currentCacheIdentifier = 'DependencyInjectionContainer_' . $baseIdentifier;
 
             // if there is a cache file, copy it over
             if (is_file($cachedDi)) {
                 // create DI container cache folder
-                mkdir($this->instancePath.'/typo3temp/var/cache/code/di/', 0755, true);
+                mkdir($this->instancePath . '/typo3temp/var/cache/code/di/', 0755, true);
 
                 // load cache and replace IDENTIFIER with current Identifier
                 $cache = file_get_contents($cachedDi);
-                file_put_contents($this->instancePath.'/typo3temp/var/cache/code/di/'. $currentCacheIdentifier.'.php', str_replace('######CACHE_IDENTIFIER######', $currentCacheIdentifier, $cache));
+                file_put_contents($this->instancePath . '/typo3temp/var/cache/code/di/' . $currentCacheIdentifier . '.php', str_replace('######CACHE_IDENTIFIER######', $currentCacheIdentifier, $cache));
                 unset($cache);
             }
 
@@ -402,10 +402,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // if there was no cache file, copy the generated over
             if (!is_file($cachedDi)) {
                 // create cache directory if not present
-                if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+                if (!is_dir($cacheDir)) {
+                    mkdir($cacheDir, 0755, true);
+                }
 
                 // replace current identifier with Placeholder
-                $cache = file_get_contents($this->instancePath.'/typo3temp/var/cache/code/di/'. $currentCacheIdentifier.'.php');
+                $cache = file_get_contents($this->instancePath . '/typo3temp/var/cache/code/di/' . $currentCacheIdentifier . '.php');
                 file_put_contents($cachedDi, str_replace($currentCacheIdentifier, '######CACHE_IDENTIFIER######', $cache));
                 unset($cache);
             }
