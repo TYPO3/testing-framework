@@ -50,7 +50,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
 use TYPO3\TestingFramework\Core\Testbase;
 
-
 /**
  * Base test case class for functional tests, all TYPO3 CMS
  * functional tests should extend from this class!
