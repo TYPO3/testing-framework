@@ -33,14 +33,14 @@ abstract class AbstractModalDialog
      *
      * @var string
      */
-    public static $openedModalSelector = '.modal.in';
+    public static $openedModalSelector = '.modal.show';
 
     /**
      * Selector for the container in the modal where the buttons are located
      *
      * @var string
      */
-    public static $openedModalButtonContainerSelector = '.modal.in .modal-footer';
+    public static $openedModalButtonContainerSelector = '.modal.show .modal-footer';
 
     /**
      * @var AcceptanceTester
