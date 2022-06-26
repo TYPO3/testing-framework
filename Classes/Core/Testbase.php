@@ -671,6 +671,14 @@ class Testbase
         } else {
             $this->truncateAllTablesForOtherDatabases();
         }
+
+        // reimport static content
+        $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
+        $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
+        $sqlCode = $sqlReader->getTablesDefinitionString(true);
+
+        $insertStatements = $sqlReader->getInsertStatementArray($sqlCode);
+        $schemaMigrationService->importStaticData($insertStatements);
     }
 
     /**
