@@ -55,7 +55,7 @@ abstract class AbstractInstruction implements \JsonSerializable
             );
         }
 
-        if (self::class === static::class) {
+        if (static::class === self::class) {
             return $data['__type']::fromArray($data);
         }
         /** @phpstan-ignore-next-line Avoid 'Unsafe usage of new static' error. This is needed by design and considerable safe with the above checks*/
