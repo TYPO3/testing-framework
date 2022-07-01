@@ -80,8 +80,8 @@ class Acceptance extends Module
         $messages = [];
         foreach ($browserLogEntries as $logEntry) {
             // We fail only on errors. Warnings and info messages are OK.
-            if (true === isset($logEntry['level'])
-                && true === isset($logEntry['message'])
+            if (isset($logEntry['level']) === true
+                && isset($logEntry['message']) === true
                 && $this->isJSError($logEntry['level'], $logEntry['message'])
             ) {
                 // Timestamp is in milliseconds, but date() requires seconds.

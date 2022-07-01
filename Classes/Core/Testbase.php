@@ -137,11 +137,11 @@ class Testbase
         }
 
         $commonPath = $to;
-        while (strpos($from . '/', $commonPath . '/') !== 0 && '/' !== $commonPath && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && '.' !== $commonPath) {
+        while (strpos($from . '/', $commonPath . '/') !== 0 && $commonPath !== '/' && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && $commonPath !== '.') {
             $commonPath = str_replace('\\', '/', \dirname($commonPath));
         }
 
-        if ('/' === $commonPath || '.' === $commonPath || 0 !== strpos($from, $commonPath)) {
+        if ($commonPath === '/' || $commonPath === '.' || strpos($from, $commonPath) !== 0) {
             return var_export($to, true);
         }
 
