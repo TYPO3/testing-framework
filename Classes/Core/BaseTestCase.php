@@ -30,6 +30,10 @@ abstract class BaseTestCase extends TestCase
     /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
+     * Note: This method has no native return types on purpose, but only PHPDoc return type annotations.
+     * The reason is that the combination of "union types with generics in PHPDoc" and "a subset of those types as
+     * native types, but without the generics" tends to confuse PhpStorm's static type analysis (which we want to avoid).
+     *
      * @template T of object
      * @param class-string<T> $originalClassName name of class to create the mock object of
      * @param string[]|null $methods name of the methods to mock, null for "mock no methods"
@@ -51,8 +55,7 @@ abstract class BaseTestCase extends TestCase
         bool $callOriginalConstructor = true,
         bool $callOriginalClone = true,
         bool $callAutoload = true
-    ): MockObject&AccessibleObjectInterface
-    {
+    ) {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1334701880);
         }
@@ -80,7 +83,11 @@ abstract class BaseTestCase extends TestCase
     /**
      * Returns a mock object which allows for calling protected methods and access
      * of protected properties. Concrete methods to mock can be specified with
-     * the last parameter
+     * the last parameter.
+     *
+     * Note: This method has no native return types on purpose, but only PHPDoc return type annotations.
+     * The reason is that the combination of "union types with generics in PHPDoc" and "a subset of those types as
+     * native types, but without the generics" tends to confuse PhpStorm's static type analysis (which we want to avoid).
      *
      * @template T of object
      * @param class-string<T> $originalClassName Full qualified name of the original class
@@ -102,8 +109,7 @@ abstract class BaseTestCase extends TestCase
         bool $callOriginalClone = true,
         bool $callAutoload = true,
         array $mockedMethods = []
-    ): MockObject&AccessibleObjectInterface
-    {
+    ) {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1384268260);
         }
