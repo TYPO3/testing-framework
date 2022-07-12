@@ -51,7 +51,8 @@ abstract class BaseTestCase extends TestCase
         bool $callOriginalConstructor = true,
         bool $callOriginalClone = true,
         bool $callAutoload = true
-    ): MockObject&AccessibleObjectInterface {
+    ): MockObject&AccessibleObjectInterface
+    {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1334701880);
         }
@@ -101,7 +102,8 @@ abstract class BaseTestCase extends TestCase
         bool $callOriginalClone = true,
         bool $callAutoload = true,
         array $mockedMethods = []
-    ): MockObject&AccessibleObjectInterface {
+    ): MockObject&AccessibleObjectInterface
+    {
         if ($originalClassName === '') {
             throw new \InvalidArgumentException('$originalClassName must not be empty.', 1384268260);
         }
