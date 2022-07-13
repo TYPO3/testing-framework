@@ -144,6 +144,12 @@ abstract class BackendEnvironment extends Extension
          * Given paths are expected to be relative to your document root.
          *
          * @var array
+         * @deprecated Will be removed with core v12 compatible testing-framework.
+         *             Switch to 'csvDatabaseFixtures' below instead, and deliver
+         *             the default database imports as local file.
+         *             See v12 core/Test/Acceptance/Support/Extension/ApplicationEnvironment.php
+         *             or v12 styleguide Tests/Acceptance/Support/Extension/BackendStyleguideEnvironment.php
+         *             for example transitions.
          */
         'xmlDatabaseFixtures' => [],
 
@@ -315,6 +321,7 @@ abstract class BackendEnvironment extends Extension
         $suite = $suiteEvent->getSuite();
         $suite->setBackupGlobals(false);
 
+        // @deprecated Will be removed with core v12 compatible testing-framework. See property comment.
         foreach ($this->config['xmlDatabaseFixtures'] as $fixture) {
             $testbase->importXmlDatabaseFixture($fixture);
         }
