@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- @deprecated Will be removed with core v12 compatible testing-framework.
+                 See comment on 'xmlDatabaseFixtures' in BackendEnvironment.php -->
 <dataset>
 	<be_users>
 		<uid>1</uid>
