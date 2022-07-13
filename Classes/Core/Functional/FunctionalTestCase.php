@@ -1119,8 +1119,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * An example to this are the "SiteHandling" core tests, which create
      * a starter scenario using DataHandler based on Yaml files.
+     *
+     * @param callable|null $createCallback Optional callback executed just before the snapshot is created
+     * @param callable|null $restoreCallback Optional callback executed after a snapshot has been restored
      */
-    protected function withDatabaseSnapshot(callable $callback): void
+    protected function withDatabaseSnapshot(?callable $createCallback = null, ?callable $restoreCallback = null): void
     {
         $connection = $this->getConnectionPool()->getConnectionByName(
             ConnectionPool::DEFAULT_CONNECTION_NAME
@@ -1128,10 +1131,15 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
         if ($this->isFirstTest) {
-            $callback();
+            if ($createCallback) {
+                $createCallback();
+            }
             $snapshot->create($accessor, $connection);
         } else {
             $snapshot->restore($accessor, $connection);
+            if ($restoreCallback) {
+                $restoreCallback();
+            }
         }
     }
 
