@@ -139,21 +139,6 @@ abstract class BackendEnvironment extends Extension
         'additionalFoldersToCreate' => [],
 
         /**
-         * XML database fixtures to be loaded into database.
-         *
-         * Given paths are expected to be relative to your document root.
-         *
-         * @var array
-         * @deprecated Will be removed with core v12 compatible testing-framework.
-         *             Switch to 'csvDatabaseFixtures' below instead, and deliver
-         *             the default database imports as local file.
-         *             See v12 core/Test/Acceptance/Support/Extension/ApplicationEnvironment.php
-         *             or v12 styleguide Tests/Acceptance/Support/Extension/BackendStyleguideEnvironment.php
-         *             for example transitions.
-         */
-        'xmlDatabaseFixtures' => [],
-
-        /**
          * Array of absolute paths to .csv files to be loaded into database.
          * This can be used to prime the database with fixture records.
          *
@@ -320,11 +305,6 @@ abstract class BackendEnvironment extends Extension
         // unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys']['extbase']);
         $suite = $suiteEvent->getSuite();
         $suite->setBackupGlobals(false);
-
-        // @deprecated Will be removed with core v12 compatible testing-framework. See property comment.
-        foreach ($this->config['xmlDatabaseFixtures'] as $fixture) {
-            $testbase->importXmlDatabaseFixture($fixture);
-        }
 
         foreach ($this->config['csvDatabaseFixtures'] as $fixture) {
             $this->importCSVDataSet($fixture);
