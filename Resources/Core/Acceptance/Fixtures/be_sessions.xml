@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- @deprecated Will be removed with core v12 compatible testing-framework.
+                 See comment on 'xmlDatabaseFixtures' in BackendEnvironment.php -->
 <dataset>
     <be_sessions>
         <!-- hash_hmac('sha256', '886526ce72b86870739cc41991144ec1', sha1('iAmInvalid' . 'core-session-backend')) -->
