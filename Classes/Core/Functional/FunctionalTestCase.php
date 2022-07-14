@@ -1090,6 +1090,13 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * An example to this are the "SiteHandling" core tests, which create
      * a starter scenario using DataHandler based on Yaml files.
      *
+     * Important: This method expects the database to be *empty* (schema
+     * ready, but no rows) when called. Rows should only be populated
+     * within $createCallback. When rows exist already before calling this
+     * method, snapshot restore can fail with duplicate row errors. In
+     * practice: Do not call insertCSVDataSet() *before* calling this
+     * method in setUp(), but do it within the create callback body instead.
+     *
      * @param callable|null $createCallback Optional callback executed just before the snapshot is created
      * @param callable|null $restoreCallback Optional callback executed after a snapshot has been restored
      */

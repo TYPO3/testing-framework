@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,7 +15,8 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\Exception;
+namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
+
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
 use TYPO3\CMS\Core\Database\Connection;
@@ -24,42 +24,36 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
- * @internal Use the helper methods of FunctionalTestCase
+ * Helper class of DatabaseSnapshot doing the main query
+ * work around snapshow handling.
+ *
+ * @internal Use FunctionalTestCase->withDatabaseSnapshot() to leverage this.
  */
 class DatabaseAccessor
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
-    /**
-     * @param Connection $connection
-     */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
     }
 
     /**
-     * @return array
+     * Fetch rows from all tables and return as array.
      */
     public function export(): array
     {
         $schemaManager = $this->connection->createSchemaManager();
-
         $export = [];
         foreach ($schemaManager->listTables() as $table) {
             $tableName = $table->getName();
             if (stripos($tableName, 'cf_') === 0 || stripos($tableName, 'cache_') === 0) {
                 continue;
             }
-
             $tableExport = $this->exportTable($tableName);
             if (empty($tableExport)) {
                 continue;
             }
-
             $export[] = [
                 'tableName' => $tableName,
                 'columns' => $this->prepareColumns(
@@ -73,8 +67,7 @@ class DatabaseAccessor
     }
 
     /**
-     * @param array $import
-     * @throws \Doctrine\DBAL\ConnectionException
+     * Import rows to database from rows created by export().
      */
     public function import(array $import)
     {
@@ -87,10 +80,6 @@ class DatabaseAccessor
         }
     }
 
-    /**
-     * @param string $tableName
-     * @return array
-     */
     private function exportTable(string $tableName): array
     {
         return $this->createQueryBuilder()
@@ -99,11 +88,9 @@ class DatabaseAccessor
     }
 
     /**
-     * @param string $tableName
      * @param array $columns [columnName => columnType]
-     * @param array $items
      */
-    private function importTable(string $tableName, array $columns, array $items)
+    private function importTable(string $tableName, array $columns, array $items): void
     {
         if (empty($tableName) || empty($columns) || empty($items)) {
             throw new \RuntimeException(
@@ -114,33 +101,11 @@ class DatabaseAccessor
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
-            try {
-                $this->connection->insert(
-                    $tableName,
-                    array_combine($columnNames, $item),
-                    $columns
-                );
-            } catch (Exception $e) {
-                // The scenario solved here: Some tests (eg. ClipboardTest) use the snapshot *after* first rows have
-                // been inserted in setUp(). Those rows are snapshotted too, the second test then tries to insert
-                // those rows from the snapshot again. But they exist already, which leads to an exception.
-                // This can't be solved easily, especially due to setUpBackendUserFromFixture(), which both inserts
-                // rows, plus sets up PHP state, and DataHandlerWriter::withBackendUser() depends on this state too,
-                // which is used *within* the snapshot callback. We thus can't get rid of this unfortunate backend user
-                // handling right now.
-                // The previous solution was to simply truncate all tables before rows are inserted from the snapshot.
-                // But this is slow. The solution is now to simply let the insert fail with an exception, then truncate,
-                // then insert again. This avoids lots of truncate calls.
-                // @todo: Find a solution for the backend user handling and remove this catch block altogether.
-                // @deprecated: This catch block will be removed when the TF-API handles it in a better way. In general,
-                //              when using the snapshotter, no test should add rows before import().
-                $this->connection->truncate($tableName);
-                $this->connection->insert(
-                    $tableName,
-                    array_combine($columnNames, $item),
-                    $columns
-                );
-            }
+            $this->connection->insert(
+                $tableName,
+                array_combine($columnNames, $item),
+                $columns
+            );
         }
         // reset table sequences after inserting snapshot data. Dataset contains primary key column data which
         // leads to out-of-sync sequence values for some dbms platforms, thus resetting sequence values
@@ -148,11 +113,6 @@ class DatabaseAccessor
         Testbase::resetTableSequences($this->connection, $tableName);
     }
 
-    /**
-     * @param string[] $columnNames
-     * @param Table $table
-     * @return array
-     */
     private function prepareColumns(array $columnNames, Table $table): array
     {
         $columnTypes = array_map(
@@ -166,10 +126,7 @@ class DatabaseAccessor
         return array_combine($columnNames, $columnTypes);
     }
 
-    /**
-     * @return DoctrineQueryBuilder|TYPO3QueryBuilder
-     */
-    private function createQueryBuilder()
+    private function createQueryBuilder(): DoctrineQueryBuilder|TYPO3QueryBuilder
     {
         $queryBuilder = $this->connection->createQueryBuilder();
         if ($queryBuilder instanceof TYPO3QueryBuilder) {
