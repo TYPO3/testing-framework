@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,9 +15,16 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
+
 use Doctrine\DBAL\Connection;
 
 /**
+ * Implement the database snapshot and callback logic.
+ * This is helpful when tests need expensive setUp() to prime the database
+ * with rows: Subsequent tests can re-use the rows from first test to skip
+ * the expensive calculation.
+ *
  * @internal Use FunctionalTestCase->withDatabaseSnapshot() to leverage this.
  */
 class DatabaseSnapshot
@@ -50,9 +56,13 @@ class DatabaseSnapshot
         $this->inMemoryImport = [];
     }
 
+    /**
+     * Create a new snapshot. This is called for the *first* test in a test case.
+     */
     public function create(DatabaseAccessor $accessor, Connection $connection): void
     {
         if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
+            // With sqlite, we simply copy the db-file to a different place
             $connection->close();
             copy(
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite',
@@ -60,6 +70,7 @@ class DatabaseSnapshot
             );
             $this->inMemoryImport = [true];
         } else {
+            // With non-sqlite, we fetch rows from all tables and park the content in memory
             $export = $accessor->export();
             $serialized = json_encode($export);
             // It's not the exact consumption due to serialization literals... fine
@@ -71,6 +82,9 @@ class DatabaseSnapshot
         }
     }
 
+    /**
+     * Restore a snapshot. This is called for subsequent tests in a test case.
+     */
     public function restore(DatabaseAccessor $accessor, Connection $connection): void
     {
         if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
