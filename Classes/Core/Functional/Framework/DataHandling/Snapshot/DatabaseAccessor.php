@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -14,8 +15,6 @@ declare(strict_types=1);
  *
  * The TYPO3 project - inspiring people to share!
  */
-
-namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
@@ -115,11 +114,33 @@ class DatabaseAccessor
 
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
-            $this->connection->insert(
-                $tableName,
-                array_combine($columnNames, $item),
-                $columns
-            );
+            try {
+                $this->connection->insert(
+                    $tableName,
+                    array_combine($columnNames, $item),
+                    $columns
+                );
+            } catch (Exception $e) {
+                // The scenario solved here: Some tests (eg. ClipboardTest) use the snapshot *after* first rows have
+                // been inserted in setUp(). Those rows are snapshotted too, the second test then tries to insert
+                // those rows from the snapshot again. But they exist already, which leads to an exception.
+                // This can't be solved easily, especially due to setUpBackendUserFromFixture(), which both inserts
+                // rows, plus sets up PHP state, and DataHandlerWriter::withBackendUser() depends on this state too,
+                // which is used *within* the snapshot callback. We thus can't get rid of this unfortunate backend user
+                // handling right now.
+                // The previous solution was to simply truncate all tables before rows are inserted from the snapshot.
+                // But this is slow. The solution is now to simply let the insert fail with an exception, then truncate,
+                // then insert again. This avoids lots of truncate calls.
+                // @todo: Find a solution for the backend user handling and remove this catch block altogether.
+                // @deprecated: This catch block will be removed when the TF-API handles it in a better way. In general,
+                //              when using the snapshotter, no test should add rows before import().
+                $this->connection->truncate($tableName);
+                $this->connection->insert(
+                    $tableName,
+                    array_combine($columnNames, $item),
+                    $columns
+                );
+            }
         }
         // reset table sequences after inserting snapshot data. Dataset contains primary key column data which
         // leads to out-of-sync sequence values for some dbms platforms, thus resetting sequence values
