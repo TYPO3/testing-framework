@@ -784,6 +784,9 @@ class Testbase
      * @throws DBALException
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
+     * @deprecated Will be removed with core v12 compatible testing-framework.
+     *             Importing database fixtures based on XML format is discouraged. Switch to CSV format
+     *             instead. See core functional tests or styleguide for many examples how these look like.
      */
     public function importXmlDatabaseFixture($path): void
     {
@@ -977,6 +980,9 @@ class Testbase
         exit(1);
     }
 
+    /**
+     * @deprecated Will be removed together with importXmlDatabaseFixture()
+     */
     protected function resolvePath(string $path): string
     {
         if (strpos($path, 'EXT:') === 0) {
