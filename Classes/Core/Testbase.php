@@ -778,81 +778,6 @@ class Testbase
     }
 
     /**
-     * Imports a data set represented as XML into the test database,
-     *
-     * @param non-empty-string $path Absolute path to the XML file containing the data set to load
-     * @throws DBALException
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
-     * @deprecated Will be removed with core v12 compatible testing-framework.
-     *             Importing database fixtures based on XML format is discouraged. Switch to CSV format
-     *             instead. See core functional tests or styleguide for many examples how these look like.
-     */
-    public function importXmlDatabaseFixture($path): void
-    {
-        $path = $this->resolvePath($path);
-        if (!is_file($path)) {
-            throw new \RuntimeException(
-                'Fixture file ' . $path . ' not found',
-                1376746261
-            );
-        }
-
-        $fileContent = file_get_contents($path);
-        $previousValueOfEntityLoader = false;
-        if (PHP_MAJOR_VERSION < 8) {
-            // Disables the functionality to allow external entities to be loaded when parsing the XML, must be kept
-            $previousValueOfEntityLoader = libxml_disable_entity_loader(true);
-        }
-        $xml = simplexml_load_string($fileContent);
-        if (PHP_MAJOR_VERSION < 8) {
-            libxml_disable_entity_loader($previousValueOfEntityLoader);
-        }
-        $foreignKeys = [];
-
-        /** @var \SimpleXMLElement $table */
-        foreach ($xml->children() as $table) {
-            $insertArray = [];
-
-            /** @var \SimpleXMLElement $column */
-            foreach ($table->children() as $column) {
-                $columnName = $column->getName();
-                $columnValue = null;
-
-                if (isset($column['ref'])) {
-                    [$tableName, $elementId] = explode('#', $column['ref']);
-                    $columnValue = $foreignKeys[$tableName][$elementId];
-                } elseif (isset($column['is-NULL']) && ($column['is-NULL'] === 'yes')) {
-                    $columnValue = null;
-                } else {
-                    $columnValue = (string)$table->$columnName;
-                }
-
-                $insertArray[$columnName] = $columnValue;
-            }
-
-            $tableName = $table->getName();
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
-
-            // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
-            // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
-            $types = [];
-            $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
-            foreach ($insertArray as $columnName => $columnValue) {
-                $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
-            }
-
-            // Insert the row
-            $connection->insert($tableName, $insertArray, $types);
-            static::resetTableSequences($connection, $tableName);
-            if (isset($table['id'])) {
-                $elementId = (string)$table['id'];
-                $foreignKeys[$tableName][$elementId] = $connection->lastInsertId($tableName);
-            }
-        }
-    }
-
-    /**
      * Perform post processing of database tables after an insert has been performed.
      * Doing this once per insert is rather slow, but due to the soft reference behavior
      * this needs to be done after every row to ensure consistent results.
@@ -978,20 +903,5 @@ class Testbase
     {
         echo $message . chr(10);
         exit(1);
-    }
-
-    /**
-     * @deprecated Will be removed together with importXmlDatabaseFixture()
-     */
-    protected function resolvePath(string $path): string
-    {
-        if (strpos($path, 'EXT:') === 0) {
-            return GeneralUtility::getFileAbsFileName($path);
-        }
-
-        if (strpos($path, 'PACKAGE:') === 0) {
-            return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '', $path);
-        }
-        return $path;
     }
 }

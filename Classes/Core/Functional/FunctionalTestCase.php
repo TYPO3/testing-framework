@@ -552,23 +552,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
-     * Imports a data set represented as XML into the test database,
-     *
-     * @param non-empty-string $path Absolute path to the XML file containing the data set to load
-     * @throws Exception
-     * @deprecated Will be removed with core v12 compatible testing-framework.
-     *             Importing database fixtures based on XML format is discouraged. Switch to CSV format
-     *             instead. See core functional tests or styleguide for many examples how these look like.
-     *             Use method importCSVDataSet() to import such fixture files and assertCSVDataSet() to
-     *             compare database state with fixture files.
-     */
-    protected function importDataSet(string $path): void
-    {
-        $testbase = new Testbase();
-        $testbase->importXmlDatabaseFixture($path);
-    }
-
-    /**
      * Import data from a CSV file to database
      * Single file can contain data from multiple tables
      *

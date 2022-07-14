@@ -50,18 +50,3 @@ parameters:
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
 
-		-
-			message: "#^Parameter \\#2 \\$string of function explode expects string, SimpleXMLElement given\\.$#"
-			count: 1
-			path: ../../Classes/Core/Testbase.php
-
-		-
-			message: "#^Result of && is always false\\.$#"
-			count: 1
-			path: ../../Classes/Core/Testbase.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between SimpleXMLElement and 'yes' will always evaluate to false\\.$#"
-			count: 1
-			path: ../../Classes/Core/Testbase.php
-
