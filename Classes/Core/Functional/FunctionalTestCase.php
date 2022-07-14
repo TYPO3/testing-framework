@@ -220,6 +220,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * The fixture which is used when initializing a backend user
      *
      * @var non-empty-string
+     * @deprecated Will be removed with core v12 compatible testing-framework.
+     *             Core v12 and above compatible testing-framework will no longer deliver the .xml fixture
+     *             files. This property is used with method setUpBackendUserFromFixture() which is deprecated
+     *             as well. See the method for more information on transitioning to a better solution.
      */
     protected string $backendUserFixture = 'PACKAGE:typo3/testing-framework/Resources/Core/Functional/Fixtures/be_users.xml';
 
@@ -477,6 +481,13 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Initialize backend user.
      *
      * @param int $userUid uid of the user we want to initialize. This user must exist in the fixture file.
+     * @deprecated This method together with property $this->backendUserFixture and the functional test
+     *             related fixture .xml files will be removed with core v12 compatible testing-framework.
+     *             Existing usages should be adapted, first call $this->importCSVDataSet() with a local .csv
+     *             based fixture file - delivered by your extension - into database. Then call
+     *             $this->setUpBackendUser() with an id that is delivered with the fixture file to set
+     *             up a backend user. See this styleguide commit for an example transition:
+     *             https://github.com/TYPO3/styleguide/commit/dce442978c552346165d1b420d86caa830f6741f
      */
     protected function setUpBackendUserFromFixture(int $userUid): BackendUserAuthentication
     {
