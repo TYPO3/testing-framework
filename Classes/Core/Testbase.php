@@ -767,12 +767,16 @@ class Testbase
     {
         $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
+        // @todo: Remove argument when the deprecation below is removed.
         $sqlCode = $sqlReader->getTablesDefinitionString(true);
-
         $createTableStatements = $sqlReader->getCreateTableStatementArray($sqlCode);
-
         $schemaMigrationService->install($createTableStatements);
-
+        // @deprecated: Will be removed with core v12 compatible testing-framework.
+        //              We will no longer read and auto-apply rows from ext_tables_static+adt.sql files.
+        //              Test cases that rely on this should either (recommended) supply according rows
+        //              as .csv fixture files and import them using importCSVDataSet(), or (not recommended)
+        //              call SqlReader and SchemaMigrator to manually import ext_tables_static+adt.sql
+        //              files in setUp().
         $insertStatements = $sqlReader->getInsertStatementArray($sqlCode);
         $schemaMigrationService->importStaticData($insertStatements);
     }
