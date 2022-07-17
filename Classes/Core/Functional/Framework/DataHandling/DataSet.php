@@ -205,22 +205,6 @@ class DataSet
     }
 
     /**
-     * @return int
-     * @deprecated Will be removed with core v12 compatible testing-framework.
-     */
-    public function getMaximumPadding(): int
-    {
-        $maximums = array_map(
-            function (array $tableData) {
-                return count($tableData['fields'] ?? []);
-            },
-            array_values($this->data)
-        );
-        // adding additional index since field values are indented by one
-        return max($maximums) + 1;
-    }
-
-    /**
      * @param string $tableName
      * @return array|null
      */
@@ -270,53 +254,5 @@ class DataSet
             $elements = $this->data[$tableName]['elements'];
         }
         return $elements;
-    }
-
-    /**
-     * @param string $fileName
-     * @param int|null $padding
-     * @deprecated Will be removed with core v12 compatible testing-framework.
-     */
-    public function persist(string $fileName, int $padding = null)
-    {
-        $fileHandle = fopen($fileName, 'w');
-        $modifier = CsvWriterStreamFilter::apply($fileHandle);
-
-        foreach ($this->data as $tableName => $tableData) {
-            if (empty($tableData['fields']) || empty($tableData['elements'])) {
-                continue;
-            }
-
-            $fields = $tableData['fields'];
-            array_unshift($fields, '');
-
-            fputcsv($fileHandle, $this->pad($modifier([$tableName]), $padding));
-            fputcsv($fileHandle, $this->pad($modifier($fields), $padding));
-
-            foreach ($tableData['elements'] as $element) {
-                array_unshift($element, '');
-                fputcsv($fileHandle, $this->pad($modifier($element), $padding));
-            }
-        }
-
-        fclose($fileHandle);
-    }
-
-    /**
-     * @param array $values
-     * @param int|null $padding
-     * @return array
-     * @deprecated Will be removed with core v12 compatible testing-framework.
-     */
-    protected function pad(array $values, int $padding = null): array
-    {
-        if ($padding === null) {
-            return $values;
-        }
-
-        return array_merge(
-            $values,
-            array_fill(0, $padding - count($values), '')
-        );
     }
 }
