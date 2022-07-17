@@ -75,7 +75,6 @@ class DataSet
      *
      * Special values are:
      * + "\NULL" to treat as NULL value
-     * + "\*" to ignore value during comparison
      *
      * @param array $rawData
      * @return array
@@ -207,6 +206,7 @@ class DataSet
 
     /**
      * @return int
+     * @deprecated Will be removed with core v12 compatible testing-framework.
      */
     public function getMaximumPadding(): int
     {
@@ -275,6 +275,7 @@ class DataSet
     /**
      * @param string $fileName
      * @param int|null $padding
+     * @deprecated Will be removed with core v12 compatible testing-framework.
      */
     public function persist(string $fileName, int $padding = null)
     {
@@ -305,6 +306,7 @@ class DataSet
      * @param array $values
      * @param int|null $padding
      * @return array
+     * @deprecated Will be removed with core v12 compatible testing-framework.
      */
     protected function pad(array $values, int $padding = null): array
     {

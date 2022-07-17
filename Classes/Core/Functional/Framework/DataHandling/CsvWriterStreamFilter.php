@@ -23,6 +23,8 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
  * A unique sequence (e.g. contains new-line, tab, white space) is added to
  * relevant CSV field values in order to trigger enclosure in fputcsv. This stream
  * filter is taking care of removing that sequence again when acutally writing to stream.
+ *
+ * @deprecated Will be removed with core v12 compatible testing-framework.
  */
 class CsvWriterStreamFilter extends \php_user_filter
 {
