@@ -559,28 +559,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     public function importCSVDataSet(string $path): void
     {
-        $dataSet = DataSet::read($path, true);
-
-        foreach ($dataSet->getTableNames() as $tableName) {
-            $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
-            foreach ($dataSet->getElements($tableName) as $element) {
-                try {
-                    // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
-                    // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
-                    $types = [];
-                    $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
-                    foreach ($element as $columnName => $columnValue) {
-                        $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
-                    }
-
-                    // Insert the row
-                    $connection->insert($tableName, $element, $types);
-                } catch (DBALException $e) {
-                    self::fail('SQL Error for table "' . $tableName . '": ' . LF . $e->getMessage());
-                }
-            }
-            Testbase::resetTableSequences($connection, $tableName);
-        }
+        DataSet::import($path);
     }
 
     /**

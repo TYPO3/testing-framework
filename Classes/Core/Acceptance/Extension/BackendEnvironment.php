@@ -307,7 +307,7 @@ abstract class BackendEnvironment extends Extension
         $suite->setBackupGlobals(false);
 
         foreach ($this->config['csvDatabaseFixtures'] as $fixture) {
-            $this->importCSVDataSet($fixture);
+            DataSet::import($fixture);
         }
     }
 
@@ -324,32 +324,5 @@ abstract class BackendEnvironment extends Extension
         GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
             ->update('be_users', ['uc' => null], ['uid' => 1]);
-    }
-
-    /**
-     * Import data from a CSV file to database.
-     * Single file can contain data from multiple tables.
-     *
-     * @param string $path Absolute path to the CSV file containing the data set to load
-     * @todo: Very similar to FunctionolTestCase->importCSVDataSet() ... we may want to abstract in a better way
-     */
-    private function importCSVDataSet(string $path): void
-    {
-        $dataSet = DataSet::read($path, true);
-        foreach ($dataSet->getTableNames() as $tableName) {
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
-            foreach ($dataSet->getElements($tableName) as $element) {
-                // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
-                // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
-                $types = [];
-                $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
-                foreach ($element as $columnName => $columnValue) {
-                    $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
-                }
-                // Insert the row
-                $connection->insert($tableName, $element, $types);
-            }
-            Testbase::resetTableSequences($connection, $tableName);
-        }
     }
 }

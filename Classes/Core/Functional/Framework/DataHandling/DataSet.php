@@ -17,6 +17,10 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Testbase;
+
 /**
  * Internal worker class managing .csv fixture file contents.
  *
@@ -53,6 +57,32 @@ final class DataSet
     private function __construct(array $data)
     {
         $this->data = $data;
+    }
+
+    /**
+     * Read a file and import it.
+     *
+     * @param string $path Absolute path to the CSV file containing the data set to load
+     * @internal API is exposed using importCSVDataSet() in FunctionalTestCase and BackendEnvironment acceptance test base class.
+     */
+    public static function import(string $path): void
+    {
+        $dataSet = self::read($path, true);
+        foreach ($dataSet->getTableNames() as $tableName) {
+            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+            foreach ($dataSet->getElements($tableName) as $element) {
+                // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
+                // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
+                $types = [];
+                $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
+                foreach ($element as $columnName => $columnValue) {
+                    $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+                }
+                // Insert the row
+                $connection->insert($tableName, $element, $types);
+            }
+            Testbase::resetTableSequences($connection, $tableName);
+        }
     }
 
     /**
