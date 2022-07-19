@@ -66,9 +66,15 @@ class FrameworkState
         $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
         $rootlineUtilityLocalCache->setAccessible(true);
         $state['rootlineUtilityLocalCache'] = $rootlineUtilityLocalCache->getValue();
-        $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-        $rootlineUtilityRootlineFields->setAccessible(true);
-        $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
+
+        try {
+            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+            $rootlineUtilityRootlineFields->setAccessible(true);
+            $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
+        } catch (\ReflectionException $e) {
+            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+        }
+
         $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
         $rootlineUtilityPageRecordCache->setAccessible(true);
         $state['rootlineUtilityPageRecordCache'] = $rootlineUtilityPageRecordCache->getValue();
@@ -93,10 +99,15 @@ class FrameworkState
         RootlineUtility::purgeCaches();
         $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
         $rootlineFieldsDefault = $rootlineUtilityReflection->getDefaultProperties();
-        $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
-        $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-        $rootlineUtilityRootlineFields->setAccessible(true);
-        $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
+
+        try {
+            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+            $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
+            $rootlineUtilityRootlineFields->setAccessible(true);
+            $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
+        } catch (\ReflectionException $e) {
+            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+        }
     }
 
     /**
@@ -127,9 +138,15 @@ class FrameworkState
         $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
         $rootlineUtilityLocalCache->setAccessible(true);
         $rootlineUtilityLocalCache->setValue($state['rootlineUtilityLocalCache']);
-        $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-        $rootlineUtilityRootlineFields->setAccessible(true);
-        $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
+
+        try {
+            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+            $rootlineUtilityRootlineFields->setAccessible(true);
+            $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
+        } catch (\ReflectionException $e) {
+            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+        }
+
         $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
         $rootlineUtilityPageRecordCache->setAccessible(true);
         $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
