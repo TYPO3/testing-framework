@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TYPO3\TestingFramework\Core\Tests\Unit\Functional\Framework\DataHandler;
+namespace TYPO3\TestingFramework\Tests\Unit\Core\Functional\Framework\DataHandling;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -20,9 +20,6 @@ namespace TYPO3\TestingFramework\Core\Tests\Unit\Functional\Framework\DataHandle
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-/**
- * Test Case
- */
 class DataSetTest extends UnitTestCase
 {
     /**
