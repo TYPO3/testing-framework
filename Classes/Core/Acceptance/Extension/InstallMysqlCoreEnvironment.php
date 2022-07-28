@@ -44,7 +44,7 @@ class InstallMysqlCoreEnvironment extends Extension
     /**
      * Override configuration from ENV if needed
      */
-    public function _initialize()
+    public function _initialize(): void
     {
         $env = getenv('typo3InstallMysqlDatabaseHost');
         $this->config['typo3InstallMysqlDatabaseHost'] = is_string($env)

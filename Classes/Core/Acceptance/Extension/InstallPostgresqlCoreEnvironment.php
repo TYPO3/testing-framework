@@ -45,7 +45,7 @@ class InstallPostgresqlCoreEnvironment extends Extension
     /**
      * Override configuration from ENV if needed
      */
-    public function _initialize()
+    public function _initialize(): void
     {
         $env = getenv('typo3InstallPostgresqlDatabaseHost');
         $this->config['typo3InstallPostgresqlDatabaseHost'] = is_string($env)
