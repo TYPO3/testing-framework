@@ -34,10 +34,8 @@ abstract class BackendEnvironment extends Extension
 {
     /**
      * Some settings can be overridden by the same name environment variables, see _initialize()
-     *
-     * @var array
      */
-    protected $config = [
+    protected array $config = [
         // config / environment variables
         'typo3Setup' => true,
         'typo3Cleanup' => true,
@@ -186,7 +184,7 @@ abstract class BackendEnvironment extends Extension
      *
      * typo3DatabaseHost=127.0.0.1 ./bin/codecept run ...
      */
-    public function _initialize()
+    public function _initialize(): void
     {
         $this->config = array_replace($this->config, $this->localConfig);
         $env = getenv('typo3Setup');
@@ -304,7 +302,7 @@ abstract class BackendEnvironment extends Extension
         // Alternative solution:
         // unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys']['extbase']);
         $suite = $suiteEvent->getSuite();
-        $suite->setBackupGlobals(false);
+        $suite->backupGlobals(false);
 
         foreach ($this->config['csvDatabaseFixtures'] as $fixture) {
             DataSet::import($fixture);
