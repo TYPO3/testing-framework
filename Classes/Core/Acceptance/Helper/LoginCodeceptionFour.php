@@ -25,14 +25,14 @@ use Codeception\Util\Locator;
 /**
  * Helper class to log in backend users and load backend.
  *
- * Core v12 / codeception 5 compatible version.
+ * codeception 4 compatible version.
  */
-class LoginTwelve extends Module
+class LoginCodeceptionFour extends Module
 {
     /**
      * @var array Filled by .yml config with valid sessions per role
      */
-    protected array $config = [
+    protected $config = [
         'sessions' => [],
     ];
 

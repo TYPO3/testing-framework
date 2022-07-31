@@ -21,15 +21,15 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 
 /**
  * This is an ugly hack exclusively for testing-framework v7 to allow
- * both codeception 4 (core v11) and 5 (core v12) at the same time.
+ * both codeception 4 and 5 to be used for core v11 and v12 at the same time.
  *
  * Problem is the codeception API is hard breaking between codeception 4 and 5,
  * especially due to new type hints on properties that we have to use.
  */
-if (((new Typo3Version())->getMajorVersion() >= 12)) {
-    class_alias(BackendEnvironmentCoreTwelve::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Extension\\BackendEnvironmentCoreConditionalParent');
+if (method_exists(\Codeception\Suite::class, 'backupGlobals')) {
+    class_alias(BackendEnvironmentCodeceptionFive::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Extension\\BackendEnvironmentCoreConditionalParent');
 } else {
-    class_alias(BackendEnvironmentCoreEleven::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Extension\\BackendEnvironmentCoreConditionalParent');
+    class_alias(BackendEnvironmentCodeceptionFour::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Extension\\BackendEnvironmentCoreConditionalParent');
 }
 
 abstract class BackendEnvironment extends BackendEnvironmentCoreConditionalParent
