@@ -26,7 +26,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Testbase;
 
-
 /**
  * This codeception extension creates a full TYPO3 instance within
  * typo3temp. Own acceptance test suites should extend from this class
