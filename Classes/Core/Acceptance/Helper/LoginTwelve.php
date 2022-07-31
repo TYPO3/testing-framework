@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,6 +15,8 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
+
 use Codeception\Exception\ConfigurationException;
 use Codeception\Module;
 use Codeception\Module\WebDriver;
@@ -23,6 +24,8 @@ use Codeception\Util\Locator;
 
 /**
  * Helper class to log in backend users and load backend.
+ *
+ * Core v12 / codeception 5 compatible version.
  */
 class LoginTwelve extends Module
 {

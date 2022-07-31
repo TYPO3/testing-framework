@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,6 +15,8 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Acceptance\Extension;
+
 use Codeception\Event\SuiteEvent;
 use Codeception\Events;
 use Codeception\Extension;
@@ -25,11 +26,14 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Testbase;
 
+
 /**
  * This codeception extension creates a full TYPO3 instance within
  * typo3temp. Own acceptance test suites should extend from this class
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
+ *
+ * Core v11 / codeception 4 compatible version.
  */
 abstract class BackendEnvironmentCoreEleven extends Extension
 {

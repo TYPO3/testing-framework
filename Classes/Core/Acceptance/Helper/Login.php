@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,8 +15,17 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
+
 use TYPO3\CMS\Core\Information\Typo3Version;
 
+/**
+ * This is an ugly hack exclusively for testing-framework v7 to allow
+ * both codeception 4 (core v11) and 5 (core v12) at the same time.
+ *
+ * Problem is the codeception API is hard breaking between codeception 4 and 5,
+ * especially due to new type hints on properties that we have to use.
+ */
 if (((new Typo3Version())->getMajorVersion() >= 12)) {
     class_alias(LoginTwelve::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Helper\\LoginConditionalParent');
 } else {
