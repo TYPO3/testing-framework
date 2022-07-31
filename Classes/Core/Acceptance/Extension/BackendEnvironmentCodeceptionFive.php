@@ -32,14 +32,14 @@ use TYPO3\TestingFramework\Core\Testbase;
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
  *
- * Core v11 / codeception 4 compatible version.
+ * codeception 5 compatible version.
  */
-abstract class BackendEnvironmentCoreEleven extends Extension
+abstract class BackendEnvironmentCodeceptionFive extends Extension
 {
     /**
      * Some settings can be overridden by the same name environment variables, see _initialize()
      */
-    protected $config = [
+    protected array $config = [
         // config / environment variables
         'typo3Setup' => true,
         'typo3Cleanup' => true,
@@ -326,7 +326,7 @@ abstract class BackendEnvironmentCoreEleven extends Extension
         // Alternative solution:
         // unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys']['extbase']);
         $suite = $suiteEvent->getSuite();
-        $suite->setBackupGlobals(false);
+        $suite->backupGlobals(false);
 
         // @deprecated Will be removed with core v12 compatible testing-framework. See property comment.
         foreach ($this->config['xmlDatabaseFixtures'] as $fixture) {
