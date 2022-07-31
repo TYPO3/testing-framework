@@ -29,7 +29,7 @@ class Login extends Module
     /**
      * @var array Filled by .yml config with valid sessions per role
      */
-    protected $config = [
+    protected array $config = [
         'sessions' => [],
     ];
 
