@@ -48,11 +48,12 @@ Options:
             - phpstanGenerateBaseline: regenerate phpstan baseline, handy after phpstan updates
             - unit (default): PHP unit tests
 
-    -p <7.4|8.0|8.1>
+    -p <7.4|8.0|8.1|8.2>
         Specifies the PHP minor version to be used
             - 7.4 (default): use PHP 7.4
             - 8.0: use PHP 8.0
             - 8.1: use PHP 8.1
+            - 8.2: use PHP 8.2
 
     -x
         Only with -s cgl|unit
