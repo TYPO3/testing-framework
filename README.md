@@ -29,3 +29,7 @@ Usage examples within core and for extensions can be found in
   run tests with core v10 and v11. Supports PHP 7.2 to 8.1
 * Branch 4 is for core v9 and tagged as 4.x.y
 * Branch 1 is for core v8 and tagged as 1.x.y
+
+## Known problems
+
+* Relying on `ext_tables_static+adt.sql` data from extensions is not recommended. See issue #377.
