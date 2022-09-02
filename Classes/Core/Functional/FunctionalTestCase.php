@@ -567,12 +567,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $result = $queryBuilder->select('*')
             ->from('be_users')
             ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
-            ->execute();
-        if ((new Typo3Version())->getMajorVersion() >= 11) {
-            return $result->fetchAssociative() ?: null;
-        }
-        // @deprecated: Will be removed with next major version - core v10 compat.
-        return $result->fetch() ?: null;
+            ->executeQuery();
+        return $result->fetchAssociative() ?: null;
     }
 
     private function createServerRequest(string $url, string $method = 'GET'): ServerRequestInterface
@@ -812,10 +808,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $statement = $queryBuilder
             ->select('*')
             ->from($tableName)
-            ->execute();
+            ->executeQuery();
 
         if (!$hasUidField && !$hasHashField) {
-            return $statement->fetchAll();
+            return $statement->fetchAllAssociative();
         }
 
         if ($hasUidField) {

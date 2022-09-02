@@ -28,7 +28,6 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -912,14 +911,8 @@ class Testbase
                     $queryBuilder->expr()->eq('PGT.tablename', $queryBuilder->quote($tableName))
                 )
                 ->setMaxResults(1)
-                ->execute();
-            if ((new Typo3Version())->getMajorVersion() >= 11) {
-                $row = $statement->fetchAssociative();
-            } else {
-                // @deprecated: Will be removed with next major version - core v10 compat.
-                $row = $statement->fetch();
-            }
-
+                ->executeQuery();
+            $row = $statement->fetchAssociative();
             if ($row !== false) {
                 $connection->exec(
                     sprintf(

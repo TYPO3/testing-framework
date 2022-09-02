@@ -97,7 +97,7 @@ class DatabaseAccessor
     {
         return $this->createQueryBuilder()
             ->select('*')->from($tableName)
-            ->execute()->fetchAll(FetchMode::ASSOCIATIVE);
+            ->executeQuery()->fetchAllAssociative(FetchMode::ASSOCIATIVE);
     }
 
     /**

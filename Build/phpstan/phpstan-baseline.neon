@@ -61,12 +61,12 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
 
 		-
-			message: "#^Cannot call method fetchAll\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\|string\\.$#"
+			message: "#^Instanceof between Doctrine\\\\DBAL\\\\Query\\\\QueryBuilder and TYPO3\\\\CMS\\\\Core\\\\Database\\\\Query\\\\QueryBuilder will always evaluate to false\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
 
 		-
-			message: "#^Instanceof between Doctrine\\\\DBAL\\\\Query\\\\QueryBuilder and TYPO3\\\\CMS\\\\Core\\\\Database\\\\Query\\\\QueryBuilder will always evaluate to false\\.$#"
+			message: "#^Method Doctrine\\\\DBAL\\\\Driver\\\\Result\\:\\:fetchAllAssociative\\(\\) invoked with 1 parameter, 0 required\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
 
@@ -152,7 +152,7 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Result\\:\\:fetch\\(\\)\\.$#"
-			count: 2
+			count: 4
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
@@ -162,16 +162,6 @@ parameters:
 
 		-
 			message: "#^Call to method setVar\\(\\) on an unknown class Text_Template\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/FunctionalTestCase.php
-
-		-
-			message: "#^Cannot call method fetch\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\.$#"
-			count: 3
-			path: ../../Classes/Core/Functional/FunctionalTestCase.php
-
-		-
-			message: "#^Cannot call method fetchAll\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
@@ -191,11 +181,6 @@ parameters:
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
-			message: "#^Cannot call method fetch\\(\\) on Doctrine\\\\DBAL\\\\Result\\|int\\.$#"
-			count: 1
-			path: ../../Classes/Core/Testbase.php
-
-		-
 			message: "#^Result of && is always false\\.$#"
 			count: 1
 			path: ../../Classes/Core/Testbase.php
@@ -206,7 +191,17 @@ parameters:
 			path: ../../Classes/Core/Testbase.php
 
 		-
+			message: "#^Call to method reveal\\(\\) on an unknown class Prophecy\\\\Prophecy\\\\ObjectProphecy\\.$#"
+			count: 2
+			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
+
+		-
 			message: "#^Property TYPO3\\\\TestingFramework\\\\Fluid\\\\Unit\\\\ViewHelpers\\\\ViewHelperBaseTestcase\\:\\:\\$request \\(TYPO3\\\\CMS\\\\Extbase\\\\Mvc\\\\Request\\) does not accept Prophecy\\\\Prophecy\\\\ObjectProphecy\\.$#"
+			count: 1
+			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Fluid\\\\Unit\\\\ViewHelpers\\\\ViewHelperBaseTestcase\\:\\:\\$viewHelperVariableContainer has unknown class Prophecy\\\\Prophecy\\\\ObjectProphecy as its type\\.$#"
 			count: 1
 			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
 
