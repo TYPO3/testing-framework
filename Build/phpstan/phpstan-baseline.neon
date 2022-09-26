@@ -246,7 +246,17 @@ parameters:
 			path: ../../Classes/Core/Testbase.php
 
 		-
+			message: "#^Call to method reveal\\(\\) on an unknown class Prophecy\\\\Prophecy\\\\ObjectProphecy\\.$#"
+			count: 2
+			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
+
+		-
 			message: "#^Property TYPO3\\\\TestingFramework\\\\Fluid\\\\Unit\\\\ViewHelpers\\\\ViewHelperBaseTestcase\\:\\:\\$request \\(TYPO3\\\\CMS\\\\Extbase\\\\Mvc\\\\Request\\) does not accept Prophecy\\\\Prophecy\\\\ObjectProphecy\\.$#"
+			count: 1
+			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
+
+		-
+			message: "#^Property TYPO3\\\\TestingFramework\\\\Fluid\\\\Unit\\\\ViewHelpers\\\\ViewHelperBaseTestcase\\:\\:\\$viewHelperVariableContainer has unknown class Prophecy\\\\Prophecy\\\\ObjectProphecy as its type\\.$#"
 			count: 1
 			path: ../../Classes/Fluid/Unit/ViewHelpers/ViewHelperBaseTestcase.php
 
