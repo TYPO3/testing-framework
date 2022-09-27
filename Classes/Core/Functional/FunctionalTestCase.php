@@ -347,7 +347,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 'frontend',
                 'extbase',
                 'install',
-                'recordlist',
                 'fluid',
             ];
             $testbase->setUpPackageStates(

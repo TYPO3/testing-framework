@@ -35,7 +35,6 @@
     "typo3/cms-extbase": "12.*.*@dev",
     "typo3/cms-fluid": "12.*.*@dev",
     "typo3/cms-install": "12.*.*@dev",
-    "typo3/cms-recordlist": "12.*.*@dev",
     "guzzlehttp/psr7": "^1.7 || ^2.0"
   },
   "conflict": {
