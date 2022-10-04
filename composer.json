@@ -27,7 +27,7 @@
   "require": {
     "php": "^8.1",
     "ext-pdo": "*",
-    "phpunit/phpunit": "^9.5.10",
+    "phpunit/phpunit": "^9.5.25",
     "psr/container": "^1.1.0 || ^2.0.0",
     "typo3/cms-core": "12.*.*@dev",
     "typo3/cms-backend": "12.*.*@dev",
@@ -35,15 +35,12 @@
     "typo3/cms-extbase": "12.*.*@dev",
     "typo3/cms-fluid": "12.*.*@dev",
     "typo3/cms-install": "12.*.*@dev",
-    "typo3/cms-recordlist": "12.*.*@dev",
     "guzzlehttp/psr7": "^1.7 || ^2.0"
-  },
-  "conflict": {
-    "doctrine/dbal": "2.13.0 || 2.13.1"
   },
   "config": {
     "vendor-dir": ".Build/vendor",
     "bin-dir": ".Build/bin",
+    "sort-packages": true,
     "allow-plugins": {
       "composer/package-versions-deprecated": true,
       "typo3/class-alias-loader": true,
@@ -62,7 +59,7 @@
     }
   },
   "require-dev": {
-    "typo3/coding-standards": "0.5.2",
+    "friendsofphp/php-cs-fixer": "^3.11.0",
     "phpstan/phpstan": "^1.8.0",
     "phpstan/phpstan-phpunit": "^1.1.1",
     "typo3/cms-workspaces": "12.*.*@dev"
