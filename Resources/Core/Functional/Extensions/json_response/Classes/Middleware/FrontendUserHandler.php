@@ -58,7 +58,7 @@ class FrontendUserHandler implements MiddlewareInterface
                 array_replace(
                     $request->getCookieParams(),
                     [
-                        'fe_typo_user' => $userSession->getIdentifier(),
+                        'fe_typo_user' => $userSession->getJwt(),
                     ]
                 )
             );
