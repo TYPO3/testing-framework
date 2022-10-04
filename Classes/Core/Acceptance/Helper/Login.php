@@ -108,8 +108,8 @@ class Login extends Module
     public function _deleteSession()
     {
         $webDriver = $this->getWebDriver();
-        $webDriver->resetCookie('be_typo_user');
-        $webDriver->resetCookie('be_lastLoginProvider');
+        $webDriver->webDriver->manage()->deleteCookieNamed('be_typo_user');
+        $webDriver->webDriver->manage()->deleteCookieNamed('be_lastLoginProvider');
         $webDriver->deleteSessionSnapshot('login');
     }
 
@@ -127,8 +127,8 @@ class Login extends Module
             self::createSigningKeyFromEncryptionKey(UserSession::class)
         );
         $webDriver = $this->getWebDriver();
-        $webDriver->setCookie('be_typo_user', $sessionJwt);
-        $webDriver->setCookie('be_lastLoginProvider', '1433416747');
+        $webDriver->setCookie('be_typo_user', $sessionJwt, [], false);
+        $webDriver->setCookie('be_lastLoginProvider', '1433416747', [], false);
         $webDriver->saveSessionSnapshot('login');
     }
 
