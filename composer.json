@@ -43,6 +43,7 @@
   "config": {
     "vendor-dir": ".Build/vendor",
     "bin-dir": ".Build/bin",
+    "sort-packages": true,
     "allow-plugins": {
       "composer/package-versions-deprecated": true,
       "typo3/class-alias-loader": true,
@@ -61,7 +62,7 @@
     }
   },
   "require-dev": {
-    "typo3/coding-standards": "0.5.2",
+    "friendsofphp/php-cs-fixer": "^3.11.0",
     "phpstan/phpstan": "^1.8.0",
     "phpstan/phpstan-phpunit": "^1.1.1",
     "typo3/cms-workspaces": "12.*.*@dev"
