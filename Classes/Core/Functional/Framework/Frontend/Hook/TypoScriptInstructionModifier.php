@@ -15,6 +15,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Hook;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\TypoScriptInstruction;
@@ -31,6 +32,12 @@ class TypoScriptInstructionModifier implements SingletonInterface
      */
     public function apply(array $parameters, TemplateService $service)
     {
+        if ((new Typo3Version())->getMajorVersion() >= 12) {
+            // This hook has been substituted in v12 with testing-framework event listener
+            // TYPO3\JsonResponse\EventListener\AddTypoScriptFromInternalRequest
+            // It is kept for v11 compat but shouldn't do anything in v12 anymore.
+            return;
+        }
         $instruction = RequestBootstrap::getInternalRequest()
             ->getInstruction(TemplateService::class);
         if (!$instruction instanceof TypoScriptInstruction) {
