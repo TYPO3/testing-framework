@@ -31,7 +31,7 @@ final class AddTypoScriptFromInternalRequest
 {
     public function __invoke(AfterTemplatesHaveBeenDeterminedEvent $event): void
     {
-        if (method_exists($request, 'getRequest')) {
+        if (method_exists($event, 'getRequest')) {
             $request = $event->getRequest();
         } else {
             // This is a compat layer for 12.0 exclusively, 12.1 will have getRequest() in the event.
