@@ -974,13 +974,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
 
-        // The testing-framework registers extension 'json_response' that brings some middlewares which
-        // allow to eg. log in backend users in frontend application context. These globals are used to
-        // carry that information.
-        // @todo This global can be removed, after Instructions are handled using the ServerRequest
-        //       directly instead of loading the RequestBootstrap and thus this global handover.
-        $_SERVER['X_TYPO3_TESTING_FRAMEWORK']['request'] = $request;
-
         /** @var InternalRequest $serverRequest */
         $serverRequest = $request->withAttribute('typo3.testing.context', $context);
 

@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  TYPO3\JsonResponse\:
+    resource: '../Classes/*'
+
+  TYPO3\JsonResponse\EventListener\AddTypoScriptFromInternalRequest:
+    tags:
+      - name: event.listener
+        identifier: 'typo3-jsonresponse/add-typoscript-from-internal-request'
