@@ -76,10 +76,21 @@ abstract class UnitTestCase extends BaseTestCase
     private array $backedUpEnvironment = [];
 
     /**
+     * This property helps to determine if method chain of
+     * setUp() is valid down to this class, which is checked
+     * in tearDown() which is more unlikely to be overridden
+     * in tests.
+     *
+     * @var bool
+     */
+    private bool $setUpMethodCallChainValid = false;
+
+    /**
      * Generic setUp()
      */
     protected function setUp(): void
     {
+        $this->setUpMethodCallChainValid = true;
         if ($this->backupEnvironment === true) {
             $this->backupEnvironment();
         }
@@ -192,6 +203,10 @@ abstract class UnitTestCase extends BaseTestCase
         $property = $reflectionClass->getProperty('configurationManager');
         $property->setAccessible(true);
         self::assertNull($property->getValue());
+
+        self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
+            . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
+            . get_class($this) . '"');
     }
 
     /**
