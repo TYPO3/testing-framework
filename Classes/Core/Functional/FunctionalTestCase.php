@@ -19,8 +19,6 @@ namespace TYPO3\TestingFramework\Core\Functional;
 
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use PHPUnit\Framework\RiskyTestError;
-use PHPUnit\Util\ErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -392,34 +390,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         unset($this->testExtensionsToLoad, $this->pathsToLinkInTestInstance);
         unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
         unset($this->additionalFoldersToCreate);
-
-        // Verify no dangling error handler is registered. This might happen when
-        // tests register an own error handler which is not reset again. This error
-        // handler then may "eat" error of subsequent tests.
-        // Register a dummy error handler to retrieve *previous* one and unregister dummy again,
-        // then verify previous is the phpunit error handler. This will mark the one test that
-        // fails to unset/restore it's custom error handler as "risky".
-        // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
-        // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
-        $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
-        restore_error_handler();
-        if (!$previousErrorHandler instanceof ErrorHandler) {
-            throw new RiskyTestError(
-                'tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.',
-                1634490417
-            );
-        }
-
-        // Verify no dangling exception handler is registered. Same scenario as with error handlers.
-        // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
-        $previousExceptionHandler = set_exception_handler(function () {});
-        restore_exception_handler();
-        if ($previousExceptionHandler !== null) {
-            throw new RiskyTestError(
-                'tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.',
-                1634490418
-            );
-        }
 
         parent::tearDown();
     }
