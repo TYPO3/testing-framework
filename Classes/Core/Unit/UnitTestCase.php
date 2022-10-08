@@ -207,6 +207,8 @@ abstract class UnitTestCase extends BaseTestCase
         self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
             . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
             . get_class($this) . '"');
+
+        parent::tearDown();
     }
 
     /**

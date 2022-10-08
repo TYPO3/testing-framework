@@ -376,6 +376,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 }
             }
         }
+
+        parent::setUp();
     }
 
     /**
@@ -418,6 +420,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 1634490418
             );
         }
+
+        parent::tearDown();
     }
 
     protected function getConnectionPool(): ConnectionPool
