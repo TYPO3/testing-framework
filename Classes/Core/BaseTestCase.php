@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core;
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -27,6 +28,44 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class BaseTestCase extends TestCase
 {
+    /**
+     * Holds the state of error_reporting during setUp() phase,
+     * which will checked in tearDown() phase to ensure that a
+     * test do not exposes changed error_reporting behaviour
+     * between tests.
+     *
+     * @var int|null
+     */
+    private ?int $backupErrorReporting = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->backupErrorReporting = error_reporting();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        if ($this->backupErrorReporting !== null) {
+            $backupErrorReporting = $this->backupErrorReporting;
+            $this->backupErrorReporting = null;
+            $currentErrorReporting = error_reporting();
+            if ($currentErrorReporting !== $backupErrorReporting) {
+                error_reporting($backupErrorReporting);
+            }
+            if ($backupErrorReporting !== $currentErrorReporting) {
+                throw new RiskyTestError(
+                    'tearDown() integrity check found changed error_reporting. Before was '
+                    . $backupErrorReporting . ' compared to current ' . $currentErrorReporting . ' in '
+                    . '"' . get_class($this) . '".'
+                    . 'Please check and verify that this is intended and add proper cleanup to the test.',
+                    1665251711
+                );
+            }
+        }
+    }
+
     /**
      * Creates a mock object which allows for calling protected methods and access of protected properties.
      *
