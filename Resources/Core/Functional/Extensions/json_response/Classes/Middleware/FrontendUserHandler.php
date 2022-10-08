@@ -46,9 +46,8 @@ class FrontendUserHandler implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ((new Typo3Version())->getMajorVersion() >= 12) {
-            /** @var InternalRequestContext $internalRequestContext */
-            $internalRequestContext = $request->getAttribute('typo3.testing.context');
-            $frontendUserId = $internalRequestContext->getFrontendUserId();
+            $context = RequestBootstrap::getInternalRequestContext();
+            $frontendUserId = $context->getFrontendUserId();
 
             if ($frontendUserId === null) {
                 // Skip if test does not use a logged in user
