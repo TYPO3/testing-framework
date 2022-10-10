@@ -32,10 +32,7 @@ abstract class BaseTestCase extends TestCase
     /**
      * Holds the state of error_reporting during setUp() phase,
      * which will checked in tearDown() phase to ensure that a
-     * test do not exposes changed error_reporting behaviour
-     * between tests.
-     *
-     * @var int|null
+     * test does not change error_reporting behaviour between tests.
      */
     private ?int $backupErrorReporting = null;
 
@@ -55,8 +52,6 @@ abstract class BaseTestCase extends TestCase
         // Register a dummy error handler to retrieve *previous* one and unregister dummy again,
         // then verify previous is the phpunit error handler. This will mark the one test that
         // fails to unset/restore it's custom error handler as "risky".
-        // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
-        // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
         $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
         restore_error_handler();
         if (!$previousErrorHandler instanceof ErrorHandler) {
@@ -67,7 +62,6 @@ abstract class BaseTestCase extends TestCase
         }
 
         // Verify no dangling exception handler is registered. Same scenario as with error handlers.
-        // @todo: Consider moving this to BaseTestCase to have it for unit tests, too.
         $previousExceptionHandler = set_exception_handler(function () {});
         restore_exception_handler();
         if ($previousExceptionHandler !== null) {
