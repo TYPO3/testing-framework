@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,51 +15,43 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
+
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
  * Model of frontend response
  */
 class Collector implements SingletonInterface
 {
-    /**
-     * @var array
-     */
-    protected $tableFields;
+    private array $tableFields;
+    private array $structure = [];
+    private array $structurePaths = [];
+    private array $records = [];
+    private ContentObjectRenderer $cObj;
 
     /**
-     * @var array
+     * This is called from UserContentObject via ContentObjectRenderer->callUserFunction()
+     * for nested menu items - those use a USER content object for getDataAsJson().
      */
-    protected $structure = [];
+    public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
+    {
+        $this->cObj = $cObj;
+    }
 
-    /**
-     * @var array
-     */
-    protected $structurePaths = [];
-
-    /**
-     * @var array
-     */
-    protected $records = [];
-
-    /**
-     * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
-     */
-    public $cObj;
-
-    public function addRecordData($content, array $configuration = null): void
+    public function addRecordData($content, array $configuration = null, ServerRequestInterface $request): void
     {
         $recordIdentifier = $this->cObj->currentRecord;
         [$tableName] = explode(':', $recordIdentifier);
-        $currentWatcherValue = $this->getCurrentWatcherValue();
+        $currentWatcherValue = $this->getCurrentWatcherValue($request);
         $position = strpos($currentWatcherValue, '/' . $recordIdentifier);
 
-        $recordData = $this->filterFields($tableName, $this->cObj->data);
+        $recordData = $this->filterFields($tableName, $this->cObj->data, $request);
         $this->records[$recordIdentifier] = $recordData;
 
         if ($currentWatcherValue === $recordIdentifier) {
@@ -72,7 +63,7 @@ class Collector implements SingletonInterface
         }
     }
 
-    public function addFileData($content, array $configuration = null): void
+    public function addFileData($content, array $configuration = null, ServerRequestInterface $request): void
     {
         $currentFile = $this->cObj->getCurrentFile();
 
@@ -84,30 +75,37 @@ class Collector implements SingletonInterface
             return;
         }
 
-        $recordData = $this->filterFields($tableName, $currentFile->getProperties());
+        $recordData = $this->filterFields($tableName, $currentFile->getProperties(), $request);
         $recordIdentifier = $tableName . ':' . $currentFile->getUid();
         $this->records[$recordIdentifier] = $recordData;
 
-        $currentWatcherValue = $this->getCurrentWatcherValue();
+        $currentWatcherValue = $this->getCurrentWatcherValue($request);
         $levelIdentifier = rtrim($currentWatcherValue, '/');
         $this->addToStructure($levelIdentifier, $recordIdentifier, $recordData);
     }
 
-    /**
-     * @param string $tableName
-     * @param array $recordData
-     * @return array
-     */
-    protected function filterFields($tableName, array $recordData): array
+    public function attachSection(string $content, array $configuration = null): void
     {
-        $recordData = array_intersect_key(
-            $recordData,
-            array_flip($this->getTableFields($tableName))
-        );
-        return $recordData;
+        $section = [
+            'structure' => $this->structure,
+            'structurePaths' => $this->structurePaths,
+            'records' => $this->records,
+        ];
+
+        $as = (!empty($configuration['as']) ? $configuration['as'] : null);
+        $this->getRenderer()->addSection($section, $as);
+        $this->reset();
     }
 
-    protected function addToStructure($levelIdentifier, $recordIdentifier, array $recordData): void
+    private function filterFields(string $tableName, array $recordData, ServerRequestInterface $request): array
+    {
+        return array_intersect_key(
+            $recordData,
+            array_flip($this->getTableFields($tableName, $request))
+        );
+    }
+
+    private function addToStructure($levelIdentifier, $recordIdentifier, array $recordData): void
     {
         $steps = explode('/', $levelIdentifier);
         $structurePaths = [];
@@ -131,31 +129,11 @@ class Collector implements SingletonInterface
         $this->structurePaths[$recordIdentifier][] = $structurePaths;
     }
 
-    /**
-     * @param string $content
-     * @param array|null $configuration
-     */
-    public function attachSection($content, array $configuration = null): void
+    private function getTableFields(string $tableName, ServerRequestInterface $request): array
     {
-        $section = [
-            'structure' => $this->structure,
-            'structurePaths' => $this->structurePaths,
-            'records' => $this->records,
-        ];
-
-        $as = (!empty($configuration['as']) ? $configuration['as'] : null);
-        $this->getRenderer()->addSection($section, $as);
-        $this->reset();
-    }
-
-    /**
-     * @param string $tableName
-     * @return array
-     */
-    protected function getTableFields($tableName): array
-    {
-        if (!isset($this->tableFields) && !empty($this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'])) {
-            $this->tableFields = $this->getFrontendController()->tmpl->setup['config.']['watcher.']['tableFields.'];
+        $typoScriptSetupArray = $request->getAttribute('frontend.typoscript')->getSetupArray();
+        if (!isset($this->tableFields) && !empty($typoScriptSetupArray['config.']['watcher.']['tableFields.'])) {
+            $this->tableFields = $typoScriptSetupArray['config.']['watcher.']['tableFields.'];
             foreach ($this->tableFields as &$fieldList) {
                 $fieldList = GeneralUtility::trimExplode(',', $fieldList, true);
             }
@@ -165,52 +143,28 @@ class Collector implements SingletonInterface
         return !empty($this->tableFields[$tableName]) ? $this->tableFields[$tableName] : [];
     }
 
-    /**
-     * @return string|null
-     */
-    protected function getCurrentWatcherValue()
+    private function getCurrentWatcherValue(ServerRequestInterface $request): ?string
     {
         $watcherValue = null;
-        if (isset($this->getFrontendController()->register['watcher'])) {
-            $watcherValue = $this->getFrontendController()->register['watcher'];
+        $tsfe = $request->getAttribute('frontend.controller');
+        if (isset($tsfe->register['watcher'])) {
+            $watcherValue = $tsfe->register['watcher'];
         }
         return $watcherValue;
     }
 
-    /**
-     * @return Renderer
-     */
-    protected function getRenderer(): Renderer
+    private function getRenderer(): Renderer
     {
         return GeneralUtility::makeInstance(Renderer::class);
     }
 
     /**
-     * @return TypoScriptFrontendController
-     */
-    protected function getFrontendController()
-    {
-        return $GLOBALS['TSFE'];
-    }
-
-    /**
      * Collector needs to be reset after attaching a section, otherwise records will pile up.
      */
-    protected function reset(): void
+    private function reset(): void
     {
         $this->structure = [];
         $this->structurePaths = [];
         $this->records = [];
-    }
-
-    /**
-     * This is called from UserContentObject via ContentObjectRenderer->callUserFunction()
-     * for nested menu items - those use a USER content object for getDataAsJson().
-     *
-     * @param ContentObjectRenderer $cObj
-     */
-    public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
-    {
-        $this->cObj = $cObj;
     }
 }
