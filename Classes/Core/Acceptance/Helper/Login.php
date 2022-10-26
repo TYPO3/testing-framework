@@ -102,7 +102,7 @@ class Login extends Module
      */
     public function _loadSession()
     {
-        return $this->getWebDriver()->loadSessionSnapshot('login');
+        return $this->getWebDriver()->loadSessionSnapshot('login', false);
     }
 
     public function _deleteSession()
