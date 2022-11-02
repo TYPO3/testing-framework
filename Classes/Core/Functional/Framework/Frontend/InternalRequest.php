@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
+use GuzzleHttp\Psr7\Query;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
@@ -138,9 +139,9 @@ class InternalRequest extends ServerRequest
             );
         }
 
-        $parameters = \GuzzleHttp\Psr7\Query::parse($query);
+        $parameters = Query::parse($query);
         $parameters[$parameterName] = $value;
-        return \GuzzleHttp\Psr7\Query::build($parameters);
+        return Query::build($parameters);
     }
 
     /**

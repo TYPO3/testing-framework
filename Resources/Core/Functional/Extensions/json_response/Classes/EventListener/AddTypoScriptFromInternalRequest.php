@@ -42,7 +42,7 @@ final class AddTypoScriptFromInternalRequest
         if (!$request instanceof InternalRequest) {
             return;
         }
-        $instruction = $request->getInstruction('TYPO3\CMS\Core\TypoScript\TemplateService');
+        $instruction = $request->getInstruction('TypoScript');
         if (!$instruction instanceof TypoScriptInstruction || (empty($instruction->getConstants()) && empty($instruction->getTypoScript()))) {
             return;
         }

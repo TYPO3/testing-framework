@@ -18,19 +18,9 @@ declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
 /**
- * Model of instruction
+ * @todo: Turn into an interface and drop abstract.
  */
 abstract class AbstractInstruction
 {
-    protected string $identifier;
-
-    public function __construct(string $identifier)
-    {
-        $this->identifier = $identifier;
-    }
-
-    public function getIdentifier(): string
-    {
-        return $this->identifier;
-    }
+    abstract public function getIdentifier(): string;
 }

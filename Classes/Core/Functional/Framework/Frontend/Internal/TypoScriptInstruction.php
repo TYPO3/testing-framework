@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,25 +15,25 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
+
 /**
- * Model of TypoScript instruction
+ * This allows adding Frontend TypoScript when executing Frontend sub requests in functional tests.
+ * When a Frontend InternalRequest is added, an instance of this object can be added using "->withInstruction()"
+ *
+ * TypoScript constants and setup added here are automatically added when executing the Frontend request
+ * using an event in ext:json_response, which is loaded for all functional tests by default.
  */
 class TypoScriptInstruction extends AbstractInstruction
 {
-    /**
-     * @var array
-     */
-    protected $constants;
+    protected ?array $constants = null;
+    protected ?array $typoScript = null;
 
-    /**
-     * @var array
-     */
-    protected $typoScript;
+    public function getIdentifier(): string
+    {
+        return 'TypoScript';
+    }
 
-    /**
-     * @param array $constants
-     * @return static
-     */
     public function withConstants(array $constants): self
     {
         $target = clone $this;
@@ -42,10 +41,6 @@ class TypoScriptInstruction extends AbstractInstruction
         return $target;
     }
 
-    /**
-     * @param array $typoScript
-     * @return static
-     */
     public function withTypoScript(array $typoScript): self
     {
         $target = clone $this;
@@ -53,17 +48,11 @@ class TypoScriptInstruction extends AbstractInstruction
         return $target;
     }
 
-    /**
-     * @return array
-     */
     public function getConstants(): ?array
     {
         return $this->constants;
     }
 
-    /**
-     * @return array
-     */
     public function getTypoScript(): ?array
     {
         return $this->typoScript;
