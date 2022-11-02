@@ -32,11 +32,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractI
  */
 class InternalRequest extends ServerRequest
 {
-    /**
-     * @var AbstractInstruction[]
-     */
-    protected array $instructions = [];
-
     public function __construct(?string $uri = null)
     {
         if ($uri === null) {
@@ -108,16 +103,17 @@ class InternalRequest extends ServerRequest
      */
     public function withInstructions(array $instructions): InternalRequest
     {
-        $target = clone $this;
+        $currentAttribute = $this->getAttribute('testing-framework-instructions', []);
         foreach ($instructions as $instruction) {
-            $target->instructions[$instruction->getIdentifier()] = $instruction;
+            $currentAttribute[$instruction->getIdentifier()] = $instruction;
         }
-        return $target;
+        return $this->withAttribute('testing-framework-instructions', $currentAttribute);
     }
 
     public function getInstruction(string $identifier): ?AbstractInstruction
     {
-        return $this->instructions[$identifier] ?? null;
+        $currentAttribute = $this->getAttribute('testing-framework-instructions', []);
+        return $currentAttribute[$identifier] ?? null;
     }
 
     public function withServerParams(array $serverParams): InternalRequest
