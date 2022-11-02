@@ -24,6 +24,18 @@ class ArrayValueInstruction extends AbstractInstruction
 {
     protected array $array = [];
 
+    protected string $identifier;
+
+    public function __construct(string $identifier)
+    {
+        $this->identifier = $identifier;
+    }
+
+    public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
+
     public function withArray(array $array): self
     {
         $target = clone $this;
