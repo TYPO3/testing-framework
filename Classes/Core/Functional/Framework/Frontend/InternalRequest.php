@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,10 +15,11 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
+
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractInstruction;
 
 /**
@@ -31,31 +31,12 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractI
  */
 class InternalRequest extends ServerRequest
 {
-    use AssignablePropertyTrait;
-
     /**
      * @var AbstractInstruction[]
      */
-    protected $instructions = [];
+    protected array $instructions = [];
 
-    /**
-     * @param array $data
-     * @return AbstractInstruction[]
-     */
-    private static function buildInstructions(array $data): array
-    {
-        return array_map(
-            function (array $data) {
-                return AbstractInstruction::fromArray($data);
-            },
-            $data['instructions'] ?? []
-        );
-    }
-
-    /**
-     * @param string|null $uri URI for the request, if any.
-     */
-    public function __construct($uri = null)
+    public function __construct(?string $uri = null)
     {
         if ($uri === null) {
             $uri = 'http://localhost/';
@@ -64,32 +45,19 @@ class InternalRequest extends ServerRequest
         parent::__construct($uri, 'GET', $body);
     }
 
-    /**
-     * @param int $pageId
-     * @return InternalRequest
-     */
     public function withPageId(int $pageId): InternalRequest
     {
         return $this->withQueryParameter('id', $pageId);
     }
 
-    /**
-     * @param int $targetPageId Page the mount points to
-     * @param int $sourePageId Page the mount is defined at
-     * @return InternalRequest
-     */
-    public function withMountPoint(int $targetPageId, int $sourePageId): InternalRequest
+    public function withMountPoint(int $targetPageId, int $sourcePageId): InternalRequest
     {
         return $this->withQueryParameter(
             'MP',
-            sprintf('%d-%d', $targetPageId, $sourePageId)
+            sprintf('%d-%d', $targetPageId, $sourcePageId)
         );
     }
 
-    /**
-     * @param int $languageId
-     * @return InternalRequest
-     */
     public function withLanguageId(int $languageId): InternalRequest
     {
         return $this->withQueryParameter('L', $languageId);
@@ -98,9 +66,7 @@ class InternalRequest extends ServerRequest
     /**
      * Adds or overrides parameter on existing query.
      *
-     * @param string $parameterName
      * @param int|float|string|null $value
-     * @return InternalRequest
      */
     public function withQueryParameter(string $parameterName, $value): InternalRequest
     {
@@ -115,10 +81,6 @@ class InternalRequest extends ServerRequest
         return $target;
     }
 
-    /**
-     * @param array $parameters
-     * @return InternalRequest
-     */
     public function withQueryParameters(array $parameters): InternalRequest
     {
         if (empty($parameters)) {
@@ -142,7 +104,6 @@ class InternalRequest extends ServerRequest
 
     /**
      * @param AbstractInstruction[] $instructions
-     * @return InternalRequest
      */
     public function withInstructions(array $instructions): InternalRequest
     {
@@ -153,10 +114,6 @@ class InternalRequest extends ServerRequest
         return $target;
     }
 
-    /**
-     * @param string $identifier
-     * @return AbstractInstruction|null
-     */
     public function getInstruction(string $identifier): ?AbstractInstruction
     {
         return $this->instructions[$identifier] ?? null;
@@ -170,10 +127,7 @@ class InternalRequest extends ServerRequest
     }
 
     /**
-     * @param string $query
-     * @param string $parameterName
      * @param int|float|string|null $value
-     * @return string
      */
     private function modifyQueryParameter(string $query, string $parameterName, $value): string
     {
@@ -195,8 +149,7 @@ class InternalRequest extends ServerRequest
      * This method MUST return a UriInterface instance.
      *
      * @link https://tools.ietf.org/html/rfc3986#section-4.3
-     * @return \Psr\Http\Message\UriInterface Returns a UriInterface instance
-     *     representing the URI of the request.
+     * @return UriInterface Returns a UriInterface instance representing the URI of the request.
      */
     public function getUri(): UriInterface
     {
