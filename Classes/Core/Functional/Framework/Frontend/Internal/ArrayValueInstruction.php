@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,20 +15,15 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
  * The TYPO3 project - inspiring people to share!
  */
 
+namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
+
 /**
  * Model of arbitrary array value instruction
  */
 class ArrayValueInstruction extends AbstractInstruction
 {
-    /**
-     * @var array
-     */
-    protected $array = [];
+    protected array $array = [];
 
-    /**
-     * @param array $array
-     * @return static
-     */
     public function withArray(array $array): self
     {
         $target = clone $this;
@@ -37,9 +31,6 @@ class ArrayValueInstruction extends AbstractInstruction
         return $target;
     }
 
-    /**
-     * @return array
-     */
     public function getArray(): array
     {
         return $this->array;

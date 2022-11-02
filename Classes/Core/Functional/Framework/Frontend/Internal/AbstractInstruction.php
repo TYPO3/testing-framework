@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -16,76 +15,20 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\TestingFramework\Core\Functional\Framework\AssignablePropertyTrait;
+namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
 /**
  * Model of instruction
  */
-abstract class AbstractInstruction implements \JsonSerializable
+abstract class AbstractInstruction
 {
-    use AssignablePropertyTrait;
+    protected string $identifier;
 
-    /**
-     * @var string
-     */
-    protected $identifier;
-
-    public static function fromArray(array $data): self
-    {
-        if (empty($data['__type'])) {
-            throw new \LogicException(
-                'Missing internal "__type" reference',
-                1534516564
-            );
-        }
-        if (!is_a($data['__type'], self::class, true)) {
-            throw new \LogicException(
-                sprintf(
-                    'Class "%s" does not inherit from "%s"',
-                    $data['__type'],
-                    self::class
-                ),
-                1534516565
-            );
-        }
-        if (empty($data['identifier'])) {
-            throw new \LogicException(
-                'Missing identifier',
-                1534516566
-            );
-        }
-
-        if (static::class === self::class) {
-            return $data['__type']::fromArray($data);
-        }
-        /** @phpstan-ignore-next-line Avoid 'Unsafe usage of new static' error. This is needed by design and considerable safe with the above checks*/
-        $target = new static($data['identifier']);
-        unset($data['__type'], $data['identifier']);
-        return $target->with($data);
-    }
-
-    /**
-     * @param string $identifier
-     */
     public function __construct(string $identifier)
     {
         $this->identifier = $identifier;
     }
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize(): array
-    {
-        return array_merge(
-            get_object_vars($this),
-            ['__type' => get_class($this)]
-        );
-    }
-
-    /**
-     * @return string
-     */
     public function getIdentifier(): string
     {
         return $this->identifier;
