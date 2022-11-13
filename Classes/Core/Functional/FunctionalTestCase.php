@@ -451,6 +451,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 );
             }
         }
+
+        // Remove any site configuration, and it's cache files, most likely created by SiteBasedTestTrait
+        GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
+        unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
+
+        parent::tearDown();
     }
 
     protected function getConnectionPool(): ConnectionPool
