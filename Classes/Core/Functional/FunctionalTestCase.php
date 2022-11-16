@@ -413,8 +413,17 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     protected function tearDown(): void
     {
         // Remove any site configuration, and it's cache files, most likely created by SiteBasedTestTrait
-        GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
-        @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
+        if (!in_array('typo3conf/sites', $this->pathsToLinkInTestInstance)
+            && !in_array('typo3conf/sites/', $this->pathsToLinkInTestInstance)
+            && is_dir($this->instancePath . '/typo3conf/sites')
+        ) {
+            GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
+        }
+        if (file_exists($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
+            && is_file($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
+        ) {
+            @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
+        }
 
         // Unset especially the container after each test, it is a huge memory hog.
         // Test class instances in phpunit are kept until end of run, this sums up.
