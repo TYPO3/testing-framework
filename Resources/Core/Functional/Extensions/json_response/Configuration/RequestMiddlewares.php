@@ -20,10 +20,14 @@ return [
         'typo3/json-response/frontend-user-authentication' => [
             'target' => \TYPO3\JsonResponse\Middleware\FrontendUserHandler::class,
             'after' => [
-                'typo3/cms-frontend/backend-user-authentication',
+                (new \TYPO3\CMS\Core\Information\Typo3Version())->getMajorVersion() >= 12
+                    ? 'typo3/cms-frontend/backend-user-authentication'
+                    : 'typo3/cms-frontend/authentication',
             ],
             'before' => [
-                'typo3/cms-frontend/base-redirect-resolver',
+                (new \TYPO3\CMS\Core\Information\Typo3Version())->getMajorVersion() >= 12
+                    ? 'typo3/cms-frontend/authentication'
+                    : 'typo3/cms-frontend/base-redirect-resolver',
             ],
         ],
         'typo3/json-response/backend-user-authentication' => [
