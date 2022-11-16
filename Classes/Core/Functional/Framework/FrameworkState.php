@@ -16,7 +16,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Core\Database\ReferenceIndex;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\RootlineUtility;
 
@@ -61,23 +60,27 @@ class FrameworkState
 
         $state['generalUtilitySingletonInstances'] = GeneralUtility::getSingletonInstances();
 
-        // Infamous RootlineUtility carries various static state ...
-        $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-        $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-        $rootlineUtilityLocalCache->setAccessible(true);
-        $state['rootlineUtilityLocalCache'] = $rootlineUtilityLocalCache->getValue();
+        // @todo Remove this block with next major version of the testing-framework,
+        //       or if TYPO3 v13 is the min supported version.
+        if (static::handleRootlineUtilityStaticProperties()) {
+            // Infamous RootlineUtility carries various static state ...
+            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
+            $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
+            $rootlineUtilityLocalCache->setAccessible(true);
+            $state['rootlineUtilityLocalCache'] = $rootlineUtilityLocalCache->getValue();
 
-        try {
-            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-            $rootlineUtilityRootlineFields->setAccessible(true);
-            $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
-        } catch (\ReflectionException $e) {
-            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            try {
+                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+                $rootlineUtilityRootlineFields->setAccessible(true);
+                $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
+            } catch (\ReflectionException $e) {
+                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            }
+
+            $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
+            $rootlineUtilityPageRecordCache->setAccessible(true);
+            $state['rootlineUtilityPageRecordCache'] = $rootlineUtilityPageRecordCache->getValue();
         }
-
-        $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
-        $rootlineUtilityPageRecordCache->setAccessible(true);
-        $state['rootlineUtilityPageRecordCache'] = $rootlineUtilityPageRecordCache->getValue();
 
         self::$state[] = $state;
     }
@@ -96,17 +99,21 @@ class FrameworkState
 
         GeneralUtility::resetSingletonInstances([]);
 
-        RootlineUtility::purgeCaches();
-        $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-        $rootlineFieldsDefault = $rootlineUtilityReflection->getDefaultProperties();
+        // @todo Remove this block with next major version of the testing-framework,
+        //       or if TYPO3 v13 is the min supported version.
+        if (static::handleRootlineUtilityStaticProperties()) {
+            RootlineUtility::purgeCaches();
+            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
+            $rootlineFieldsDefault = $rootlineUtilityReflection->getDefaultProperties();
 
-        try {
-            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-            $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
-            $rootlineUtilityRootlineFields->setAccessible(true);
-            $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
-        } catch (\ReflectionException $e) {
-            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            try {
+                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+                $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
+                $rootlineUtilityRootlineFields->setAccessible(true);
+                $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
+            } catch (\ReflectionException $e) {
+                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            }
         }
     }
 
@@ -134,21 +141,33 @@ class FrameworkState
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
 
-        $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-        $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-        $rootlineUtilityLocalCache->setAccessible(true);
-        $rootlineUtilityLocalCache->setValue($state['rootlineUtilityLocalCache']);
+        // @todo Remove this block with next major version of the testing-framework,
+        //       or if TYPO3 v13 is the min supported version.
+        if (static::handleRootlineUtilityStaticProperties()) {
+            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
+            $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
+            $rootlineUtilityLocalCache->setAccessible(true);
+            $rootlineUtilityLocalCache->setValue($state['rootlineUtilityLocalCache']);
 
-        try {
-            $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-            $rootlineUtilityRootlineFields->setAccessible(true);
-            $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
-        } catch (\ReflectionException $e) {
-            // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            try {
+                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
+                $rootlineUtilityRootlineFields->setAccessible(true);
+                $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
+            } catch (\ReflectionException $e) {
+                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
+            }
+
+            $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
+            $rootlineUtilityPageRecordCache->setAccessible(true);
+            $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
         }
+    }
 
-        $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
-        $rootlineUtilityPageRecordCache->setAccessible(true);
-        $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
+    /**
+     * @todo Remove this with next major version of the testing-framework, or if TYPO3 v13 is the min supported version.
+     */
+    protected static function handleRootlineUtilityStaticProperties(): bool
+    {
+        return method_exists(RootlineUtility::class, 'purgeCaches');
     }
 }
