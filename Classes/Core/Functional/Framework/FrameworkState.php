@@ -62,7 +62,7 @@ class FrameworkState
 
         // @todo Remove this block with next major version of the testing-framework,
         //       or if TYPO3 v13 is the min supported version.
-        if (static::handleRootlineUtilityStaticProperties()) {
+        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
             // Infamous RootlineUtility carries various static state ...
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
@@ -101,7 +101,7 @@ class FrameworkState
 
         // @todo Remove this block with next major version of the testing-framework,
         //       or if TYPO3 v13 is the min supported version.
-        if (static::handleRootlineUtilityStaticProperties()) {
+        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
             RootlineUtility::purgeCaches();
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineFieldsDefault = $rootlineUtilityReflection->getDefaultProperties();
@@ -143,7 +143,7 @@ class FrameworkState
 
         // @todo Remove this block with next major version of the testing-framework,
         //       or if TYPO3 v13 is the min supported version.
-        if (static::handleRootlineUtilityStaticProperties()) {
+        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
             $rootlineUtilityLocalCache->setAccessible(true);
@@ -161,13 +161,5 @@ class FrameworkState
             $rootlineUtilityPageRecordCache->setAccessible(true);
             $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
         }
-    }
-
-    /**
-     * @todo Remove this with next major version of the testing-framework, or if TYPO3 v13 is the min supported version.
-     */
-    protected static function handleRootlineUtilityStaticProperties(): bool
-    {
-        return method_exists(RootlineUtility::class, 'purgeCaches');
     }
 }
