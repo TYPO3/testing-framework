@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
+use Doctrine\DBAL\Types\JsonType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Testbase;
@@ -69,14 +70,24 @@ final class DataSet
     {
         $dataSet = self::read($path, true);
         foreach ($dataSet->getTableNames() as $tableName) {
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
+            $platform = $connection->getDatabasePlatform();
+            // @todo Check if we can use the cached schema information here instead.
+            $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
                 // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                 $types = [];
-                $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
                 foreach ($element as $columnName => $columnValue) {
-                    $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+                    $columnType = $tableDetails->getColumn($columnName)->getType();
+                    // JSON-Field data is converted (json-encode'd) within $connection->insert(), and since json field
+                    // data can only be provided json encoded in the csv dataset files, we need to decode them here.
+                    if ($element[$columnName] !== null
+                        && $columnType instanceof JsonType
+                    ) {
+                        $element[$columnName] = $columnType->convertToPHPValue($columnValue, $platform);
+                    }
+                    $types[] = $columnType->getBindingType();
                 }
                 // Insert the row
                 $connection->insert($tableName, $element, $types);
