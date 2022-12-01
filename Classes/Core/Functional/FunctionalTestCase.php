@@ -20,6 +20,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Types\JsonType;
 use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Util\ErrorHandler;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
@@ -670,11 +671,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
         foreach ($dataSet->getTableNames() as $tableName) {
             $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
+            $platform = $connection->getDatabasePlatform();
+            $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 try {
                     // With mssql, hard setting uid auto-increment primary keys is only allowed if
                     // the table is prepared for such an operation beforehand
-                    $platform = $connection->getDatabasePlatform();
                     $sqlServerIdentityDisabled = false;
                     if ($platform instanceof SQLServerPlatform) {
                         try {
@@ -690,9 +692,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                     // Some DBMS like mssql are picky about inserting blob types with correct cast, setting
                     // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                     $types = [];
-                    $tableDetails = $connection->getSchemaManager()->listTableDetails($tableName);
                     foreach ($element as $columnName => $columnValue) {
-                        $types[] = $tableDetails->getColumn($columnName)->getType()->getBindingType();
+                        $columnType = $tableDetails->getColumn($columnName)->getType();
+                        if ($element[$columnName] !== null
+                            && $columnType instanceof JsonType
+                        ) {
+                            $element[$columnName] = $columnType->convertToPHPValue($columnValue, $platform);
+                        }
+                        $types[] = $columnType->getBindingType();
                     }
 
                     // Insert the row
