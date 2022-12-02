@@ -43,4 +43,18 @@ class DataSetTest extends UnitTestCase
         $tableName = $dataSet->getTableNames()[0];
         self::assertEquals(strlen('pages'), strlen($tableName));
     }
+
+    /**
+     * @test
+     */
+    public function notNullJsonFieldDataWithDoubleQuotationCanBeDecoded(): void
+    {
+        $csvFile = __DIR__ . '/../../../Fixtures/Json/WithJsonValueQuotedWithDoubleQuotes.csv';
+        $dataSet = DataSet::read($csvFile);
+        $tableName = $dataSet->getTableNames()[0];
+        self::assertSame('be_users', $tableName);
+        $jsonValue = $dataSet->getElements($tableName)[1]['mfa'];
+        $decoded = json_decode($jsonValue, true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame(['name' => 'value', 'name2' => ['name3' => 'subvalue', 'empty-array' => []]], $decoded);
+    }
 }
