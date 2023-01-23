@@ -16,6 +16,8 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Tests\Acceptance\Support\ApplicationTester;
+
 /**
  * Helper to interact with modal dialogs that appear for example when
  * you delete a record or have to confirm something.
@@ -43,7 +45,7 @@ abstract class AbstractModalDialog
     public static $openedModalButtonContainerSelector = '.modal.show .modal-footer';
 
     /**
-     * @var AcceptanceTester
+     * @var ApplicationTester
      */
     protected $tester;
 
