@@ -15,6 +15,7 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Composer\InstalledVersions;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
@@ -45,6 +46,11 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class Testbase
 {
     /**
+     * @var InstalledPackages
+     */
+    private $installedPackages;
+
+    /**
      * This class must be called in CLI environment as a security measure
      * against path disclosures and other stuff. Check this within
      * constructor to make sure this check can't be circumvented.
@@ -55,6 +61,7 @@ class Testbase
         if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
             die('This script supports command line usage only. Please check your command.');
         }
+        $this->installedPackages = new InstalledPackages();
     }
 
     /**
@@ -192,13 +199,28 @@ class Testbase
      */
     public function setUpInstanceCoreLinks($instancePath): void
     {
-        $linksToSet = [
-            '../../../../' => $instancePath . '/typo3_src',
-            'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
-        ];
-        chdir($instancePath);
         $this->createDirectory($instancePath . '/typo3');
+        if ($this->installedPackages->getProjectType() === InstalledPackages::TYPE_MONOREPO) {
+            // TYPO3 MonoRepo
+            $linksToSet = [
+                '../../../../' => $instancePath . '/typo3_src',
+                'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
+            ];
+        } else {
+            $linksToSet = [
+                $instancePath . '/typo3/sysext/' => $instancePath . '/typo3_src',
+            ];
+            // Extension or Project setup
+            $this->createDirectory($instancePath . '/typo3/sysext');
+            foreach ($this->installedPackages->getPackagesPerType('typo3-cms-framework') as $package) {
+                $from = $package['install_path'] . '/';
+                $to = 'typo3/sysext/' . ($package['extra']['typo3/cms']['extension-key'] ?? '');
+                $linksToSet[$from] = $to;
+            }
+        }
+        chdir($instancePath);
         foreach ($linksToSet as $from => $to) {
+            // @todo Need we some "relative" or "short-path" calculation for the symlink to avoid absolute source ?
             $success = symlink(realpath($from), $to);
             if (!$success) {
                 throw new Exception(
@@ -254,6 +276,33 @@ class Testbase
     {
         foreach ($extensionPaths as $extensionPath) {
             $absoluteExtensionPath = ORIGINAL_ROOT . $extensionPath;
+            if ($this->getRootPackageType() !== 'typo3-cms-core'
+                //&& str_starts_with($extensionPath, 'typo3conf/ext/')
+                && !is_dir($absoluteExtensionPath)
+            ) {
+                $extensionName = $this->installedPackages->getRealPackageName($extensionPath);
+                if ($extensionName === '') {
+                    throw new Exception(
+                        "Could not find test extension \"$extensionPath\" to be linked into test-instance.",
+                        1674937908
+                    );
+                }
+                $package = $this->installedPackages->getPackage($extensionName);
+                $extensionKey = $package['extra']['typo3/cms']['extension-key'] ?? $extensionName;
+                $installPath = $package['install_path'];
+                $destinationPath = $instancePath . '/typo3conf/ext/' . $extensionKey;
+                // @todo Need we some "relative" or "short-path" calculation for the symlink to avoid absolute source ?
+                $success = symlink($installPath, $destinationPath);
+                if (!$success) {
+                    throw new Exception(
+                        'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
+                        1376657142
+                    );
+                }
+                continue;
+            }
+            // TYPO3 MonoRepo and generic fallback (legacy install structure). This is mainly needed,
+            // as TYPO3 MonoRepo does not have required the system extensions in the root composer.json.
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
                     'Test extension path ' . $absoluteExtensionPath . ' not found',
@@ -281,8 +330,9 @@ class Testbase
      */
     public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths): void
     {
+        $testingFrameworkPath = $this->installedPackages->getPackageInstallPath('typo3/testing-framework');
         foreach ($extensionPaths as $extensionPath) {
-            $absoluteExtensionPath = $this->getPackagesPath() . '/typo3/testing-framework/' . $extensionPath;
+            $absoluteExtensionPath = $testingFrameworkPath . '/' . $extensionPath;
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
                     'Framework extension path ' . $absoluteExtensionPath . ' not found',
@@ -477,7 +527,10 @@ class Testbase
     public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration): void
     {
         // Base of final LocalConfiguration is core factory configuration
-        $finalConfigurationArray = require ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
+        $coreExtensionPath = $this->installedPackages->getProjectType() === InstalledPackages::TYPE_MONOREPO
+            ? ORIGINAL_ROOT . 'typo3/sysext/core'
+            : $this->installedPackages->getPackageInstallPath('typo3/cms-core');
+        $finalConfigurationArray = require $coreExtensionPath . '/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
         $result = file_put_contents(
@@ -564,6 +617,11 @@ class Testbase
         }
     }
 
+    public function getRootPackageType(): string
+    {
+        return InstalledVersions::getRootPackage()['type'];
+    }
+
     /**
      * Create a low level connection to dbms, without selecting the target database.
      * Drop existing database if it exists and create a new one.
@@ -626,7 +684,7 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
-        $classLoader = require __DIR__ . '/../../../../autoload.php';
+        $classLoader = require $this->getPackagesPath() . '/autoload.php';
         SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
@@ -973,14 +1031,15 @@ class Testbase
 
     /**
      * Get Path to vendor dir
-     * Since we are installed in vendor dir, we can safely assume the path of the vendor
-     * directory relative to this file
+     * Since we are surly installed in the vendor dir, we can reuse the composer runtime information to get the
+     * correct installation path of the testing-framework. With that we can calculate the package folder precisely,
+     * avoiding invalid path determination when symlinks has been invited to the party.
      *
      * @return string Absolute path to vendor dir, without trailing slash
      */
     public function getPackagesPath(): string
     {
-        return rtrim(strtr(dirname(__DIR__, 4), '\\', '/'), '/');
+        return $this->installedPackages->getPackagesPath();
     }
 
     /**
@@ -1028,5 +1087,10 @@ class Testbase
             return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '', $path);
         }
         return $path;
+    }
+
+    final public function getInstalledPackages(): InstalledPackages
+    {
+        return $this->installedPackages;
     }
 }

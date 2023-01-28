@@ -36,7 +36,7 @@ parameters:
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
-			message: "#^Parameter \\#1 \\$prefix of function uniqid expects string, int given\\.$#"
+			message: "#^Parameter \\#1 \\$prefix of function uniqid expects string, int\\<0, max\\> given\\.$#"
 			count: 1
 			path: ../../Classes/Core/BaseTestCase.php
 

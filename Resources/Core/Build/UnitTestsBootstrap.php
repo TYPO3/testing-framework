@@ -45,8 +45,15 @@
 
     $testbase->defineSitePath();
 
+    // Since testing-framework is normally installed in composer mode, the root installation installs a composer
+    // installation anyway. Thus, we could safely assume composer mode. However, we do a proper check here to stay
+    // on the light side. Additionally, we fall back to legacy mode install mode for older composer installers,
+    // which provides the same directory structure in composer mode as in legacy mode.
+    $composerMode = defined('TYPO3_COMPOSER_MODE')
+        && TYPO3_COMPOSER_MODE === true
+        && $testbase->getInstalledPackages()->isCmsComposerInstallersFourOrHigher();
     $requestType = \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_BE | \TYPO3\CMS\Core\Core\SystemEnvironmentBuilder::REQUESTTYPE_CLI;
-    \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(0, $requestType);
+    \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(0, $requestType, $composerMode);
 
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext');
     $testbase->createDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3temp/assets');
