@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -30,6 +31,8 @@ use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Composer\ComposerPackageManager;
+use TYPO3\TestingFramework\Composer\PackageInfo;
 
 /**
  * This is a helper class used by unit, functional and acceptance test
@@ -43,6 +46,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class Testbase
 {
+    private ComposerPackageManager $composerPackageManager;
+
     /**
      * This class must be called in CLI environment as a security measure
      * against path disclosures and other stuff. Check this within
@@ -54,6 +59,7 @@ class Testbase
         if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
             die('This script supports command line usage only. Please check your command.');
         }
+        $this->composerPackageManager = new ComposerPackageManager();
     }
 
     /**
@@ -175,18 +181,36 @@ class Testbase
      * For functional and acceptance tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
+     * @param string[] $defaultCoreExtensionsToLoad Default core extensions to load (extension-key or package name)
+     * @param string[] $coreExtensionsToLoad Core extension to load for test-case (extension-key or package name)
      * @throws Exception
      */
-    public function setUpInstanceCoreLinks($instancePath): void
-    {
-        $linksToSet = [
-            '../../../../' => $instancePath . '/typo3_src',
-            'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
-        ];
-        chdir($instancePath);
+    public function setUpInstanceCoreLinks(
+        string $instancePath,
+        array $defaultCoreExtensionsToLoad = [],
+        array $coreExtensionsToLoad = []
+    ): void {
         $this->createDirectory($instancePath . '/typo3');
+        $this->createDirectory($instancePath . '/typo3/sysext');
+
+        $linksToSet = [];
+        $coreExtensions = array_unique(array_merge($defaultCoreExtensionsToLoad, $coreExtensionsToLoad));
+        // @todo Fallback to all system extensions needed for TYPO3 acceptanceInstall tests.
+        if ($coreExtensions === []) {
+            $coreExtensions = $this->composerPackageManager->getSystemExtensionExtensionKeys();
+        }
+        foreach ($coreExtensions as $coreExtension) {
+            $packageInfo = $this->composerPackageManager->getPackageInfo($coreExtension);
+            if (! ($packageInfo?->isSystemExtension() ?? false)) {
+                continue;
+            }
+            $linksToSet[$packageInfo->getRealPath() . '/'] = 'typo3/sysext/' . $packageInfo->getExtensionKey();
+        }
+
+        chdir($instancePath);
         foreach ($linksToSet as $from => $to) {
-            $success = @symlink(realpath($from), $to);
+            // @todo Need we some "relative" or "short-path" calculation for the symlink to avoid absolute source ?
+            $success = @symlink($from, $to);
             if (!$success) {
                 throw new Exception(
                     'Creating link failed: from ' . $from . ' to: ' . $to,
@@ -237,9 +261,27 @@ class Testbase
      * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
      */
-    public function linkTestExtensionsToInstance($instancePath, array $extensionPaths): void
+    public function linkTestExtensionsToInstance(string $instancePath, array $extensionPaths): void
     {
         foreach ($extensionPaths as $extensionPath) {
+            $packageInfo = $this->composerPackageManager->getPackageInfo($extensionPath);
+            if ($packageInfo instanceof PackageInfo) {
+                $installPath = $packageInfo->getRealPath();
+                $destinationPath = $instancePath . '/typo3conf/ext/' . $packageInfo->getExtensionKey();
+                // @todo Need we some "relative" or "short-path" calculation for the symlink to avoid absolute source ?
+                $success = @symlink($installPath, $destinationPath);
+                if (!$success) {
+                    throw new Exception(
+                        'Can not link extension folder: ' . $installPath . ' to ' . $destinationPath . ' for '
+                        . $packageInfo->getName(),
+                        1376657142
+                    );
+                }
+                continue;
+            }
+
+            // TYPO3 MonoRepo and generic fallback (legacy install structure). This is mainly needed,
+            // as TYPO3 MonoRepo does not have required the system extensions in the root composer.json.
             $absoluteExtensionPath = ORIGINAL_ROOT . $extensionPath;
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
@@ -248,7 +290,7 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/typo3conf/ext/' . basename($absoluteExtensionPath);
-            $success = @symlink($absoluteExtensionPath, $destinationPath);
+            $success = @symlink($absoluteExtensionPath . '/', $destinationPath);
             if (!$success) {
                 throw new Exception(
                     'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
@@ -266,10 +308,11 @@ class Testbase
      * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
      * @throws Exception
      */
-    public function linkFrameworkExtensionsToInstance($instancePath, array $extensionPaths): void
+    public function linkFrameworkExtensionsToInstance(string $instancePath, array $extensionPaths): void
     {
+        $testingFrameworkPath = $this->composerPackageManager->getPackageInfo('typo3/testing-framework')->getRealPath();
         foreach ($extensionPaths as $extensionPath) {
-            $absoluteExtensionPath = $this->getPackagesPath() . '/typo3/testing-framework/' . $extensionPath;
+            $absoluteExtensionPath = $testingFrameworkPath . '/' . $extensionPath;
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
                     'Framework extension path ' . $absoluteExtensionPath . ' not found',
@@ -277,7 +320,7 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/typo3conf/ext/' . basename($absoluteExtensionPath);
-            $success = @symlink($absoluteExtensionPath, $destinationPath);
+            $success = @symlink($absoluteExtensionPath . '/', $destinationPath);
             if (!$success) {
                 throw new Exception(
                     'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
@@ -296,7 +339,7 @@ class Testbase
      * @param array<string, non-empty-string> $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
      * @throws Exception if a source path could not be found and on failing creating the symlink
      */
-    public function linkPathsInTestInstance($instancePath, array $pathsToLinkInTestInstance): void
+    public function linkPathsInTestInstance(string $instancePath, array $pathsToLinkInTestInstance): void
     {
         foreach ($pathsToLinkInTestInstance as $sourcePathToLinkInTestInstance => $destinationPathToLinkInTestInstance) {
             $sourcePath = $instancePath . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
@@ -473,13 +516,14 @@ class Testbase
      * @param array $overruleConfiguration Overrule factory and base configuration
      * @throws Exception
      */
-    public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration): void
+    public function setUpLocalConfiguration(string $instancePath, array $configuration, array $overruleConfiguration): void
     {
         // Base of final LocalConfiguration is core factory configuration
-        $finalConfigurationArray = require ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
+        $coreExtensionPath = $this->composerPackageManager->getPackageInfo('typo3/cms-core')?->getRealPath() ?? '';
+        $finalConfigurationArray = require $coreExtensionPath . '/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
-        $result = file_put_contents(
+        $result = @file_put_contents(
             $instancePath . '/typo3conf/LocalConfiguration.php',
             '<?php' . chr(10) .
             'return ' .
@@ -507,7 +551,7 @@ class Testbase
      * @throws Exception
      */
     public function setUpPackageStates(
-        $instancePath,
+        string $instancePath,
         array $defaultCoreExtensionsToLoad,
         array $additionalCoreExtensionsToLoad,
         array $testExtensionPaths,
@@ -520,6 +564,9 @@ class Testbase
 
         // Register default list of extensions and set active
         foreach ($defaultCoreExtensionsToLoad as $extensionName) {
+            if ($packageInfo = $this->composerPackageManager->getPackageInfo($extensionName)) {
+                $extensionName = $packageInfo->getExtensionKey();
+            }
             $packageStates['packages'][$extensionName] = [
                 'packagePath' => 'typo3/sysext/' . $extensionName . '/',
             ];
@@ -527,6 +574,9 @@ class Testbase
 
         // Register additional core extensions and set active
         foreach ($additionalCoreExtensionsToLoad as $extensionName) {
+            if ($packageInfo = $this->composerPackageManager->getPackageInfo($extensionName)) {
+                $extensionName = $packageInfo->getExtensionKey();
+            }
             $packageStates['packages'][$extensionName] = [
                 'packagePath' => 'typo3/sysext/' . $extensionName . '/',
             ];
@@ -534,7 +584,11 @@ class Testbase
 
         // Activate test extensions that have been symlinked before
         foreach ($testExtensionPaths as $extensionPath) {
-            $extensionName = basename($extensionPath);
+            if ($packageInfo = $this->composerPackageManager->getPackageInfo($extensionPath)) {
+                $extensionName = $packageInfo->getExtensionKey();
+            } else {
+                $extensionName = basename($extensionPath);
+            }
             $packageStates['packages'][$extensionName] = [
                 'packagePath' => 'typo3conf/ext/' . $extensionName . '/',
             ];
@@ -625,7 +679,7 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
-        $classLoader = require __DIR__ . '/../../../../autoload.php';
+        $classLoader = require $this->getPackagesPath() . '/autoload.php';
         SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
@@ -858,14 +912,15 @@ class Testbase
 
     /**
      * Get Path to vendor dir
-     * Since we are installed in vendor dir, we can safely assume the path of the vendor
-     * directory relative to this file
+     * Since we are surly installed in the vendor dir, we can reuse the composer runtime information to get the
+     * correct installation path of the testing-framework. With that we can calculate the package folder precisely,
+     * avoiding invalid path determination when symlinks has been invited to the party.
      *
      * @return string Absolute path to vendor dir, without trailing slash
      */
     public function getPackagesPath(): string
     {
-        return rtrim(strtr(dirname(__DIR__, 4), '\\', '/'), '/');
+        return $this->composerPackageManager->getVendorPath();
     }
 
     /**

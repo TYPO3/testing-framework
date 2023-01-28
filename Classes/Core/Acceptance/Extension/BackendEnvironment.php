@@ -244,7 +244,8 @@ abstract class BackendEnvironment extends Extension
         foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
-        $testbase->setUpInstanceCoreLinks($instancePath);
+        $coreExtensionsToLoad = $this->config['coreExtensionsToLoad'];
+        $testbase->setUpInstanceCoreLinks($instancePath, [], $coreExtensionsToLoad);
         $testExtensionsToLoad = $this->config['testExtensionsToLoad'];
         $testbase->linkTestExtensionsToInstance($instancePath, $testExtensionsToLoad);
         $testbase->linkPathsInTestInstance($instancePath, $this->config['pathsToLinkInTestInstance']);
@@ -279,7 +280,6 @@ abstract class BackendEnvironment extends Extension
         //$localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
         $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
         $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->config['configurationToUseInTestInstance']);
-        $coreExtensionsToLoad = $this->config['coreExtensionsToLoad'];
         $frameworkExtensionPaths = [];
         $testbase->setUpPackageStates($instancePath, [], $coreExtensionsToLoad, $testExtensionsToLoad, $frameworkExtensionPaths);
         $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($coreExtensionsToLoad, $testExtensionsToLoad)));

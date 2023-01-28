@@ -288,12 +288,21 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             foreach ($this->additionalFoldersToCreate as $directory) {
                 $testbase->createDirectory($this->instancePath . '/' . $directory);
             }
-            $testbase->setUpInstanceCoreLinks($this->instancePath);
-            $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
-            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, [
+            $defaultCoreExtensionsToLoad = [
+                'core',
+                'backend',
+                'frontend',
+                'extbase',
+                'install',
+                'fluid',
+            ];
+            $frameworkExtension = [
                 'Resources/Core/Functional/Extensions/json_response',
                 'Resources/Core/Functional/Extensions/private_container',
-            ]);
+            ];
+            $testbase->setUpInstanceCoreLinks($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad);
+            $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
+            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $frameworkExtension);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
@@ -338,23 +347,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
-            $defaultCoreExtensionsToLoad = [
-                'core',
-                'backend',
-                'frontend',
-                'extbase',
-                'install',
-                'fluid',
-            ];
             $testbase->setUpPackageStates(
                 $this->instancePath,
                 $defaultCoreExtensionsToLoad,
                 $this->coreExtensionsToLoad,
                 $this->testExtensionsToLoad,
-                [
-                    'Resources/Core/Functional/Extensions/json_response',
-                    'Resources/Core/Functional/Extensions/private_container',
-                ]
+                $frameworkExtension
             );
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             if ($this->initializeDatabase) {
