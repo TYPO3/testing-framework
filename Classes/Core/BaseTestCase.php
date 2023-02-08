@@ -148,7 +148,7 @@ abstract class BaseTestCase extends TestCase
      */
     protected function getUniqueId($prefix = '')
     {
-        $uniqueId = uniqid(mt_rand(), true);
+        $uniqueId = uniqid((string)mt_rand(), true);
         return $prefix . str_replace('.', '', $uniqueId);
     }
 }
