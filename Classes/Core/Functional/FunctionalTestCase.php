@@ -1117,6 +1117,16 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         InternalRequestContext $context = null,
         bool $followRedirects = false
     ): InternalResponse {
+        if ((new Typo3Version())->getMajorVersion() < 11) {
+            throw new \RuntimeException(
+                'executeFrontendSubRequests() only possible with TYPO3 v11 or higher.'
+                . ' Please use executeFrontendRequest() for TYPO3 up to v10. If you need to'
+                . ' to multi-core testing with the same testcase, implement a proper version check'
+                . ' or use executeFrontendRequest() for tests against both core versions.',
+                1675871234
+            );
+        }
+
         if ($context === null) {
             $context = new InternalRequestContext();
         }

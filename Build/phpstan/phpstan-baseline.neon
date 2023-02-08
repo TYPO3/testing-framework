@@ -36,11 +36,6 @@ parameters:
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
-			message: "#^Parameter \\#1 \\$prefix of function uniqid expects string, int given\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
 			message: "#^Cannot access offset string on int\\.$#"
 			count: 2
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
