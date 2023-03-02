@@ -111,10 +111,7 @@ class EntityConfiguration
         return $target;
     }
 
-    /**
-     * @param string $name
-     */
-    public function __construct(string $name)
+    final public function __construct(string $name)
     {
         $this->name = $name;
     }
