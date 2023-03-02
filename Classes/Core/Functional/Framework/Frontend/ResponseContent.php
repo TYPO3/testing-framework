@@ -44,6 +44,10 @@ class ResponseContent
      */
     protected $scope = [];
 
+    final public function __construct()
+    {
+    }
+
     public static function fromString(string $data, ResponseContent $target = null): ResponseContent
     {
         $target = $target ?? new static();
