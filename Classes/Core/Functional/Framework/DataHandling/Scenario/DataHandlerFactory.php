@@ -60,7 +60,7 @@ class DataHandlerFactory
         return new static(Yaml::parseFile($yamlFile));
     }
 
-    public function __construct(array $settings)
+    final public function __construct(array $settings)
     {
         $this->settings = $settings;
         $this->buildEntityConfigurations($settings['entitySettings'] ?? []);
