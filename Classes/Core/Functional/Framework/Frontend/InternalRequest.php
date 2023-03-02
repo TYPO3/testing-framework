@@ -67,7 +67,7 @@ class InternalRequest extends ServerRequest
     public function withQueryParameter(string $parameterName, $value): InternalRequest
     {
         $query = $this->modifyQueryParameter(
-            $this->uri->getQuery() ?? '',
+            $this->uri->getQuery(),
             $parameterName,
             $value
         );
@@ -83,7 +83,7 @@ class InternalRequest extends ServerRequest
             return $this;
         }
 
-        $query = $this->uri->getQuery() ?? '';
+        $query = $this->uri->getQuery();
 
         foreach ($parameters as $parameterName => $value) {
             $query = $this->modifyQueryParameter(
@@ -123,18 +123,8 @@ class InternalRequest extends ServerRequest
         return $target;
     }
 
-    /**
-     * @param int|float|string|null $value
-     */
-    private function modifyQueryParameter(string $query, string $parameterName, $value): string
+    private function modifyQueryParameter(string $query, string $parameterName, int|float|string|null $value): string
     {
-        if (!is_float($value) && !is_int($value) && !is_string($value) && $value !== null) {
-            throw new \RuntimeException(
-                sprintf('Invalid type "%s"', gettype($value)),
-                1533639711
-            );
-        }
-
         $parameters = Query::parse($query);
         $parameters[$parameterName] = $value;
         return Query::build($parameters);

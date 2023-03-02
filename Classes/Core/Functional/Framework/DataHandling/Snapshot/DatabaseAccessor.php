@@ -17,7 +17,6 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
-use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Doctrine\DBAL\Schema\Table;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
@@ -126,12 +125,10 @@ class DatabaseAccessor
         return array_combine($columnNames, $columnTypes);
     }
 
-    private function createQueryBuilder(): DoctrineQueryBuilder|TYPO3QueryBuilder
+    private function createQueryBuilder(): TYPO3QueryBuilder
     {
         $queryBuilder = $this->connection->createQueryBuilder();
-        if ($queryBuilder instanceof TYPO3QueryBuilder) {
-            $queryBuilder->getRestrictions()->removeAll();
-        }
+        $queryBuilder->getRestrictions()->removeAll();
         return $queryBuilder;
     }
 }
