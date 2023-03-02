@@ -55,7 +55,7 @@ class DataHandlerWriter
      * @param DataHandler $dataHandler
      * @param BackendUserAuthentication $backendUser
      */
-    public function __construct(
+    final public function __construct(
         DataHandler $dataHandler,
         BackendUserAuthentication $backendUser
     ) {

@@ -41,21 +41,6 @@ parameters:
 			path: ../../Classes/Core/BaseTestCase.php
 
 		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerWriter.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/EntityConfiguration.php
-
-		-
 			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Connection\\:\\:truncate\\(\\)\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Snapshot/DatabaseAccessor.php
@@ -144,11 +129,6 @@ parameters:
 			message: "#^Access to an undefined property TYPO3\\\\TestingFramework\\\\Core\\\\Functional\\\\Framework\\\\Frontend\\\\Response\\:\\:\\$responseContent\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/Framework/Frontend/Response.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/Frontend/ResponseContent.php
 
 		-
 			message: "#^Call to an undefined method Doctrine\\\\DBAL\\\\Result\\:\\:fetch\\(\\)\\.$#"

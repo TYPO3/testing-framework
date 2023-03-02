@@ -65,7 +65,7 @@ class ResponseContent
     /**
      * @param Response $response (deprecated)
      */
-    public function __construct(Response $response = null)
+    final public function __construct(Response $response = null)
     {
         if ($response instanceof Response) {
             static::fromString($response->getContent(), $this);
