@@ -190,6 +190,10 @@ abstract class UnitTestCase extends BaseTestCase
                 }
             }
         }
+        if (!empty($notCleanInstances)) {
+            // Reset instance list (including singletons & container) to not let all further tests fail
+            GeneralUtility::purgeInstances();
+        }
         // Let the test fail if there were instances left and give some message on why it fails
         self::assertEquals(
             [],
