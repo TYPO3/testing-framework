@@ -205,7 +205,6 @@ abstract class UnitTestCase extends BaseTestCase
         // Verify LocalizationUtility class internal state has been reset properly if a test fiddled with it
         $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
         $property = $reflectionClass->getProperty('configurationManager');
-        $property->setAccessible(true);
         self::assertNull($property->getValue());
 
         self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
