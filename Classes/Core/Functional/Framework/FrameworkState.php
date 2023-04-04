@@ -17,7 +17,6 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework;
  */
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\RootlineUtility;
 
 /**
  * This is an ugly helper class to manage some TYPO3 framework state.
@@ -46,41 +45,18 @@ class FrameworkState
         $state['globals-typo3-conf-vars'] = $GLOBALS['TYPO3_CONF_VARS'] ?: null;
 
         // Backing up TCA *should* not be needed: TCA is (hopefully) never changed after bootstrap and identical in FE and BE.
-        // Some tests change TCA on the fly (eg. core DataHandling/Regular/Modify localizeContentWithEmptyTcaIntegrityColumns).
+        // Some tests change TCA on the fly (e.g. core DataHandling/Regular/Modify localizeContentWithEmptyTcaIntegrityColumns).
         // A FE call then resets this TCA change since it initializes the global again. Then, after the FE call, the TCA is
         // different. And code that runs after that within the test scope may fail (eg. the referenceIndex check in tearDown() that
-        // relies on TCA). So we backup TCA for now before executing frontend tests.
+        // relies on TCA). So we back up TCA for now before executing frontend tests.
         $state['globals-tca'] = $GLOBALS['TCA'];
 
         // Can be dropped when GeneralUtility::getIndpEnv() is abandoned
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
         $state['generalUtilityIndpEnvCache'] = $generalUtilityIndpEnvCache->getValue();
 
         $state['generalUtilitySingletonInstances'] = GeneralUtility::getSingletonInstances();
-
-        // @todo Remove this block with next major version of the testing-framework,
-        //       or if TYPO3 v13 is the min supported version.
-        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
-            // Infamous RootlineUtility carries various static state ...
-            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-            $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-            $rootlineUtilityLocalCache->setAccessible(true);
-            $state['rootlineUtilityLocalCache'] = $rootlineUtilityLocalCache->getValue();
-
-            try {
-                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-                $rootlineUtilityRootlineFields->setAccessible(true);
-                $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
-            } catch (\ReflectionException $e) {
-                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
-            }
-
-            $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
-            $rootlineUtilityPageRecordCache->setAccessible(true);
-            $state['rootlineUtilityPageRecordCache'] = $rootlineUtilityPageRecordCache->getValue();
-        }
 
         self::$state[] = $state;
     }
@@ -94,27 +70,9 @@ class FrameworkState
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
         $generalUtilityIndpEnvCache->setValue([]);
 
         GeneralUtility::resetSingletonInstances([]);
-
-        // @todo Remove this block with next major version of the testing-framework,
-        //       or if TYPO3 v13 is the min supported version.
-        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
-            RootlineUtility::purgeCaches();
-            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-            $rootlineFieldsDefault = $rootlineUtilityReflection->getDefaultProperties();
-
-            try {
-                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-                $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
-                $rootlineUtilityRootlineFields->setAccessible(true);
-                $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
-            } catch (\ReflectionException $e) {
-                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
-            }
-        }
     }
 
     /**
@@ -136,30 +94,8 @@ class FrameworkState
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
         $generalUtilityIndpEnvCache->setValue($state['generalUtilityIndpEnvCache']);
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
-
-        // @todo Remove this block with next major version of the testing-framework,
-        //       or if TYPO3 v13 is the min supported version.
-        if (method_exists(RootlineUtility::class, 'purgeCaches')) {
-            $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
-            $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-            $rootlineUtilityLocalCache->setAccessible(true);
-            $rootlineUtilityLocalCache->setValue($state['rootlineUtilityLocalCache']);
-
-            try {
-                $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-                $rootlineUtilityRootlineFields->setAccessible(true);
-                $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
-            } catch (\ReflectionException $e) {
-                // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
-            }
-
-            $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
-            $rootlineUtilityPageRecordCache->setAccessible(true);
-            $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
-        }
     }
 }
