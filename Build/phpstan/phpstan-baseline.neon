@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Call to an undefined method PHPUnit\\\\Framework\\\\MockObject\\\\MockBuilder\\<T of object&TYPO3\\\\TestingFramework\\\\Core\\\\AccessibleObjectInterface\\>\\:\\:setMethods\\(\\)\\.$#"
-			count: 1
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
 			message: "#^Instantiated class PHPUnit\\\\Framework\\\\RiskyTestError not found\\.$#"
 			count: 3
 			path: ../../Classes/Core/BaseTestCase.php
