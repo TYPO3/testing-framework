@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
     Boilerplate for a unit test suite setup.
 
@@ -12,27 +13,23 @@
     TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
     file is located next to this .xml as FunctionalTestsBootstrap.php
 -->
-<phpunit
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
-    backupGlobals="true"
-    bootstrap="UnitTestsBootstrap.php"
-    cacheResult="false"
-    colors="true"
-    convertDeprecationsToExceptions="true"
-    convertErrorsToExceptions="true"
-    convertWarningsToExceptions="true"
-    convertNoticesToExceptions="true"
-    forceCoversAnnotation="false"
-    processIsolation="false"
-    stopOnError="false"
-    stopOnFailure="false"
-    stopOnIncomplete="false"
-    stopOnSkipped="false"
-    verbose="false"
-    beStrictAboutTestsThatDoNotTestAnything="false"
-    failOnWarning="true"
-    failOnRisky="true"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+     backupGlobals="true"
+     beStrictAboutTestsThatDoNotTestAnything="false"
+     bootstrap="FunctionalTestsBootstrap.php"
+     cacheDirectory=".phpunit.cache"
+     cacheResult="false"
+     colors="true"
+     displayDetailsOnTestsThatTriggerDeprecations="true"
+     displayDetailsOnTestsThatTriggerErrors="true"
+     displayDetailsOnTestsThatTriggerNotices="true"
+     displayDetailsOnTestsThatTriggerWarnings="true"
+     failOnDeprecation="true"
+     failOnNotice="true"
+     failOnRisky="true"
+     failOnWarning="true"
+     requireCoverageMetadata="false"
 >
     <testsuites>
         <testsuite name="Unit tests">
@@ -43,16 +40,8 @@
             <directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
         </testsuite>
     </testsuites>
-    <coverage>
-        <include>
-            <!--
-                This path needs an adaption in extensions, when coverage statistics are wanted.
-            -->
-            <directory>../../../../../../typo3/sysext/*/Classes/</directory>
-        </include>
-    </coverage>
     <php>
-        <ini name="display_errors" value="1" />
-        <env name="TYPO3_CONTEXT" value="Testing" />
+        <ini name="display_errors" value="1"/>
+        <env name="TYPO3_CONTEXT" value="Testing"/>
     </php>
 </phpunit>
