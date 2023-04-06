@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
     Boilerplate for a functional test suite setup.
 
@@ -12,26 +13,25 @@
     TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
     file is located next to this .xml as FunctionalTestsBootstrap.php
 
-    phpunit v9 compatible version, use -10.xml file for phpunit 10.
+    phpunit v10.1 compatible version.
 -->
-<phpunit
-    backupGlobals="true"
-    bootstrap="FunctionalTestsBootstrap.php"
-    cacheResult="false"
-    colors="true"
-    convertErrorsToExceptions="true"
-    convertWarningsToExceptions="true"
-    convertDeprecationsToExceptions="true"
-    convertNoticesToExceptions="true"
-    forceCoversAnnotation="false"
-    stopOnError="false"
-    stopOnFailure="false"
-    stopOnIncomplete="false"
-    stopOnSkipped="false"
-    verbose="false"
-    beStrictAboutTestsThatDoNotTestAnything="false"
-    failOnWarning="true"
-    failOnRisky="true"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+     backupGlobals="true"
+     beStrictAboutTestsThatDoNotTestAnything="false"
+     bootstrap="FunctionalTestsBootstrap.php"
+     cacheDirectory=".phpunit.cache"
+     cacheResult="false"
+     colors="true"
+     displayDetailsOnTestsThatTriggerDeprecations="true"
+     displayDetailsOnTestsThatTriggerErrors="true"
+     displayDetailsOnTestsThatTriggerNotices="true"
+     displayDetailsOnTestsThatTriggerWarnings="true"
+     failOnDeprecation="true"
+     failOnNotice="true"
+     failOnRisky="true"
+     failOnWarning="true"
+     requireCoverageMetadata="false"
 >
     <testsuites>
         <testsuite name="Functional tests">
@@ -44,15 +44,15 @@
     </testsuites>
     <php>
         <!-- @deprecated: will be removed with next major version, constant TYPO3_MODE is deprecated -->
-        <const name="TYPO3_MODE" value="BE" />
+        <const name="TYPO3_MODE" value="BE"/>
         <!--
             @deprecated: Set this to not suppress warnings, notices and deprecations in functional tests
                          with TYPO3 core v11 and up.
                          Will always be done with next major version.
                          To still suppress warnings, notices and deprecations, do NOT define the constant at all.
          -->
-        <const name="TYPO3_TESTING_FUNCTIONAL_REMOVE_ERROR_HANDLER" value="true" />
-        <ini name="display_errors" value="1" />
-        <env name="TYPO3_CONTEXT" value="Testing" />
+        <const name="TYPO3_TESTING_FUNCTIONAL_REMOVE_ERROR_HANDLER" value="true"/>
+        <ini name="display_errors" value="1"/>
+        <env name="TYPO3_CONTEXT" value="Testing"/>
     </php>
 </phpunit>
