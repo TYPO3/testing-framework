@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+    Boilerplate for a unit test suite setup.
+
+    This file is loosely maintained within TYPO3 testing-framework, extensions
+    are encouraged to not use it directly, but to copy it to an own place,
+    for instance Build/UnitTests.xml.
+    Note UnitTestsBootstrap.php should be copied along the way.
+
+    Functional tests should extend \TYPO3\TestingFramework\Core\Tests\FunctionalTestCase,
+    take a look at this class for further documentation on how to run the suite.
+
+    TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
+    file is located next to this .xml as FunctionalTestsBootstrap.php
+
+    phpunit v10.1 compatible version.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+     backupGlobals="true"
+     beStrictAboutTestsThatDoNotTestAnything="false"
+     bootstrap="FunctionalTestsBootstrap.php"
+     cacheDirectory=".phpunit.cache"
+     cacheResult="false"
+     colors="true"
+     displayDetailsOnTestsThatTriggerDeprecations="true"
+     displayDetailsOnTestsThatTriggerErrors="true"
+     displayDetailsOnTestsThatTriggerNotices="true"
+     displayDetailsOnTestsThatTriggerWarnings="true"
+     failOnDeprecation="true"
+     failOnNotice="true"
+     failOnRisky="true"
+     failOnWarning="true"
+     requireCoverageMetadata="false"
+>
+    <testsuites>
+        <testsuite name="Unit tests">
+            <!--
+                This path either needs an adaption in extensions, or an extension's
+                test location path needs to be given to phpunit.
+            -->
+            <directory>../../../../../../typo3/sysext/*/Tests/Unit/</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <!-- @deprecated: will be removed with next major version, constant TYPO3_MODE is deprecated -->
+        <const name="TYPO3_MODE" value="BE"/>
+        <ini name="display_errors" value="1"/>
+        <env name="TYPO3_CONTEXT" value="Testing"/>
+    </php>
+</phpunit>

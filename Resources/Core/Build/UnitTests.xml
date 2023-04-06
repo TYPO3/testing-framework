@@ -12,7 +12,7 @@
     TYPO3 CMS functional test suite also needs phpunit bootstrap code, the
     file is located next to this .xml as FunctionalTestsBootstrap.php
 
-    @todo: Make phpunit v9 compatible, add the xml things to phpunit tag, see core versions.
+    phpunit v9 compatible version, use -10.xml file for phpunit 10.
 -->
 <phpunit
     backupGlobals="true"
