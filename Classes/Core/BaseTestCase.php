@@ -124,9 +124,14 @@ abstract class BaseTestCase extends TestCase
         }
 
         $mockBuilder = $this->getMockBuilder($this->buildAccessibleProxy($originalClassName))
-            ->setMethods($methods)
             ->setConstructorArgs($arguments)
             ->setMockClassName($mockClassName);
+
+        if ($methods === null) {
+            $mockBuilder->onlyMethods([]);
+        } elseif (!empty($methods)) {
+            $mockBuilder->onlyMethods($methods);
+        }
 
         if (!$callOriginalConstructor) {
             $mockBuilder->disableOriginalConstructor();
