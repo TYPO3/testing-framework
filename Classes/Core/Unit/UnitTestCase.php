@@ -136,23 +136,6 @@ abstract class UnitTestCase extends BaseTestCase
             );
         }
 
-        // Unset properties of test classes to safe memory
-        $reflection = new \ReflectionObject($this);
-        foreach ($reflection->getProperties() as $property) {
-            $declaringClass = $property->getDeclaringClass()->getName();
-            if (
-                !$property->isPrivate()
-                && !$property->isStatic()
-                && $declaringClass !== UnitTestCase::class
-                && $declaringClass !== BaseTestCase::class
-                && strpos($property->getDeclaringClass()->getName(), 'PHPUnit') !== 0
-            ) {
-                $propertyName = $property->getName();
-                unset($this->$propertyName);
-            }
-        }
-        unset($reflection);
-
         // Delete registered test files and directories
         foreach ($this->testFilesToDelete as $absoluteFileName) {
             $absoluteFileName = GeneralUtility::fixWindowsFilePath(PathUtility::getCanonicalPath($absoluteFileName));
