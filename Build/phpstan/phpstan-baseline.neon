@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Class PHPUnit\\\\Util\\\\ErrorHandler not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
 			message: "#^Instantiated class PHPUnit\\\\Framework\\\\RiskyTestError not found\\.$#"
 			count: 3
 			path: ../../Classes/Core/BaseTestCase.php
