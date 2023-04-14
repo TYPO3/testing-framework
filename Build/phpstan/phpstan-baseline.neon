@@ -4,13 +4,3 @@ parameters:
 			message: "#^Class PHPUnit\\\\Util\\\\ErrorHandler not found\\.$#"
 			count: 1
 			path: ../../Classes/Core/BaseTestCase.php
-
-		-
-			message: "#^Instantiated class PHPUnit\\\\Framework\\\\RiskyTestError not found\\.$#"
-			count: 3
-			path: ../../Classes/Core/BaseTestCase.php
-
-		-
-			message: "#^Throwing object of an unknown class PHPUnit\\\\Framework\\\\RiskyTestError\\.$#"
-			count: 3
-			path: ../../Classes/Core/BaseTestCase.php
