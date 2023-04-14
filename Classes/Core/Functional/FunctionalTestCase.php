@@ -21,7 +21,6 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types\JsonType;
-use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\ErrorHandler as ErrorHandlerPrePhpUnit101;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
@@ -452,10 +451,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
                 && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101
             ) {
-                throw new RiskyTestError(
-                    'tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.',
-                    1634490417
-                );
+                self::fail('tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.');
             }
 
             // Verify no dangling exception handler is registered. Same scenario as with error handlers.
@@ -463,10 +459,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $previousExceptionHandler = set_exception_handler(function () {});
             restore_exception_handler();
             if ($previousExceptionHandler !== null) {
-                throw new RiskyTestError(
-                    'tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.',
-                    1634490418
-                );
+                self::fail('tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.');
             }
         }
 
