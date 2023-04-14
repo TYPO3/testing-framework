@@ -22,7 +22,8 @@ use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types\JsonType;
 use PHPUnit\Framework\RiskyTestError;
-use PHPUnit\Util\ErrorHandler;
+use PHPUnit\Runner\ErrorHandler;
+use PHPUnit\Util\ErrorHandler as ErrorHandlerPrePhpUnit101;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -447,7 +448,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
             $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
             restore_error_handler();
-            if (!$previousErrorHandler instanceof ErrorHandler) {
+            if (!$previousErrorHandler instanceof ErrorHandler
+                // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
+                && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101
+            ) {
                 throw new RiskyTestError(
                     'tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.',
                     1634490417

@@ -146,6 +146,11 @@ parameters:
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
 
 		-
+			message: "#^Class PHPUnit\\\\Runner\\\\ErrorHandler not found\\.$#"
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
 			message: "#^Class Text_Template not found\\.$#"
 			count: 1
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
