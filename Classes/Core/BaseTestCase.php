@@ -17,7 +17,6 @@ namespace TYPO3\TestingFramework\Core;
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\RiskyTestError;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\ErrorHandler as ErrorHandlerPrePhpUnit101;
@@ -59,20 +58,14 @@ abstract class BaseTestCase extends TestCase
             // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
             && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101
         ) {
-            throw new RiskyTestError(
-                'tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.',
-                1634490417
-            );
+            self::fail('tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.');
         }
 
         // Verify no dangling exception handler is registered. Same scenario as with error handlers.
         $previousExceptionHandler = set_exception_handler(function () {});
         restore_exception_handler();
         if ($previousExceptionHandler !== null) {
-            throw new RiskyTestError(
-                'tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.',
-                1634490418
-            );
+            self::fail('tearDown() check: A dangling exception handler has been found. Use restore_exception_handler() to unset it.');
         }
 
         if ($this->backupErrorReporting !== null) {
@@ -83,12 +76,11 @@ abstract class BaseTestCase extends TestCase
                 error_reporting($backupErrorReporting);
             }
             if ($backupErrorReporting !== $currentErrorReporting) {
-                throw new RiskyTestError(
+                self::fail(
                     'tearDown() integrity check found changed error_reporting. Before was '
                     . $backupErrorReporting . ' compared to current ' . $currentErrorReporting . ' in '
                     . '"' . get_class($this) . '".'
-                    . 'Please check and verify that this is intended and add proper cleanup to the test.',
-                    1665251711
+                    . 'Please check and verify that this is intended and add proper cleanup to the test.'
                 );
             }
         }
