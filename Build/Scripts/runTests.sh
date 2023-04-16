@@ -26,6 +26,7 @@ setUpDockerComposeDotEnv() {
     echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}" >> .env
     echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}" >> .env
     echo "CGLCHECK_DRY_RUN=${CGLCHECK_DRY_RUN}" >> .env
+    echo "IMAGE_PREFIX=${IMAGE_PREFIX}" >> .env
 }
 
 # Load help text into $HELP
@@ -100,6 +101,7 @@ PHP_VERSION="7.4"
 PHP_XDEBUG_ON=0
 SCRIPT_VERBOSE=0
 CGLCHECK_DRY_RUN=""
+IMAGE_PREFIX="ghcr.io/typo3/"
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
