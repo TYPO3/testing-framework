@@ -198,7 +198,7 @@ class Testbase
         chdir($instancePath);
         $this->createDirectory($instancePath . '/typo3');
         foreach ($linksToSet as $from => $to) {
-            $success = symlink(realpath($from), $to);
+            $success = @symlink(realpath($from), $to);
             if (!$success) {
                 throw new Exception(
                     'Creating link failed: from ' . $from . ' to: ' . $to,
@@ -260,7 +260,7 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/typo3conf/ext/' . basename($absoluteExtensionPath);
-            $success = symlink($absoluteExtensionPath, $destinationPath);
+            $success = @symlink($absoluteExtensionPath, $destinationPath);
             if (!$success) {
                 throw new Exception(
                     'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
@@ -289,7 +289,7 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/typo3conf/ext/' . basename($absoluteExtensionPath);
-            $success = symlink($absoluteExtensionPath, $destinationPath);
+            $success = @symlink($absoluteExtensionPath, $destinationPath);
             if (!$success) {
                 throw new Exception(
                     'Can not link extension folder: ' . $absoluteExtensionPath . ' to ' . $destinationPath,
@@ -319,7 +319,7 @@ class Testbase
                 );
             }
             $destinationPath = $instancePath . '/' . ltrim($destinationPathToLinkInTestInstance, '/');
-            $success = symlink($sourcePath, $destinationPath);
+            $success = @symlink($sourcePath, $destinationPath);
             if (!$success) {
                 throw new Exception(
                     'Can not link the path ' . $sourcePath . ' to ' . $destinationPath,
