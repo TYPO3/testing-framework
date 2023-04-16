@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   cgl:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
     user: "${HOST_UID}"
     volumes:
       - ${ROOT_DIR}:${ROOT_DIR}
@@ -33,7 +33,7 @@ services:
       "
 
   composer_update:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
     volumes:
       - ${ROOT_DIR}:${ROOT_DIR}
@@ -50,7 +50,7 @@ services:
         composer update --no-progress --no-interaction;
       "
   lint:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
     volumes:
       - ${ROOT_DIR}:${ROOT_DIR}
@@ -67,7 +67,7 @@ services:
       "
 
   phpstan:
-      image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+      image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
       user: "${HOST_UID}"
       volumes:
           - ${ROOT_DIR}:${ROOT_DIR}
@@ -83,7 +83,7 @@ services:
           "
 
   phpstan_generate_baseline:
-      image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+      image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
       user: "${HOST_UID}"
       volumes:
           - ${ROOT_DIR}:${ROOT_DIR}
@@ -99,7 +99,7 @@ services:
           "
 
   unit:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    image: ${IMAGE_PREFIX}core-testing-${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
     volumes:
       - ${ROOT_DIR}:${ROOT_DIR}
