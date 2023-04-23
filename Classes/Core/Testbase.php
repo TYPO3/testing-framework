@@ -198,8 +198,7 @@ class Testbase
                     );
                 }
             }
-        }
-        else {
+        } else {
             chdir($instancePath);
             $this->createDirectory($instancePath . '/typo3');
             $this->createDirectory($instancePath . '/typo3/sysext');
@@ -562,8 +561,7 @@ class Testbase
         $legacyFilePath = ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
         if (is_file($legacyFilePath)) {
             $filePath = $legacyFilePath;
-        }
-        else {
+        } else {
             $filePath = ComposerPackageInfo::resolveExtensionPath('EXT:core') . '/Configuration/FactoryConfiguration.php';
         }
         $finalConfigurationArray = require $filePath;

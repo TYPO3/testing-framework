@@ -130,11 +130,9 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
         $allRawData = self::getAllRawData($composerName);
         if (array_key_exists($composerName, $allRawData[0]['versions'])) {
             $extensionDetails = $allRawData[0]['versions'][$composerName];
-        }
-        elseif ($composerName == $allRawData[0]['root']['name']) {
+        } elseif ($composerName == $allRawData[0]['root']['name']) {
             $extensionDetails = null;
-        }
-        else {
+        } else {
             $extensionDetails = false;
         }
         return $extensionDetails;
