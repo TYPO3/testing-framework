@@ -16,13 +16,15 @@ namespace TYPO3\TestingFramework\Composer;
  * The TYPO3 project - inspiring people to share!
  */
 
+use \Composer\InstalledVersions;
+
 /**
- * PARENT PROPERTIES:
+ * PROPERTIES of \Composer\InstalledVersions:
  * private static $installed;
  * private static $canGetVendors;
  * private static $installedByVendor = array();
  *
- * PARENT METHODS:
+ * METHODS of \Composer\InstalledVersions:
  * public static function getInstalledPackages()
  * public static function getInstalledPackagesByType($type)
  * public static function isInstalled($packageName, $includeDevRequirements = true)
@@ -43,7 +45,7 @@ namespace TYPO3\TestingFramework\Composer;
  * TYPO3 related extending class of \Composer\InstalledVersions.
  * @see https://github.com/composer/composer/blob/main/src/Composer/InstalledVersions.php
  */
-class ComposerPackageInfo extends \Composer\InstalledVersions
+class ComposerPackageInfo
 {
     /**
      * Get's all TYPO3 local extensions that are installed.
@@ -51,7 +53,7 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
      */
     public static function getLocalExtensions()
     {
-        return self::getInstalledPackagesByType('typo3-cms-extension');
+        return InstalledVersions::getInstalledPackagesByType('typo3-cms-extension');
     }
 
     /**
@@ -60,7 +62,7 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
      */
     public static function getSystemExtensions()
     {
-        return self::getInstalledPackagesByType('typo3-cms-framework');
+        return InstalledVersions::getInstalledPackagesByType('typo3-cms-framework');
     }
 
     /**
@@ -96,11 +98,8 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
         return $systemExtensionsEnriched;
     }
 
-    public static function getExtensionsEnriched($composerNameArray)
+    public static function getExtensionsEnriched(array $composerNameArray)
     {
-        if (!is_array($composerNameArray)) {
-            return false;
-        }
         $extensionsEnriched = [];
         foreach ($composerNameArray as $count => $composerName) {
             $extensionDetails = self::getExtensionDetails($composerName);
@@ -124,10 +123,10 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
         return array_merge_recursive($localExtensionsEnriched, $systemExtensionsEnriched);
     }
 
-    public static function getExtensionDetails($composerName)
+    public static function getExtensionDetails(string $composerName)
     {
         $extensionDetails = [];
-        $allRawData = self::getAllRawData($composerName);
+        $allRawData = InstalledVersions::getAllRawData();
         if (array_key_exists($composerName, $allRawData[0]['versions'])) {
             $extensionDetails = $allRawData[0]['versions'][$composerName];
         } elseif ($composerName == $allRawData[0]['root']['name']) {
@@ -138,7 +137,7 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
         return $extensionDetails;
     }
 
-    public static function getExtensionKey($composerName, $installPath)
+    public static function getExtensionKey(string $composerName, string $installPath)
     {
         $data = self::getJsonConfiguration($composerName, $installPath);
         $extensionKey = $data['extra']['typo3/cms']['extension-key'] ?? '';
@@ -150,12 +149,9 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
      * Can be used to get any details which are not provided by composer API by default.
      * Used for getExtensionKey()
      *
-     * @param string
-     * @param string
-     *
      * @return mixed [array | false]
      */
-    public static function getJsonConfiguration($composerName, $installPath)
+    public static function getJsonConfiguration(string $composerName, string $installPath)
     {
         $filePath = $installPath . '/composer.json';
         if (!is_file($filePath)) {
@@ -166,7 +162,7 @@ class ComposerPackageInfo extends \Composer\InstalledVersions
         return $data;
     }
 
-    public static function resolveExtensionPath($extensionPath)
+    public static function resolveExtensionPath(string $extensionPath)
     {
         if (strpos($extensionPath, 'EXT:') === 0) {
             $extKey = substr($extensionPath, 4);
