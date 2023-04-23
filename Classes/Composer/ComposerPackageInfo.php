@@ -16,7 +16,7 @@ namespace TYPO3\TestingFramework\Composer;
  * The TYPO3 project - inspiring people to share!
  */
 
-use \Composer\InstalledVersions;
+use Composer\InstalledVersions;
 
 /**
  * PROPERTIES of \Composer\InstalledVersions:
