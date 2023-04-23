@@ -70,5 +70,8 @@
     "phpstan/phpstan": "^1.9.2",
     "phpstan/phpstan-phpunit": "^1.1.1",
     "typo3/cms-workspaces": "11.*.*@dev"
+  },
+  "replace": {
+    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "*"
   }
 }

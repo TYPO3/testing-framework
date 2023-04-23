@@ -321,9 +321,19 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             foreach ($this->additionalFoldersToCreate as $directory) {
                 $testbase->createDirectory($this->instancePath . '/' . $directory);
             }
-            $testbase->setUpInstanceCoreLinks($this->instancePath);
+            $defaultCoreExtensionsToLoad = [
+                'core',
+                'backend',
+                'frontend',
+                'extbase',
+                'install',
+                'fluid',
+            ];
+            if ((new Typo3Version())->getMajorVersion() < 12) {
+                $defaultCoreExtensionsToLoad[] = 'recordlist';
+            }
+            $testbase->setUpInstanceCoreLinks($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad);
             $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
-            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $this->frameworkExtensionsToLoad);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
@@ -372,15 +382,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
             $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
-            $defaultCoreExtensionsToLoad = [
-                'core',
-                'backend',
-                'frontend',
-                'extbase',
-                'install',
-                'recordlist',
-                'fluid',
-            ];
             $testbase->setUpPackageStates(
                 $this->instancePath,
                 $defaultCoreExtensionsToLoad,
