@@ -227,8 +227,7 @@ class Testbase
             $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
         ];
 
-        // var $_composer_autoload_path is global and set by composer
-        $autoloadFile = $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
+        $autoloadFile = ComposerPackageInfo::getAutoload();
         foreach ($entryPointsToSet as $source => $target) {
             if (($entryPointContent = @file_get_contents($source)) === false) {
                 throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
@@ -281,8 +280,7 @@ class Testbase
             $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
         ];
 
-        // var $_composer_autoload_path is global and set by composer
-        $autoloadFile = $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
+        $autoloadFile = ComposerPackageInfo::getAutoload();
         foreach ($entryPointsToSet as $source => $target) {
             if (($entryPointContent = @file_get_contents($source)) === false) {
                 throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
@@ -713,8 +711,7 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
-        // var $_composer_autoload_path is global and set by composer
-        $autoloadFile = require $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
+        $autoloadFile = require ComposerPackageInfo::getAutoload();
         SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         $container = Bootstrap::init($autoloadFile);
         // Make sure output is not buffered, so command-line output can take place and
