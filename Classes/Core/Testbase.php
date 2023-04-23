@@ -30,6 +30,7 @@ use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Composer\ComposerPackageInfo;
 
 /**
  * This is a helper class used by unit, functional and acceptance test
@@ -179,6 +180,82 @@ class Testbase
      */
     public function setUpInstanceCoreLinks($instancePath): void
     {
+        // simple check if installation is using typo3/sysext for core extensions
+        // does execute the required procedures if applying
+        if (is_dir(ORIGINAL_ROOT . 'typo3/sysext/core')) {
+            $linksToSet = [
+                        '../../../../' => $instancePath . '/typo3_src',
+                        'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
+            ];
+            chdir($instancePath);
+            $this->createDirectory($instancePath . '/typo3');
+            foreach ($linksToSet as $from => $to) {
+                $success = @symlink($from, $to);
+                if (!$success) {
+                    throw new Exception(
+                        'Creating link failed: from ' . $from . ' to: ' . $to,
+                        1376657199
+                    );
+                }
+            }
+        }
+        else {
+            chdir($instancePath);
+            $this->createDirectory($instancePath . '/typo3');
+            $this->createDirectory($instancePath . '/typo3/sysext');
+            $typo3SystemExtensions = ComposerPackageInfo::getSystemExtensionsEnriched();
+            chdir($instancePath . '/typo3/sysext');
+            foreach ($typo3SystemExtensions as $count => $systemExtension) {
+                $from = $systemExtension['install_path'];
+                $to = $systemExtension['extensionKey'];
+                $success = @symlink($from, $to);
+                if (!$success) {
+                    throw new Exception(
+                        'Creating link failed: from ' . $from . ' to: ' . $to,
+                        1376657199
+                    );
+                }
+            }
+        }
+
+        // We can't just link the entry scripts here, because acceptance tests will make use of them
+        // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
+        // of the testing framework.
+        // instancePath: '/var/www/html/public/typo3temp/var/tests/acceptance/'
+        $entryPointsToSet = [
+            $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
+            $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
+            $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
+        ];
+
+        // var $_composer_autoload_path is global and set by composer
+        $autoloadFile = $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
+        foreach ($entryPointsToSet as $source => $target) {
+            if (($entryPointContent = @file_get_contents($source)) === false) {
+                throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
+            }
+            $entryPointContent = (string)preg_replace(
+                '/__DIR__ \. \'[^\']+\'/',
+                $this->findShortestPathCode($target, $autoloadFile),
+                $entryPointContent
+            );
+            $entryPointContent = (string)preg_replace(
+                '/\\\\TYPO3\\\\CMS\\\\Core\\\\Core\\\\SystemEnvironmentBuilder::run\(/',
+                '\TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(',
+                $entryPointContent
+            );
+            if ($entryPointContent === '') {
+                throw new \UnexpectedValueException(
+                    sprintf('Error while customizing the source file (%s).', $source),
+                    1636244910
+                );
+            }
+            file_put_contents($target, $entryPointContent);
+        }
+    }
+
+    public function _legacy_setUpInstanceCoreLinks($instancePath): void
+    {
         $linksToSet = [
             '../../../../' => $instancePath . '/typo3_src',
             'typo3_src/typo3/sysext/' => $instancePath . '/typo3/sysext',
@@ -186,7 +263,7 @@ class Testbase
         chdir($instancePath);
         $this->createDirectory($instancePath . '/typo3');
         foreach ($linksToSet as $from => $to) {
-            $success = @symlink(realpath($from), $to);
+            $success = @symlink($from, $to);
             if (!$success) {
                 throw new Exception(
                     'Creating link failed: from ' . $from . ' to: ' . $to,
@@ -198,15 +275,17 @@ class Testbase
         // We can't just link the entry scripts here, because acceptance tests will make use of them
         // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
         // of the testing framework.
+        // instancePath: '/var/www/html/public/typo3temp/var/tests/acceptance/'
         $entryPointsToSet = [
             $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
             $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
             $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
         ];
-        $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
 
+        // var $_composer_autoload_path is global and set by composer
+        $autoloadFile = $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
         foreach ($entryPointsToSet as $source => $target) {
-            if (($entryPointContent = file_get_contents($source)) === false) {
+            if (($entryPointContent = @file_get_contents($source)) === false) {
                 throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
             }
             $entryPointContent = (string)preg_replace(
@@ -240,7 +319,11 @@ class Testbase
     public function linkTestExtensionsToInstance($instancePath, array $extensionPaths): void
     {
         foreach ($extensionPaths as $extensionPath) {
-            $absoluteExtensionPath = ORIGINAL_ROOT . $extensionPath;
+            if (strpos($extensionPath, 'EXT:') === 0) {
+                $absoluteExtensionPath = ComposerPackageInfo::resolveExtensionPath($extensionPath);
+            } else {
+                $absoluteExtensionPath = ORIGINAL_ROOT . $extensionPath;
+            }
             if (!is_dir($absoluteExtensionPath)) {
                 throw new Exception(
                     'Test extension path ' . $absoluteExtensionPath . ' not found',
@@ -346,7 +429,7 @@ class Testbase
                     // Create parent dir if it does not exist yet
                     mkdir($destinationParentPath, 0775, true);
                 }
-                $success = copy($sourcePath, $destinationPath);
+                $success = @copy($sourcePath, $destinationPath);
             } else {
                 $success = $this->copyRecursive($sourcePath, $destinationPath);
             }
@@ -476,10 +559,17 @@ class Testbase
     public function setUpLocalConfiguration($instancePath, array $configuration, array $overruleConfiguration): void
     {
         // Base of final LocalConfiguration is core factory configuration
-        $finalConfigurationArray = require ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
+        $legacyFilePath = ORIGINAL_ROOT . 'typo3/sysext/core/Configuration/FactoryConfiguration.php';
+        if (is_file($legacyFilePath)) {
+            $filePath = $legacyFilePath;
+        }
+        else {
+            $filePath = ComposerPackageInfo::resolveExtensionPath('EXT:core') . '/Configuration/FactoryConfiguration.php';
+        }
+        $finalConfigurationArray = require $filePath;
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
-        $result = file_put_contents(
+        $result = @file_put_contents(
             $instancePath . '/typo3conf/LocalConfiguration.php',
             '<?php' . chr(10) .
             'return ' .
@@ -548,7 +638,7 @@ class Testbase
             ];
         }
 
-        $result = file_put_contents(
+        $result = @file_put_contents(
             $instancePath . '/typo3conf/PackageStates.php',
             '<?php' . chr(10) .
             'return ' .
@@ -625,9 +715,10 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
-        $classLoader = require __DIR__ . '/../../../../autoload.php';
+        // var $_composer_autoload_path is global and set by composer
+        $autoloadFile = require $_composer_autoload_path ?? $this->getPackagesPath() . '/autoload.php';
         SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-        $container = Bootstrap::init($classLoader);
+        $container = Bootstrap::init($autoloadFile);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
         ob_end_clean();
