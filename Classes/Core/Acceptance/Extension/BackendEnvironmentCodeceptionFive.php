@@ -265,7 +265,8 @@ abstract class BackendEnvironmentCodeceptionFive extends Extension
         foreach ($this->config['additionalFoldersToCreate'] as $directory) {
             $testbase->createDirectory($instancePath . '/' . $directory);
         }
-        $testbase->setUpInstanceCoreLinks($instancePath);
+        $coreExtensionsToLoad = $this->config['coreExtensionsToLoad'];
+        $testbase->setUpInstanceCoreLinks($instancePath, [], $coreExtensionsToLoad);
         $testExtensionsToLoad = $this->config['testExtensionsToLoad'];
         $testbase->linkTestExtensionsToInstance($instancePath, $testExtensionsToLoad);
         $testbase->linkPathsInTestInstance($instancePath, $this->config['pathsToLinkInTestInstance']);
@@ -304,7 +305,6 @@ abstract class BackendEnvironmentCodeceptionFive extends Extension
         $localConfiguration['SYS']['caching']['cacheConfigurations']['extbase_object']['backend'] = NullBackend::class;
         $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
         $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->config['configurationToUseInTestInstance']);
-        $coreExtensionsToLoad = $this->config['coreExtensionsToLoad'];
         $frameworkExtensionPaths = [];
         $testbase->setUpPackageStates($instancePath, [], $coreExtensionsToLoad, $testExtensionsToLoad, $frameworkExtensionPaths);
         $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($coreExtensionsToLoad, $testExtensionsToLoad)));
