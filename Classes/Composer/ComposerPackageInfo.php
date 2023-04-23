@@ -184,6 +184,6 @@ class ComposerPackageInfo
 
     public static function getAutoload()
     {
-        return realpath(self::getInstallPath('typo3/cms-core') . '/../../autoload.php');
+        return realpath(InstalledVersions::getInstallPath('typo3/cms-core') . '/../../autoload.php');
     }
 }
