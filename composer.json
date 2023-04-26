@@ -30,6 +30,7 @@
     "guzzlehttp/psr7": "^2.4.3",
     "phpunit/phpunit": "^9.5.25 || ^10.1",
     "psr/container": "^1.1.0 || ^2.0.0",
+    "symfony/filesystem": "^5.4 || ^6.0",
     "typo3/cms-backend": "11.*.*@dev || 12.*.*@dev",
     "typo3/cms-core": "11.*.*@dev || 12.*.*@dev",
     "typo3/cms-extbase": "11.*.*@dev || 12.*.*@dev",
