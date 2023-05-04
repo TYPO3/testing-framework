@@ -18,6 +18,7 @@ namespace TYPO3\TestingFramework\Tests\Unit\Composer;
  */
 
 use TYPO3\TestingFramework\Composer\ComposerPackageManager;
+use TYPO3\TestingFramework\Composer\PackageInfo;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 final class ComposerPackageManagerTest extends UnitTestCase
@@ -141,5 +142,47 @@ final class ComposerPackageManagerTest extends UnitTestCase
     {
         $subject = new ComposerPackageManager();
         self::assertSame($expectedPath, $subject->sanitizePath($path));
+    }
+
+    /**
+     * @test
+     */
+    public function coreExtensionCanBeResolvedByExtensionKey(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfo('core');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('typo3/cms-core', $packageInfo->getName());
+        self::assertSame('core', $packageInfo->getExtensionKey());
+        self::assertTrue($packageInfo->isSystemExtension());
+    }
+
+    /**
+     * @test
+     */
+    public function coreExtensionCanBeResolvedByPackageName(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfo('typo3/cms-core');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('typo3/cms-core', $packageInfo->getName());
+        self::assertSame('core', $packageInfo->getExtensionKey());
+        self::assertTrue($packageInfo->isSystemExtension());
+    }
+
+    /**
+     * @test
+     */
+    public function coreExtensionCanBeResolvedWithRelativeLegacyPathPrefix(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfo('typo3/sysext/core');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('typo3/cms-core', $packageInfo->getName());
+        self::assertSame('core', $packageInfo->getExtensionKey());
+        self::assertTrue($packageInfo->isSystemExtension());
     }
 }
