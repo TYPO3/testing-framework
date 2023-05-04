@@ -28,7 +28,9 @@ final class PackageInfo
         private readonly string $path,
         private readonly string $realPath,
         private readonly string $version,
-        private array $info,
+        private readonly string $extensionKey,
+        private readonly ?array $info = null,
+        private readonly ?array $extEmConf = null,
     ) {
     }
 
@@ -57,6 +59,16 @@ final class PackageInfo
         return $this->version;
     }
 
+    public function getInfo(): ?array
+    {
+        return $this->info;
+    }
+
+    public function getExtEmConf(): ?array
+    {
+        return $this->extEmConf;
+    }
+
     public function isSystemExtension(): bool
     {
         return $this->type === 'typo3-cms-framework';
@@ -72,13 +84,18 @@ final class PackageInfo
         return $this->type === 'typo3-cms-core';
     }
 
+    public function isComposerPackage(): bool
+    {
+        return $this->info !== null;
+    }
+
     public function getExtensionKey(): string
     {
-        return (string)($this->info['extra']['typo3/cms']['extension-key'] ?? '');
+        return $this->extensionKey;
     }
 
     public function getVendorDir(): string
     {
-        return (string)($this->info['config']['vendor-dir'] ?? '');
+        return (string)($this?->info['config']['vendor-dir'] ?? '');
     }
 }
