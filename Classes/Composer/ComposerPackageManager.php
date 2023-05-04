@@ -18,13 +18,31 @@ namespace TYPO3\TestingFramework\Composer;
  */
 
 use Composer\InstalledVersions;
-use Symfony\Component\Filesystem\Path;
 
 /**
  * @internal This class is for testing-framework internal processing and not part of public testing API.
  */
 final class ComposerPackageManager
 {
+    /**
+     * The number of buffer entries that triggers a cleanup operation.
+     */
+    private const CLEANUP_THRESHOLD = 1250;
+
+    /**
+     * The buffer size after the cleanup operation.
+     */
+    private const CLEANUP_SIZE = 1000;
+
+    /**
+     * Buffers input/output of {@link canonicalize()}.
+     *
+     * @var array<string, string>
+     */
+    private static $buffer = [];
+
+    private static $bufferSize = 0;
+
     private static string $vendorPath = '';
 
     private static PackageInfo|null $rootPackage = null;
@@ -241,9 +259,9 @@ final class ComposerPackageManager
      * This method resolves relative path tokens directly ( e.g. '/../' ) and sanitizes the path from back-slash to
      * slash for a cross os compatibility.
      */
-    private function sanitizePath(string $path): string
+    public function sanitizePath(string $path): string
     {
-        return Path::canonicalize(rtrim(strtr($path, '\\', '/'), '/'));
+        return $this->canonicalize(rtrim(strtr($path, '\\', '/'), '/'));
     }
 
     /**
@@ -253,5 +271,108 @@ final class ComposerPackageManager
     {
         $path = $this->sanitizePath($path);
         return realpath($path) ?: $path;
+    }
+
+    private function canonicalize(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+
+        // This method is called by many other methods in this class. Buffer
+        // the canonicalized paths to make up for the severe performance
+        // decrease.
+        if (isset(self::$buffer[$path])) {
+            return self::$buffer[$path];
+        }
+
+        $path = str_replace('\\', '/', $path);
+
+        [$root, $pathWithoutRoot] = $this->split($path);
+
+        $canonicalParts = $this->findCanonicalParts($root, $pathWithoutRoot);
+
+        // Add the root directory again
+        self::$buffer[$path] = $canonicalPath = $root . implode('/', $canonicalParts);
+        ++self::$bufferSize;
+
+        // Clean up regularly to prevent memory leaks
+        if (self::$bufferSize > self::CLEANUP_THRESHOLD) {
+            self::$buffer = \array_slice(self::$buffer, -self::CLEANUP_SIZE, null, true);
+            self::$bufferSize = self::CLEANUP_SIZE;
+        }
+
+        return $canonicalPath;
+    }
+
+    private function split(string $path): array
+    {
+        if ($path === '') {
+            return ['', ''];
+        }
+
+        // Remember scheme as part of the root, if any
+        $schemeSeparatorPosition = strpos($path, '://');
+        if ($schemeSeparatorPosition !== false) {
+            $root = substr($path, 0, $schemeSeparatorPosition + 3);
+            $path = substr($path, $schemeSeparatorPosition + 3);
+        } else {
+            $root = '';
+        }
+
+        $length = \strlen($path);
+
+        // Remove and remember root directory
+        if (str_starts_with($path, '/')) {
+            $root .= '/';
+            $path = $length > 1 ? substr($path, 1) : '';
+        } elseif ($length > 1 && ctype_alpha($path[0]) && ':' === $path[1]) {
+            if ($length === 2) {
+                // Windows special case: "C:"
+                $root .= $path . '/';
+                $path = '';
+            } elseif ($path[2] === '/') {
+                // Windows normal case: "C:/"..
+                $root .= substr($path, 0, 3);
+                $path = $length > 3 ? substr($path, 3) : '';
+            }
+        }
+
+        return [$root, $path];
+    }
+
+    private function findCanonicalParts(string $root, string $pathWithoutRoot): array
+    {
+        $parts = explode('/', $pathWithoutRoot);
+
+        $canonicalParts = [];
+
+        // Collapse "." and "..", if possible
+        foreach ($parts as $part) {
+            if ($part === '.'
+                || $part === ''
+            ) {
+                continue;
+            }
+
+            // Collapse ".." with the previous part, if one exists
+            // Don't collapse ".." if the previous part is also ".."
+            if ($part === '..'
+                && \count($canonicalParts) > 0
+                && $canonicalParts[\count($canonicalParts) - 1] !== '..'
+            ) {
+                array_pop($canonicalParts);
+                continue;
+            }
+
+            // Only add ".." prefixes for relative paths
+            if ($part !== '..'
+                || $root === ''
+            ) {
+                $canonicalParts[] = $part;
+            }
+        }
+
+        return $canonicalParts;
     }
 }
