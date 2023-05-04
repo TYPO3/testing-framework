@@ -118,8 +118,10 @@ final class ComposerPackageManager
         $packageName = $package['name'];
         $packagePath = $this->getPackageInstallPath($packageName);
         $packageRealPath = $this->realPath($packagePath);
-        $info = $this->getPackageComposerJson($packagePath) ?? [];
+        $info = $this->getPackageComposerJson($packagePath);
         $packageType = $info['type'] ?? '';
+        $extEmConf = $this->getExtEmConf($packagePath);
+        $extensionKey = $this->determineExtensionKey($packagePath, $info, $extEmConf);
 
         $packageInfo = new PackageInfo(
             $packageName,
@@ -127,7 +129,9 @@ final class ComposerPackageManager
             $packagePath,
             $packageRealPath,
             $package['pretty_version'],
-            $info
+            $extensionKey,
+            $info,
+            $extEmConf
         );
         self::$rootPackage = $packageInfo;
         $this->addPackageInfo($packageInfo);
@@ -159,6 +163,8 @@ final class ComposerPackageManager
             $info = $this->getPackageComposerJson($packageRealPath);
             $packageName = $info['name'] ?? '';
             $packageType = $info['type'] ?? '';
+            $extEmConf = $this->getExtEmConf($packageRealPath);
+            $extensionKey = $this->determineExtensionKey($packageRealPath, $info, $extEmConf);
             $packageInfo = new PackageInfo(
                 $packageName,
                 $packageType,
@@ -166,7 +172,9 @@ final class ComposerPackageManager
                 $packageRealPath,
                 // System extensions in mono-repository are exactly the same version as the root package. Use it.
                 $this->rootPackage()->getVersion(),
-                $info
+                $extensionKey,
+                $info,
+                $extEmConf,
             );
             if (!$packageInfo->isSystemExtension()) {
                 continue;
@@ -184,15 +192,19 @@ final class ComposerPackageManager
             foreach ($loader['versions'] as $packageName => $version) {
                 $packagePath = $this->getPackageInstallPath($packageName);
                 $packageRealPath = $this->realPath($packagePath);
-                $info = $this->getPackageComposerJson($packagePath) ?? [];
+                $info = $this->getPackageComposerJson($packagePath);
+                $extEmConf = $this->getExtEmConf($packagePath);
                 $packageType = $info['type'] ?? '';
+                $extensionKey = $this->determineExtensionKey($packagePath, $info, $extEmConf);
                 $this->addPackageInfo(new PackageInfo(
                     $packageName,
                     $packageType,
                     $packagePath,
                     $packageRealPath,
-                    (string)($version['pretty_version'] ?? ''),
-                    $info
+                    (string)($version['pretty_version'] ?? $this->prettifyVersion($extEmConf['version'] ?? '')),
+                    $extensionKey,
+                    $info,
+                    $extEmConf
                 ));
             }
         }
@@ -222,6 +234,9 @@ final class ComposerPackageManager
 
     private function getPackageComposerJson(string $path): ?array
     {
+        if ($path === '') {
+            return null;
+        }
         $composerFile = rtrim($path, '/') . '/composer.json';
         if (!file_exists($composerFile) || !is_readable($composerFile)) {
             return null;
@@ -231,6 +246,28 @@ final class ComposerPackageManager
         } catch(\Throwable) {
             // skipped
         }
+        return null;
+    }
+
+    private function getExtEmConf(string $path): ?array
+    {
+        if ($path === '') {
+            return null;
+        }
+        $extEmConfFile = rtrim($path, '/') . 'ext_emconf.php';
+        if (!file_exists($extEmConfFile) || !is_readable($extEmConfFile)) {
+            return null;
+        }
+
+        try {
+            /** @var array<non-empty-string, array> $EM_CONF */
+            $EM_CONF = [];
+            $_EXTKEY = '__EXTKEY__';
+            @include $extEmConfFile;
+            return $EM_CONF[$_EXTKEY] ?? null;
+        } catch (\Throwable) {
+        }
+
         return null;
     }
 
@@ -374,5 +411,35 @@ final class ComposerPackageManager
         }
 
         return $canonicalParts;
+    }
+
+    private function determineExtensionKey(
+        string $packagePath,
+        ?array $info = null,
+        ?array $extEmConf = null
+    ): string {
+        $isExtension = in_array($info['type'] ?? '', ['typo3-cms-framework', 'typo3-cms-extension'], true)
+            || ($extEmConf !== null);
+        if (!$isExtension) {
+            return '';
+        }
+        $baseName = basename($packagePath);
+        return $info['extra']['typo3/cms']['extension-key'] ?? $baseName;
+    }
+
+    private function prettifyVersion(string $version): string
+    {
+        if ($version === '') {
+            return '';
+        }
+        $parts =  array_pad(explode('.', $version), 3, '0');
+        return implode(
+            '.',
+            [
+                $parts[0] ?? '0',
+                $parts[1] ?? '0',
+                $parts[2] ?? '0',
+            ],
+        );
     }
 }
