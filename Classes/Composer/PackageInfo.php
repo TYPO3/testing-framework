@@ -27,7 +27,9 @@ final class PackageInfo
     private string $path;
     private string $realPath;
     private string $version;
-    private array $info;
+    private string $extensionKey;
+    private ?array $info = null;
+    private ?array $extEmConf = null;
 
     public function __construct(
         string $name,
@@ -35,14 +37,18 @@ final class PackageInfo
         string $path,
         string $realPath,
         string $version,
-        array $info
+        string $extensionKey,
+        ?array $info = null,
+        ?array $extEmConf = null
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->path = $path;
         $this->realPath = $realPath;
         $this->version = $version;
+        $this->extensionKey = $extensionKey;
         $this->info = $info;
+        $this->extEmConf = $extEmConf;
     }
 
     public function getName(): string
@@ -70,6 +76,16 @@ final class PackageInfo
         return $this->version;
     }
 
+    public function getInfo(): ?array
+    {
+        return $this->info;
+    }
+
+    public function getExtEmConf(): ?array
+    {
+        return $this->extEmConf;
+    }
+
     public function isSystemExtension(): bool
     {
         return $this->type === 'typo3-cms-framework';
@@ -85,9 +101,14 @@ final class PackageInfo
         return $this->type === 'typo3-cms-core';
     }
 
+    public function isComposerPackage(): bool
+    {
+        return $this->info !== null;
+    }
+
     public function getExtensionKey(): string
     {
-        return (string)($this->info['extra']['typo3/cms']['extension-key'] ?? '');
+        return $this->extensionKey;
     }
 
     public function getVendorDir(): string
