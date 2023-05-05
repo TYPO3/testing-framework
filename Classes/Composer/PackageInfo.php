@@ -120,4 +120,18 @@ final class PackageInfo
     {
         return (string)($this->info['extra']['typo3/cms']['web-dir'] ?? '');
     }
+
+    /**
+     * @return string[]
+     */
+    public function getReplacesPackageNames(): array
+    {
+        $keys = array_keys($this->info['replace'] ?? []);
+        if ($this->isMonoRepository()) {
+            // Monorepo root composer.json replaces core system extension. We do not want that happen, so
+            // ignore only replaced core extensions.
+            $keys = array_filter($keys, static fn ($value) => !str_starts_with($value, 'typo3/cms-'));
+        }
+        return $keys;
+    }
 }
