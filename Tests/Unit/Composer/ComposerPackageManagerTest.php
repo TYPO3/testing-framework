@@ -146,6 +146,24 @@ final class ComposerPackageManagerTest extends UnitTestCase
 
     /**
      * @test
+     * @internal Ensure the TF related special case is in place as baseline for followup tests.
+     */
+    public function testingFrameworkCanBeResolvedAsExtensionKey(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfo('testing_framework');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('typo3/testing-framework', $packageInfo->getName());
+        self::assertSame('', $packageInfo->getExtensionKey());
+        self::assertFalse($packageInfo->isExtension());
+        self::assertFalse($packageInfo->isSystemExtension());
+        self::assertNull($packageInfo->getExtEmConf());
+        self::assertNotNull($packageInfo->getInfo());
+    }
+
+    /**
+     * @test
      */
     public function coreExtensionCanBeResolvedByExtensionKey(): void
     {
@@ -184,5 +202,118 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertSame('typo3/cms-core', $packageInfo->getName());
         self::assertSame('core', $packageInfo->getExtensionKey());
         self::assertTrue($packageInfo->isSystemExtension());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithoutJsonCanBeResolvedByAbsolutePath(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/ext_without_composerjson_absolute');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('ext_without_composerjson_absolute', $packageInfo->getExtensionKey());
+        self::assertSame('unknown-vendor/ext-without-composerjson-absolute', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithoutJsonCanBeResolvedRelativeFromRoot(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback('Tests/Unit/Composer/Fixtures/Extensions/ext_without_composerjson_relativefromroot');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('ext_without_composerjson_relativefromroot', $packageInfo->getExtensionKey());
+        self::assertSame('unknown-vendor/ext-without-composerjson-relativefromroot', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithoutJsonCanBeResolvedByLegacyPath(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback('typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_without_composerjson_fallbackroot');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('ext_without_composerjson_fallbackroot', $packageInfo->getExtensionKey());
+        self::assertSame('unknown-vendor/ext-without-composerjson-fallbackroot', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithJsonCanBeResolvedByAbsolutePath(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/ext_absolute');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('absolute_real', $packageInfo->getExtensionKey());
+        self::assertSame('testing-framework/extension-absolute', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNotNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithJsonCanBeResolvedRelativeFromRoot(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback('Tests/Unit/Composer/Fixtures/Extensions/ext_relativefromroot');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('relativefromroot_real', $packageInfo->getExtensionKey());
+        self::assertSame('testing-framework/extension-relativefromroot', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNotNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithJsonCanBeResolvedByLegacyPath(): void
+    {
+        $subject = new ComposerPackageManager();
+        $packageInfo = $subject->getPackageInfoWithFallback('typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_fallbackroot');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('fallbackroot_real', $packageInfo->getExtensionKey());
+        self::assertSame('testing-framework/extension-fallbackroot', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNotNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
+    }
+
+    /**
+     * @test
+     */
+    public function extensionWithJsonCanBeResolvedByRelativeLegacyPath(): void
+    {
+        $subject = new ComposerPackageManager();
+        $projectFolderName = basename($subject->getRootPath());
+        $packageInfo = $subject->getPackageInfoWithFallback('../' . $projectFolderName . '/typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_fallbackroot');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('fallbackroot_real', $packageInfo->getExtensionKey());
+        self::assertSame('testing-framework/extension-fallbackroot', $packageInfo->getName());
+        self::assertSame('typo3-cms-extension', $packageInfo->getType());
+        self::assertNotNull($packageInfo->getInfo());
+        self::assertNotNull($packageInfo->getExtEmConf());
     }
 }

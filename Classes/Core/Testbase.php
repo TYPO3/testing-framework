@@ -200,7 +200,7 @@ class Testbase
             $coreExtensions = $this->composerPackageManager->getSystemExtensionExtensionKeys();
         }
         foreach ($coreExtensions as $coreExtension) {
-            $packageInfo = $this->composerPackageManager->getPackageInfo($coreExtension);
+            $packageInfo = $this->composerPackageManager->getPackageInfoWithFallback($coreExtension);
             if (! ($packageInfo?->isSystemExtension() ?? false)) {
                 continue;
             }
@@ -264,7 +264,7 @@ class Testbase
     public function linkTestExtensionsToInstance(string $instancePath, array $extensionPaths): void
     {
         foreach ($extensionPaths as $extensionPath) {
-            $packageInfo = $this->composerPackageManager->getPackageInfo($extensionPath);
+            $packageInfo = $this->composerPackageManager->getPackageInfoWithFallback($extensionPath);
             if ($packageInfo instanceof PackageInfo) {
                 $installPath = $packageInfo->getRealPath();
                 $destinationPath = $instancePath . '/typo3conf/ext/' . $packageInfo->getExtensionKey();
