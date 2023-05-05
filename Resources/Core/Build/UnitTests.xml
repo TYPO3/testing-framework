@@ -17,7 +17,7 @@
      xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
      backupGlobals="true"
      beStrictAboutTestsThatDoNotTestAnything="false"
-     bootstrap="FunctionalTestsBootstrap.php"
+     bootstrap="UnitTestsBootstrap.php"
      cacheDirectory=".phpunit.cache"
      cacheResult="false"
      colors="true"
