@@ -304,6 +304,12 @@ final class ComposerPackageManager
     {
         foreach (InstalledVersions::getAllRawData() as $loader) {
             foreach ($loader['versions'] as $packageName => $version) {
+                // We ignore replaced packages. The replacing package adds them with the final package info directly.
+                if (($version['replaced'] ?? false)
+                    && $version['replaced'] !== []
+                ) {
+                    continue;
+                }
                 $packagePath = $this->getPackageInstallPath($packageName);
                 $packageRealPath = $this->realPath($packagePath);
                 $info = $this->getPackageComposerJson($packagePath);
@@ -338,6 +344,17 @@ final class ComposerPackageManager
         self::$packages[$packageInfo->getName()] = $packageInfo;
         if ($packageInfo->getExtensionKey() !== '') {
             self::$extensionKeyToPackageNameMap[$packageInfo->getExtensionKey()] = $packageInfo->getName();
+        }
+        foreach ($packageInfo->getReplacesPackageNames() as $replacedPackageName) {
+            self::$packages[$replacedPackageName] = $packageInfo;
+            if ($packageInfo->isExtension() || $packageInfo->isSystemExtension()) {
+                $extensionKey = basename($replacedPackageName);
+                if (str_starts_with($extensionKey, 'cms-')) {
+                    $extensionKey = substr($extensionKey, 4);
+                }
+                $extensionKey = $this->normalizeExtensionKey($extensionKey);
+                self::$extensionKeyToPackageNameMap[$extensionKey] = $replacedPackageName;
+            }
         }
     }
 
