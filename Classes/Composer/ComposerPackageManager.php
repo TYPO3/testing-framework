@@ -273,7 +273,7 @@ final class ComposerPackageManager
 
     private function resolvePackageName(string $name): string
     {
-        return self::$extensionKeyToPackageNameMap[basename($name)] ?? $name;
+        return self::$extensionKeyToPackageNameMap[$this->normalizeExtensionKey(basename($name))] ?? $name;
     }
 
     /**
@@ -419,7 +419,27 @@ final class ComposerPackageManager
             return '';
         }
         $baseName = basename($packagePath);
+        if (($info['type'] ?? '') === 'typo3-csm-framework'
+            && str_starts_with($baseName, 'cms-')
+        ) {
+            // remove `cms-` prefix
+            $baseName = substr($baseName, 4);
+        }
+        $baseName = $this->normalizeExtensionKey($baseName);
+
         return $info['extra']['typo3/cms']['extension-key'] ?? $baseName;
+    }
+
+    private function normalizeExtensionKey(string $extensionKey): string
+    {
+        $replaces = [
+            '-' => '_',
+        ];
+        return str_replace(
+            array_keys($replaces),
+            array_values($replaces),
+            $extensionKey
+        );
     }
 
     private function prettifyVersion(string $version): string
