@@ -98,4 +98,9 @@ final class PackageInfo
     {
         return (string)($this?->info['config']['vendor-dir'] ?? '');
     }
+
+    public function getWebDir(): string
+    {
+        return (string)($this?->info['extra']['typo3/cms']['web-dir'] ?? '');
+    }
 }

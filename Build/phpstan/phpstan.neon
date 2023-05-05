@@ -18,3 +18,5 @@ parameters:
   excludePaths:
     # Checking acceptance support files is cumbersome due to codeception dynamic mixin generation
     - ../../Classes/Core/Acceptance/*
+    # Text fixtures extensions uses $_EXTKEY phpstan would be report as "might not defined"
+    - ../../Tests/Unit/*/Fixtures/Extensions/*/ext_emconf.php
