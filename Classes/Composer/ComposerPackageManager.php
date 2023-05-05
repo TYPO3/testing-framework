@@ -45,6 +45,8 @@ final class ComposerPackageManager
 
     private static string $vendorPath = '';
 
+    private static string $publicPath = '';
+
     private static ?PackageInfo $rootPackage = null;
 
     /**
@@ -60,6 +62,21 @@ final class ComposerPackageManager
     public function __construct()
     {
         $this->build();
+    }
+
+    public function getPackageInfoWithFallback(string $name): ?PackageInfo
+    {
+        if ($packageInfo = $this->getPackageInfo($name)) {
+            return $packageInfo;
+        }
+        if ($packageInfo = $this->getPackageFromPath($name)) {
+            return $packageInfo;
+        }
+        if ($packageInfo = $this->getPackageFromPathFallback($name)) {
+            return $packageInfo;
+        }
+
+        return null;
     }
 
     public function getPackageInfo(string $name): ?PackageInfo
@@ -86,12 +103,22 @@ final class ComposerPackageManager
         return $extensionKeys;
     }
 
+    public function getRootPath(): string
+    {
+        return $this->rootPackage()->getRealPath();
+    }
+
     /**
      * Get full vendor path
      */
     public function getVendorPath(): string
     {
         return self::$vendorPath;
+    }
+
+    public function getPublicPath(): string
+    {
+        return self::$publicPath;
     }
 
     /**
@@ -136,12 +163,99 @@ final class ComposerPackageManager
         self::$rootPackage = $packageInfo;
         $this->addPackageInfo($packageInfo);
 
+        // If root-package is the testing-framework itself, we add it as fake extension_key for unit-tests related
+        // to composer package manager to test properly for extension testing level.
+        if ($packageInfo->getName() === 'typo3/testing-framework') {
+            self::$extensionKeyToPackageNameMap['testing_framework'] = 'typo3/testing-framework';
+        }
+
         self::$vendorPath = $this->realPath(
             rtrim(
                 $packageInfo->getRealPath() . '/' . ($packageInfo->getVendorDir() ?: 'vendor'),
                 '/'
             )
         );
+        self::$publicPath = $this->realPath(
+            rtrim(
+                $packageInfo->getRealPath() . '/' . ($packageInfo->getWebDir() ?: ''),
+                '/'
+            )
+        );
+    }
+
+    private function getPackageFromPathFallback(string $path): ?PackageInfo
+    {
+        $path = $this->sanitizePath($path);
+        if (str_contains($path, '..')
+            && !str_starts_with($path, '/')
+        ) {
+            $path = rtrim($this->rootPackage()->getRealPath() . '/' . $this->rootPackage()->getWebDir(), '/') . '/' . $path;
+            $path = $this->canonicalize(rtrim(strtr($path, '\\', '/'), '/'));
+        }
+        $containsLegacySystemExtensionPath = str_contains($path, 'typo3/sysext/ext/');
+        $containsLegacyExtensionPath = str_contains($path, 'typo3conf/ext/');
+        if ($containsLegacyExtensionPath || $containsLegacySystemExtensionPath) {
+            $path = $this->removePrefixPaths($path);
+        }
+        $matches = [];
+        if (preg_match('/typo3\/sysext\/[\w]+/', $path, $matches) === 1) {
+            $extensionKey = $this->getFirstPathElement(substr($path, mb_strlen('typo3/sysext/')));
+            if ($extensionPackageInfo = $this->getPackageInfo($extensionKey)) {
+                if (rtrim($path, '/') === 'typo3/sysext/' . $extensionKey) {
+                    return $extensionPackageInfo;
+                }
+                $path = $extensionPackageInfo->getRealPath() . '/' . substr($path, mb_strlen('typo3/sysext/' . $extensionKey . '/'));
+            }
+        }
+        if (preg_match('/typo3conf\/ext\/[\w]+/', $path, $matches) === 1) {
+            $extensionKey = $this->getFirstPathElement(substr($path, mb_strlen('typo3conf/ext/')));
+            if ($extensionPackageInfo = $this->getPackageInfo($extensionKey)) {
+                if (rtrim($path, '/') === 'typo3conf/ext/' . $extensionKey) {
+                    return $extensionPackageInfo;
+                }
+                $path = $extensionPackageInfo->getRealPath() . '/' . substr($path, mb_strlen('typo3conf/ext/' . $extensionKey . '/'));
+            }
+        }
+        if ($packageInfo = $this->getPackageFromPath($path)) {
+            return $packageInfo;
+        }
+
+        // @todo Validate if there are additional cases which should be handled as fallback.
+
+        return null;
+    }
+
+    private function getPackageFromPath(string $path): ?PackageInfo
+    {
+        $path = $this->sanitizePath($path);
+        $path = rtrim($path);
+        if (!is_dir($path)) {
+            return null;
+        }
+        $info = $this->getPackageComposerJson($path);
+        $extEmConf = $this->getExtEmConf($path);
+        $extensionKey = $this->determineExtensionKey($path, $info, $extEmConf);
+        $packageName = $info['name'] ?? $this->normalizePackageName($extensionKey);
+        $packageType = $info['type'] ?? ($extEmConf !== null ? 'typo3-cms-extension' : '');
+        if ($packageInfo = $this->getPackageInfo($packageName)) {
+            return $packageInfo;
+        }
+        if ($packageInfo = $this->getPackageInfo($extensionKey)) {
+            return $packageInfo;
+        }
+        $packageInfo = new PackageInfo(
+            $packageName,
+            $packageType,
+            $path,
+            $this->realPath($path),
+            // System extensions in mono-repository are exactly the same version as the root package. Use it.
+            $this->rootPackage()->getVersion(),
+            $extensionKey,
+            $info,
+            $extEmConf,
+        );
+        $this->addPackageInfo($packageInfo);
+        return $packageInfo;
     }
 
     /**
@@ -254,7 +368,7 @@ final class ComposerPackageManager
         if ($path === '') {
             return null;
         }
-        $extEmConfFile = rtrim($path, '/') . 'ext_emconf.php';
+        $extEmConfFile = rtrim($path, '/') . '/ext_emconf.php';
         if (!file_exists($extEmConfFile) || !is_readable($extEmConfFile)) {
             return null;
         }
@@ -293,7 +407,8 @@ final class ComposerPackageManager
      */
     public function sanitizePath(string $path): string
     {
-        return $this->canonicalize(rtrim(strtr($path, '\\', '/'), '/'));
+        $path = $this->canonicalize(rtrim(strtr($path, '\\', '/'), '/'));
+        return $path;
     }
 
     /**
@@ -442,6 +557,21 @@ final class ComposerPackageManager
         );
     }
 
+    private function normalizePackageName(string $packageName): string
+    {
+        if (!str_contains($packageName, '/')) {
+            $packageName = 'unknown-vendor/' . $packageName;
+        }
+        $replaces = [
+            '_' => '-',
+        ];
+        return str_replace(
+            array_keys($replaces),
+            array_values($replaces),
+            $packageName
+        );
+    }
+
     private function prettifyVersion(string $version): string
     {
         if ($version === '') {
@@ -456,5 +586,31 @@ final class ComposerPackageManager
                 $parts[2] ?? '0',
             ],
         );
+    }
+
+    private function removePrefixPaths(string $path): string
+    {
+        $removePaths = [
+            rtrim($this->getPublicPath(), '/') . '/',
+            rtrim($this->getVendorPath(), '/') . '/',
+            rtrim($this->rootPackage()->getVendorDir(), '/') . '/',
+            rtrim($this->rootPackage()->getWebDir(), '/') . '/',
+            rtrim($this->getRootPath(), '/') . '/',
+            basename($this->getRootPath()) . '/',
+        ];
+        foreach ($removePaths as $removePath) {
+            if (str_starts_with($path, $removePath)) {
+                $path = substr($path, mb_strlen($removePath));
+            }
+        }
+        return ltrim($path, '/');
+    }
+
+    private function getFirstPathElement(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+        return explode('/', $path)[0] ?? '';
     }
 }
