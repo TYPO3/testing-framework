@@ -117,11 +117,11 @@ services:
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"off\" \
-          .Build/bin/phpunit Tests/Unit/;
+          .Build/bin/phpunit -c Resources/Core/Build/UnitTests.xml Tests/Unit/;
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_host=host.docker.internal\" \
-          .Build/bin/phpunit Tests/Unit/;
+          .Build/bin/phpunit -c Resources/Core/Build/UnitTests.xml Tests/Unit/;
         fi
       "
