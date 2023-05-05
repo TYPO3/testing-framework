@@ -3,3 +3,4 @@
 composer.lock
 public/
 Build/testing-docker/.env
+var/
