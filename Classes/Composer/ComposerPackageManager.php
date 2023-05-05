@@ -273,12 +273,7 @@ final class ComposerPackageManager
 
     private function resolvePackageName(string $name): string
     {
-        if (str_starts_with($name, 'typo3conf/ext/')
-            || str_starts_with($name, 'typo3/sysext/')
-        ) {
-            $name = basename($name);
-        }
-        return self::$extensionKeyToPackageNameMap[$name] ?? $name;
+        return self::$extensionKeyToPackageNameMap[basename($name)] ?? $name;
     }
 
     /**
