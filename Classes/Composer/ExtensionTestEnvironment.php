@@ -19,7 +19,6 @@ namespace TYPO3\TestingFramework\Composer;
 use Composer\Script\Event;
 use Composer\Util\Filesystem;
 use TYPO3\CMS\Composer\Plugin\Config;
-use TYPO3\CMS\Core\Composer\PackageArtifactBuilder;
 
 /**
  * If a TYPO3 extension should be tested, the extension needs to be embedded in
@@ -54,11 +53,6 @@ final class ExtensionTestEnvironment
      */
     public static function prepare(Event $event): void
     {
-        if (class_exists(PackageArtifactBuilder::class)) {
-            // TYPO3 11.5 already takes care of creating the symlink if strictly required
-            $event->getIO()->warning('ExtensionTestEnvironment is not required any more for TYPO3 11.5 LTS');
-            return;
-        }
         $composer = $event->getComposer();
         $rootPackage = $composer->getPackage();
         if ($rootPackage->getType() !== 'typo3-cms-extension') {
