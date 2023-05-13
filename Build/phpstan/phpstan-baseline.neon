@@ -11,11 +11,6 @@ parameters:
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
-			message: "#^Call to method getIO\\(\\) on an unknown class Composer\\\\Script\\\\Event\\.$#"
-			count: 1
-			path: ../../Classes/Composer/ExtensionTestEnvironment.php
-
-		-
 			message: "#^Call to method isSymlinkedDirectory\\(\\) on an unknown class Composer\\\\Util\\\\Filesystem\\.$#"
 			count: 1
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
