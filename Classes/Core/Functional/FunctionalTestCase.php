@@ -355,6 +355,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                     $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
                     $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
                 }
+                // With ODBC v18 Microsoft decided to make 'Encrypt=Yes' the default, which breaks automatic testing
+                // using the linux mssql server. Setting `Encrytion` to false(no) to mitigate this issue meanwhile.
+                // See: https://github.com/TYPO3/testing-framework/issues/433
+                if ($dbDriver === 'sqlsrv' || $dbDriver === 'pdo_sqlsrv') {
+                    $localConfiguration['DB']['Connections']['Default']['driverOptions']['Encrypt'] = false;
+                }
             } else {
                 // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
                 $testbase->createDirectory(dirname($this->instancePath) . '/functional-sqlite-dbs');
