@@ -310,6 +310,16 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $dbDriver = $localConfiguration['DB']['Connections']['Default']['driver'];
             if ($dbDriver !== 'pdo_sqlite') {
                 $originalDatabaseName = $localConfiguration['DB']['Connections']['Default']['dbname'];
+                if ($originalDatabaseName !== preg_replace('/[^a-zA-Z0-9_]/', '', $originalDatabaseName)) {
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Database name "%s" is invalid. Use a valid name, for example "%s".',
+                            $originalDatabaseName,
+                            preg_replace('/[^a-zA-Z0-9_]/', '', $originalDatabaseName)
+                        ),
+                        1695139917
+                    );
+                }
                 // Append the unique identifier to the base database name to end up with a single database per test case
                 $dbName = $originalDatabaseName . '_ft' . $this->identifier;
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
