@@ -86,7 +86,7 @@ abstract class AbstractPageTree
             $nodeText,
             $context
         ) {
-            return $context->findElement(\Facebook\WebDriver\WebDriverBy::xpath('//*[text()=\'' . $nodeText . '\']/..'));
+            return $context->findElement(\Facebook\WebDriver\WebDriverBy::xpath('.//following-sibling::*//*[text()=\'' . $nodeText . '\']/..'));
         });
 
         try {
