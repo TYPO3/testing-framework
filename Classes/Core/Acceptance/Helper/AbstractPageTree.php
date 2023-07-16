@@ -52,7 +52,7 @@ abstract class AbstractPageTree
         foreach ($path as $pageName) {
             $context = $this->ensureTreeNodeIsOpen($pageName, $context);
         }
-        $context->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(self::$treeItemAnchorSelector))->click();
+        $context->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(static::$treeItemAnchorSelector))->click();
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class AbstractPageTree
         $I = $this->tester;
         $I->switchToIFrame();
         return $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver) {
-            return $webdriver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(self::$pageTreeSelector));
+            return $webdriver->findElement(\Facebook\WebDriver\WebDriverBy::cssSelector(static::$pageTreeSelector));
         });
     }
 
@@ -79,7 +79,7 @@ abstract class AbstractPageTree
     protected function ensureTreeNodeIsOpen(string $nodeText, RemoteWebElement $context)
     {
         $I = $this->tester;
-        $I->see($nodeText, self::$treeItemSelector);
+        $I->see($nodeText, static::$treeItemSelector);
 
         /** @var RemoteWebElement $context */
         $context = $I->executeInSelenium(function () use (
