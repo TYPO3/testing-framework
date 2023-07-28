@@ -68,7 +68,7 @@ final class DataSet
      */
     public static function import(string $path): void
     {
-        $dataSet = self::read($path, true);
+        $dataSet = self::read($path, true, true);
         foreach ($dataSet->getTableNames() as $tableName) {
             $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
             $platform = $connection->getDatabasePlatform();
@@ -99,9 +99,9 @@ final class DataSet
     /**
      * Main entry method: Get at absosulete (!) path to a .csv file, read it and return an instance of self
      */
-    public static function read(string $fileName, bool $applyDefaultValues = false): self
+    public static function read(string $fileName, bool $applyDefaultValues = false, bool $checkForDuplicates = false): self
     {
-        $data = self::parseData(self::readData($fileName));
+        $data = self::parseData(self::readData($fileName), $fileName, $checkForDuplicates);
         if ($applyDefaultValues) {
             $data = self::applyDefaultValues($data);
         }
@@ -199,7 +199,7 @@ final class DataSet
      * Special value treatment:
      * + "\NULL" to treat as NULL value
      */
-    private static function parseData(array $rawData): array
+    private static function parseData(array $rawData, string $fileName, bool $checkForDuplicates): array
     {
         $data = [];
         $tableName = null;
@@ -257,8 +257,30 @@ final class DataSet
                     unset($value);
                     $element = array_combine($data[$tableName]['fields'], $values);
                     if ($idIndex !== null) {
+                        if ($checkForDuplicates && is_array($data[$tableName]['elements'][$values[$idIndex]] ?? false)) {
+                            throw new \RuntimeException(
+                                sprintf(
+                                    'DataSet "%s" containes a duplicate record for idField "%s.uid" => %s',
+                                    $fileName,
+                                    $tableName,
+                                    $values[$idIndex]
+                                ),
+                                1690538506
+                            );
+                        }
                         $data[$tableName]['elements'][$values[$idIndex]] = $element;
                     } elseif ($hashIndex !== null) {
+                        if ($checkForDuplicates && is_array($data[$tableName]['elements'][$values[$hashIndex]] ?? false)) {
+                            throw new \RuntimeException(
+                                sprintf(
+                                    'DataSet "%s" containes a duplicate record for idHash "%s.hash" => %s',
+                                    $fileName,
+                                    $tableName,
+                                    $values[$hashIndex]
+                                ),
+                                1690541069
+                            );
+                        }
                         $data[$tableName]['elements'][$values[$hashIndex]] = $element;
                     } else {
                         $data[$tableName]['elements'][] = $element;
