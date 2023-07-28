@@ -32,9 +32,9 @@ class DataSet
      * @param bool $applyDefaultValues
      * @return DataSet
      */
-    public static function read(string $fileName, bool $applyDefaultValues = false): DataSet
+    public static function read(string $fileName, bool $applyDefaultValues = false, bool $checkForDuplicates = false): DataSet
     {
-        $data = self::parseData(self::readData($fileName));
+        $data = self::parseData(self::readData($fileName), $fileName, $checkForDuplicates);
 
         if ($applyDefaultValues) {
             $data = self::applyDefaultValues($data);
@@ -79,7 +79,7 @@ class DataSet
      * @param array $rawData
      * @return array
      */
-    protected static function parseData(array $rawData): array
+    protected static function parseData(array $rawData, string $fileName, bool $checkForDuplicates): array
     {
         $data = [];
         $tableName = null;
@@ -137,8 +137,30 @@ class DataSet
                     unset($value);
                     $element = array_combine($data[$tableName]['fields'], $values);
                     if ($idIndex !== null) {
+                        if ($checkForDuplicates && is_array($data[$tableName]['elements'][$values[$idIndex]] ?? false)) {
+                            throw new \RuntimeException(
+                                sprintf(
+                                    'DataSet "%s" containes a duplicate record for idField "%s.uid" => %s',
+                                    $fileName,
+                                    $tableName,
+                                    $values[$idIndex]
+                                ),
+                                1690538506
+                            );
+                        }
                         $data[$tableName]['elements'][$values[$idIndex]] = $element;
                     } elseif ($hashIndex !== null) {
+                        if ($checkForDuplicates && is_array($data[$tableName]['elements'][$values[$hashIndex]] ?? false)) {
+                            throw new \RuntimeException(
+                                sprintf(
+                                    'DataSet "%s" containes a duplicate record for idHash "%s.hash" => %s',
+                                    $fileName,
+                                    $tableName,
+                                    $values[$hashIndex]
+                                ),
+                                1690541069
+                            );
+                        }
                         $data[$tableName]['elements'][$values[$hashIndex]] = $element;
                     } else {
                         $data[$tableName]['elements'][] = $element;
