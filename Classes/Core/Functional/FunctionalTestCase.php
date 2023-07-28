@@ -678,7 +678,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     public function importCSVDataSet(string $path): void
     {
-        $dataSet = DataSet::read($path, true);
+        $dataSet = DataSet::read($path, true, true);
 
         foreach ($dataSet->getTableNames() as $tableName) {
             $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
