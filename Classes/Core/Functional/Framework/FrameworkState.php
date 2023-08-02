@@ -95,7 +95,7 @@ class FrameworkState
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
         $generalUtilityIndpEnvCache->setAccessible(true);
-        $generalUtilityIndpEnvCache->setValue([]);
+        $generalUtilityIndpEnvCache->setValue(null, []);
 
         GeneralUtility::resetSingletonInstances([]);
 
@@ -137,7 +137,7 @@ class FrameworkState
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
         $generalUtilityIndpEnvCache->setAccessible(true);
-        $generalUtilityIndpEnvCache->setValue($state['generalUtilityIndpEnvCache']);
+        $generalUtilityIndpEnvCache->setValue(null, $state['generalUtilityIndpEnvCache']);
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
 
@@ -147,19 +147,19 @@ class FrameworkState
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
             $rootlineUtilityLocalCache->setAccessible(true);
-            $rootlineUtilityLocalCache->setValue($state['rootlineUtilityLocalCache']);
+            $rootlineUtilityLocalCache->setValue(null, $state['rootlineUtilityLocalCache']);
 
             try {
                 $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
                 $rootlineUtilityRootlineFields->setAccessible(true);
-                $rootlineUtilityRootlineFields->setValue($state['rootlineUtilityRootlineFields']);
+                $rootlineUtilityRootlineFields->setValue(null, $state['rootlineUtilityRootlineFields']);
             } catch (\ReflectionException $e) {
                 // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
             }
 
             $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
             $rootlineUtilityPageRecordCache->setAccessible(true);
-            $rootlineUtilityPageRecordCache->setValue($state['rootlineUtilityPageRecordCache']);
+            $rootlineUtilityPageRecordCache->setValue(null, $state['rootlineUtilityPageRecordCache']);
         }
     }
 }
