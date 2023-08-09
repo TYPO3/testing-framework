@@ -105,12 +105,12 @@ class DataSet
                 $fieldCount = null;
                 $idIndex = null;
                 $hashIndex = null;
-            } elseif ($tableName !== null && !empty($values[1])) {
+            } elseif ($tableName !== null && (string)$values[1] !== '') {
                 array_shift($values);
                 if (!isset($data[$tableName]['fields'])) {
                     $data[$tableName]['fields'] = [];
                     foreach ($values as $value) {
-                        if (empty($value)) {
+                        if ((string)$value === '') {
                             continue;
                         }
                         $data[$tableName]['fields'][] = $value;
