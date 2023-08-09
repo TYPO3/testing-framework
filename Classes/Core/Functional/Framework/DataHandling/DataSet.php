@@ -236,11 +236,11 @@ final class DataSet
                         $data[$tableName]['fields'][] = $value;
                         $fieldCount = count($data[$tableName]['fields']);
                     }
-                    if (in_array('uid', $values)) {
+                    if (in_array('uid', $values, true)) {
                         $idIndex = array_search('uid', $values);
                         $data[$tableName]['idIndex'] = $idIndex;
                     }
-                    if (in_array('hash', $values)) {
+                    if (in_array('hash', $values, true)) {
                         $hashIndex = array_search('hash', $values);
                         $data[$tableName]['hashIndex'] = $hashIndex;
                     }
@@ -304,11 +304,11 @@ final class DataSet
             $fields = $sections['fields'];
             foreach ($GLOBALS['TCA'][$tableName]['columns'] as $tcaFieldName => $tcaFieldConfiguration) {
                 // Skip if field was already imported
-                if (in_array($tcaFieldName, $fields)) {
+                if (in_array($tcaFieldName, $fields, true)) {
                     continue;
                 }
                 // Skip if field is an enable-column (it's expected that those fields have proper DBMS defaults)
-                if (!empty($GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns']) && in_array($tcaFieldName, $GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'])) {
+                if (!empty($GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns']) && in_array($tcaFieldName, $GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'], true)) {
                     continue;
                 }
                 // Skip if no default value is defined in the accordant TCA definition (NULL values might occur as well)
