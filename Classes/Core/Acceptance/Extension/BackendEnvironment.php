@@ -129,7 +129,7 @@ abstract class BackendEnvironment extends Extension
          * relative to the test instance root and have to begin with a slash. Example:
          *
          * array(
-         *   'fileadmin/user_upload'
+         *   '/fileadmin/user_upload'
          * );
          *
          * @var array

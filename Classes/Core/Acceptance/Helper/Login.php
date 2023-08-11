@@ -48,29 +48,34 @@ class Login extends Module
      */
     public function useExistingSession($role = '')
     {
+        $waitTime = 0.5;
         $webDriver = $this->getWebDriver();
-
         $newUserSessionId = $this->getUserSessionIdByRole($role);
 
         $hasSession = $this->_loadSession();
         if ($hasSession && $newUserSessionId !== '' && $newUserSessionId !== $this->getUserSessionId()) {
+            $webDriver->amOnPage('/typo3/index.php');
+            $webDriver->wait($waitTime);
             $this->_deleteSession();
             $hasSession = false;
         }
 
         if (!$hasSession) {
             $webDriver->amOnPage('/typo3/index.php');
+            $webDriver->wait($waitTime);
             $webDriver->waitForElement('body[data-typo3-login-ready]');
             $this->_createSession($newUserSessionId);
         }
 
         // Reload the page to have a logged in backend.
         $webDriver->amOnPage('/typo3/index.php');
+        $webDriver->wait($waitTime);
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions ..
         $webDriver->waitForElement('iframe[name="list_frame"]');
         $webDriver->switchToIFrame('list_frame');
         $webDriver->waitForElement(Locator::firstElement('div.module'));
+        $webDriver->wait($waitTime);
         // .. and switch back to main frame.
         $webDriver->switchToIFrame();
     }
