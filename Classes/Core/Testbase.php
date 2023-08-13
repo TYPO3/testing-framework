@@ -817,9 +817,9 @@ class Testbase
      * Create tables and import static rows.
      * For functional and acceptance tests.
      */
-    public function createDatabaseStructure(): void
+    public function createDatabaseStructure(ContainerInterface $container): void
     {
-        $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
+        $schemaMigrationService = $container->get(SchemaMigrator::class);
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
         $sqlCode = $sqlReader->getTablesDefinitionString();
         $createTableStatements = $sqlReader->getCreateTableStatementArray($sqlCode);
