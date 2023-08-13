@@ -382,8 +382,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     protected function tearDown(): void
     {
         // Remove any site configuration, and it's cache files, most likely created by SiteBasedTestTrait
-        if (!in_array('typo3conf/sites', $this->pathsToLinkInTestInstance)
-            && !in_array('typo3conf/sites/', $this->pathsToLinkInTestInstance)
+        if (!in_array('typo3conf/sites', $this->pathsToLinkInTestInstance, true)
+            && !in_array('typo3conf/sites/', $this->pathsToLinkInTestInstance, true)
             && is_dir($this->instancePath . '/typo3conf/sites')
         ) {
             GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
@@ -993,7 +993,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $body->write(\GuzzleHttp\Psr7\Query::build($parsedBody));
             $serverRequest = $serverRequest->withBody($body);
         }
-        if (empty($parsedBody) && !empty((string)$body) && in_array($serverRequest->getMethod(), ['PUT', 'PATCH', 'POST', 'DELETE'])) {
+        if (empty($parsedBody) && !empty((string)$body) && in_array($serverRequest->getMethod(), ['PUT', 'PATCH', 'POST', 'DELETE'], true)) {
             parse_str((string)$body, $parsedBody);
             $serverRequest = $serverRequest->withParsedBody($parsedBody);
         }
