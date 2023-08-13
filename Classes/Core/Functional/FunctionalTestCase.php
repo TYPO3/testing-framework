@@ -364,7 +364,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             }
             $testbase->loadExtensionTables();
             if ($this->initializeDatabase) {
-                $testbase->createDatabaseStructure();
+                $testbase->createDatabaseStructure($this->container);
                 if ($dbDriver === 'pdo_sqlite') {
                     // Copy sqlite file '/path/functional-sqlite-dbs/test_123.sqlite' to
                     // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consequtive tests.

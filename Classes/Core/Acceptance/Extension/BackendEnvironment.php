@@ -283,14 +283,14 @@ abstract class BackendEnvironment extends Extension
         $frameworkExtensionPaths = [];
         $testbase->setUpPackageStates($instancePath, [], $coreExtensionsToLoad, $testExtensionsToLoad, $frameworkExtensionPaths);
         $this->output->debug('Loaded Extensions: ' . json_encode(array_merge($coreExtensionsToLoad, $testExtensionsToLoad)));
-        $testbase->setUpBasicTypo3Bootstrap($instancePath);
+        $container = $testbase->setUpBasicTypo3Bootstrap($instancePath);
         if ($dbDriver !== 'pdo_sqlite') {
             $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['dbname'], $originalDatabaseName);
         } else {
             $testbase->setUpTestDatabase($localConfiguration['DB']['Connections']['Default']['path'], $originalDatabaseName);
         }
         $testbase->loadExtensionTables();
-        $testbase->createDatabaseStructure();
+        $testbase->createDatabaseStructure($container);
 
         // Unregister core error handler again, which has been initialized by
         // $testbase->setUpBasicTypo3Bootstrap($instancePath); for DB schema
