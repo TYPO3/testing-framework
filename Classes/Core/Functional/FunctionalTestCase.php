@@ -455,6 +455,13 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     protected function setUpBackendUser(int $userUid): BackendUserAuthentication
     {
         $userRow = $this->getBackendUserRecordFromDatabase($userUid);
+        if (!is_array($userRow)) {
+            throw new \RuntimeException(
+                'The BE User with the UID ' . $userUid . ' does not exist in the database.',
+                1692970802
+            );
+        }
+
         $backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
         $session = $backendUser->createUserSession($userRow);
         $request = $this->createServerRequest('https://typo3-testing.local/typo3/');
