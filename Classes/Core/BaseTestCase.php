@@ -153,6 +153,11 @@ abstract class BaseTestCase extends TestCase
      * The reason is that the combination of "union types with generics in PHPDoc" and "a subset of those types as
      * native types, but without the generics" tends to confuse PhpStorm's static type analysis (which we want to avoid).
      *
+     * @deprecated will be removed in version 8 because `getMockForAbstractClass` (which we're using here under the
+     * hood) has been soft-deprecated in PHPUnit 10.1, and using it will result in a deprecation warning in PHPUnit 11.
+     *
+     * @see https://github.com/sebastianbergmann/phpunit/issues/5241
+     *
      * @template T of object
      * @param class-string<T> $originalClassName Full qualified name of the original class
      * @param array $arguments
