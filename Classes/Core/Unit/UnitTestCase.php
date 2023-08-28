@@ -189,9 +189,13 @@ abstract class UnitTestCase extends BaseTestCase
 
         // Verify LocalizationUtility class internal state has been reset properly if a test fiddled with it
         $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
-        $property = $reflectionClass->getProperty('configurationManager');
-        $property->setAccessible(true);
-        self::assertNull($property->getValue());
+        try {
+            $property = $reflectionClass->getProperty('configurationManager');
+            $property->setAccessible(true);
+            self::assertNull($property->getValue());
+        } catch (\ReflectionException $e) {
+            // Do not assert if property does not exist - it has been removed in v12.
+        }
     }
 
     /**
