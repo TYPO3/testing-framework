@@ -186,9 +186,14 @@ abstract class UnitTestCase extends BaseTestCase
         );
 
         // Verify LocalizationUtility class internal state has been reset properly if a test fiddled with it
+        // @deprecated: Remove in TF main for core v12 & v13 when https://review.typo3.org/c/Packages/TYPO3.CMS/+/80735 is merged.
         $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
-        $property = $reflectionClass->getProperty('configurationManager');
-        self::assertNull($property->getValue());
+        try {
+            $property = $reflectionClass->getProperty('configurationManager');
+            self::assertNull($property->getValue());
+        } catch (\ReflectionException) {
+            // Do not assert property does not exist - it has been removed in v12.
+        }
 
         self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
             . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
