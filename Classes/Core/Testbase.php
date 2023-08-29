@@ -23,6 +23,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\Connection;
@@ -819,7 +820,13 @@ class Testbase
      */
     public function createDatabaseStructure(ContainerInterface $container): void
     {
-        $schemaMigrationService = $container->get(SchemaMigrator::class);
+        try {
+            $schemaMigrationService = $container->get(SchemaMigrator::class);
+        } catch (ServiceNotFoundException) {
+            // @todo: Remove when core v12 patch level 12.4.6 has been released which
+            //        releases https://review.typo3.org/c/Packages/TYPO3.CMS/+/80530/5/typo3/sysext/core/Configuration/Services.yaml
+            $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
+        }
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
         $sqlCode = $sqlReader->getTablesDefinitionString();
         $createTableStatements = $sqlReader->getCreateTableStatementArray($sqlCode);
