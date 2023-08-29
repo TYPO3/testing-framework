@@ -19,7 +19,6 @@ namespace TYPO3\TestingFramework\Core;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Runner\ErrorHandler;
-use PHPUnit\Util\ErrorHandler as ErrorHandlerPrePhpUnit101;
 
 /**
  * The mother of all test cases.
@@ -54,10 +53,7 @@ abstract class BaseTestCase extends TestCase
         // fails to unset/restore it's custom error handler as "risky".
         $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
         restore_error_handler();
-        if (!$previousErrorHandler instanceof ErrorHandler
-            // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
-            && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101
-        ) {
+        if (!$previousErrorHandler instanceof ErrorHandler) {
             self::fail('tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.');
         }
 
