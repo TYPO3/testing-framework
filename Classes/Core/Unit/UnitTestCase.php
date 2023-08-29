@@ -20,7 +20,6 @@ namespace TYPO3\TestingFramework\Core\Unit;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 
 /**
@@ -184,16 +183,6 @@ abstract class UnitTestCase extends BaseTestCase
             'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance list.'
             . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
         );
-
-        // Verify LocalizationUtility class internal state has been reset properly if a test fiddled with it
-        // @deprecated: Remove in TF main for core v12 & v13 when https://review.typo3.org/c/Packages/TYPO3.CMS/+/80735 is merged.
-        $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
-        try {
-            $property = $reflectionClass->getProperty('configurationManager');
-            self::assertNull($property->getValue());
-        } catch (\ReflectionException) {
-            // Do not assert property does not exist - it has been removed in v12.
-        }
 
         self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
             . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
