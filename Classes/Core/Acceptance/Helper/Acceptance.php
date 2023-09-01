@@ -111,7 +111,10 @@ class Acceptance extends Module
      */
     protected function isJSError($logEntryLevel, $message)
     {
-        return $logEntryLevel === 'SEVERE' && strpos($message, 'ERR_PROXY_CONNECTION_FAILED') === false;
+        return $logEntryLevel === 'SEVERE'
+            && !str_contains($message, 'ERR_PROXY_CONNECTION_FAILED')
+            && !str_contains($message, 'was loaded over an insecure connection. This file should be served over HTTPS.')
+        ;
     }
 
     /**
