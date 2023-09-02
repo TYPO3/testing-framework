@@ -17,8 +17,8 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -80,7 +80,7 @@ use TYPO3\TestingFramework\Core\Testbase;
 abstract class FunctionalTestCase extends BaseTestCase implements ContainerInterface
 {
     /**
-     * An unique identifier for this test case. Location of the test
+     * Unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
      *
      * @var non-empty-string
@@ -104,7 +104,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * This property will stay empty in this abstract, so it is possible
      * to just overwrite it in extending classes. Extensions noted here will
-     * be loaded for every test of a test case and it is not possible to change
+     * be loaded for every test of a test case, and it is not possible to change
      * the list of loaded extensions between single tests of a test case.
      *
      * A default list of core extensions is always loaded.
@@ -120,7 +120,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * This property will stay empty in this abstract, so it is possible
      * to just overwrite it in extending classes. Extensions noted here will
-     * be loaded for every test of a test case and it is not possible to change
+     * be loaded for every test of a test case, and it is not possible to change
      * the list of loaded extensions between single tests of a test case.
      *
      * Given path is expected to be relative to your document root, example:
@@ -142,7 +142,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * This property will stay empty in this abstract, so it is possible
      * to just overwrite it in extending classes. Path noted here will
-     * be linked for every test of a test case and it is not possible to change
+     * be linked for every test of a test case, and it is not possible to change
      * the list of folders between single tests of a test case.
      *
      * array(
@@ -194,7 +194,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * This property will stay empty in this abstract, so it is possible
      * to just overwrite it in extending classes. Path noted here will
-     * be linked for every test of a test case and it is not possible to change
+     * be linked for every test of a test case, and it is not possible to change
      * the list of folders between single tests of a test case.
      *
      * Per default the following folder are created
@@ -238,8 +238,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
-     *
-     * @throws DBALException
      */
     protected function setUp(): void
     {
@@ -367,7 +365,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $testbase->createDatabaseStructure($this->container);
                 if ($dbDriver === 'pdo_sqlite') {
                     // Copy sqlite file '/path/functional-sqlite-dbs/test_123.sqlite' to
-                    // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consequtive tests.
+                    // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consecutive tests.
                     copy($dbPathSqlite, $dbPathSqliteEmpty);
                 }
             }
@@ -474,10 +472,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
     protected function getBackendUserRecordFromDatabase(int $userId): ?array
     {
-        $queryBuilder = $this->getConnectionPool()
-            ->getQueryBuilderForTable('be_users');
+        $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable('be_users');
         $queryBuilder->getRestrictions()->removeAll();
-
         $result = $queryBuilder->select('*')
             ->from('be_users')
             ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
@@ -527,16 +523,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $backendUser->start($request);
         if (!is_array($backendUser->user) || !$backendUser->user['uid']) {
-            throw new Exception(
-                'Can not initialize backend user',
-                1377095807
-            );
+            throw new Exception('Can not initialize backend user', 1377095807);
         }
         $backendUser->backendCheckLogin();
-        GeneralUtility::makeInstance(Context::class)->setAspect(
-            'backend.user',
-            GeneralUtility::makeInstance(UserAspect::class, $backendUser)
-        );
+        GeneralUtility::makeInstance(Context::class)->setAspect('backend.user', GeneralUtility::makeInstance(UserAspect::class, $backendUser));
         return $backendUser;
     }
 
@@ -635,8 +625,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Check if $expectedRecord is present in $actualRecords array
      * and compares if all column values from matches
      *
-     * @param array $expectedRecord
-     * @param array $actualRecords
      * @return bool|int|string false if record is not found or some column value doesn't match
      */
     protected function assertInRecords(array $expectedRecord, array $actualRecords): bool|int|string
@@ -658,8 +646,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function getAllRecords(string $tableName, bool $hasUidField = false, bool $hasHashField = false): array
     {
-        $queryBuilder = $this->getConnectionPool()
-            ->getQueryBuilderForTable($tableName);
+        $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll();
         $statement = $queryBuilder
             ->select('*')
@@ -688,7 +675,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
-     * Format array as human readable string. Used to format verbose error messages in assertCSVDataSet
+     * Format array as human-readable string. Used to format verbose error messages in assertCSVDataSet
      */
     protected function arrayToString(array $array): string
     {
@@ -703,7 +690,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
-     * Format output showing difference between expected and actual db row in a human readable way
+     * Format output showing difference between expected and actual db row in a human-readable way
      * Used to format verbose error messages in assertCSVDataSet
      */
     protected function renderRecords(array $assertion, array $record): string
@@ -727,7 +714,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         foreach ($columns as $columnIndex => $column) {
             $columnLength = null;
             foreach ($column as $value) {
-                if (strpos((string)$value, '<?xml') === 0) {
+                if (str_starts_with((string)$value, '<?xml')) {
                     $value = '[see diff]';
                 }
                 $valueLength = strlen((string)$value);
@@ -736,11 +723,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 }
             }
             foreach ($column as $valueIndex => $value) {
-                if (strpos((string)$value, '<?xml') === 0) {
+                if (str_starts_with((string)$value, '<?xml')) {
                     if ($columnIndex === 'assertion') {
                         try {
                             self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
-                        } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
+                        } catch (ExpectationFailedException $e) {
                             $linesFromXmlValues[] = 'Diff for field "' . $columns['fields'][$valueIndex] . '":' . PHP_EOL .
                                 $e->getComparisonFailure()->getDiff();
                         }
@@ -771,7 +758,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $differentFields = [];
 
         foreach ($assertion as $field => $value) {
-            if (strpos((string)$value, '\\*') === 0) {
+            if (str_starts_with((string)$value, '\\*')) {
                 continue;
             }
 
@@ -779,10 +766,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
             }
 
-            if (strpos((string)$value, '<?xml') === 0) {
+            if (str_starts_with((string)$value, '<?xml')) {
                 try {
                     self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
-                } catch (\PHPUnit\Framework\ExpectationFailedException $e) {
+                } catch (ExpectationFailedException) {
                     $differentFields[] = $field;
                 }
             } elseif ($value === null && $record[$field] !== $value) {
@@ -809,7 +796,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *      'constants' => ['path/constants.typoscript'],
      *      'setup' => ['path/setup.typoscript']
      *    ]`
-     *   which allows to define contents for the `contants` and `setup` part
+     *   which allows to define contents for the `constants` and `setup` part
      *   of the TypoScript template record at the same time
      */
     protected function setUpFrontendRootPage(int $pageId, array $typoScriptFiles = [], array $templateValues = []): void
@@ -862,8 +849,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
 
-        $connection = $this->getConnectionPool()
-            ->getConnectionForTable('sys_template');
+        $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
         $connection->delete('sys_template', ['pid' => $pageId]);
         $connection->insert(
             'sys_template',
@@ -893,8 +879,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     /**
      * Execute a TYPO3 frontend application request.
      *
-     * @param InternalRequest $request
-     * @param InternalRequestContext|null $context
      * @param bool $followRedirects Whether to follow HTTP location redirects
      */
     protected function executeFrontendSubRequest(
@@ -929,12 +913,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * The method is still a bit messy and needs to do some stuff that can be obsoleted
      * when the core becomes more clean.
      * It's main job is to turn the testing-framework internal request object into a
-     * a PSR-7 core/Http/ServerRequest, register the testing-framework InternalRequestContext
+     * PSR-7 core/Http/ServerRequest, register the testing-framework InternalRequestContext
      * object for the testing-framework ext:json_response middlewares to operate on, and
      * to then call the ext:frontend Application.
      * Note this method is in 'early' state and will change over time.
-     *
-     * @internal Do not use directly, use ->executeFrontendSubRequest() instead
      */
     private function retrieveFrontendSubRequestResult(
         InternalRequest $request,
@@ -969,7 +951,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         /** @var InternalRequest $serverRequest */
         $serverRequest = $request->withAttribute('typo3.testing.context', $context);
 
-        // If no serverParams are set, fallback to to old ServerRequest build behaviour and
+        // If no serverParams are set, fallback to old ServerRequest build behaviour and
         // fill needed stuff. This has been historically be done to create ServerRequest from
         // InternalRequest which is now directly used.
         if ($serverRequest->getServerParams() === []) {
@@ -1045,7 +1027,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * Using this can speed up tests when expensive setUp() operations are
      * needed in all tests of a test case: The first test performs the
-     * expensive operations in $callback, sub sequent tests of this test
+     * expensive operations in $callback, subsequent tests of this test
      * case then just import the resulting database rows.
      *
      * An example to this are the "SiteHandling" core tests, which create
@@ -1056,16 +1038,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * within $createCallback. When rows exist already before calling this
      * method, snapshot restore can fail with duplicate row errors. In
      * practice: Do not call insertCSVDataSet() *before* calling this
-     * method in setUp(), but do it within the create callback body instead.
+     * method in setUp(), but do it within the "create" callback body instead.
      *
      * @param callable|null $createCallback Optional callback executed just before the snapshot is created
      * @param callable|null $restoreCallback Optional callback executed after a snapshot has been restored
      */
     protected function withDatabaseSnapshot(?callable $createCallback = null, ?callable $restoreCallback = null): void
     {
-        $connection = $this->getConnectionPool()->getConnectionByName(
-            ConnectionPool::DEFAULT_CONNECTION_NAME
-        );
+        $connection = $this->getConnectionPool()->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
         if ($this->isFirstTest) {
