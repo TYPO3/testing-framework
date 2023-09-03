@@ -44,11 +44,11 @@ class Login extends Module
      * "Backend Users" as this will change the user session ID and make it useless for subsequent calls of this action.
      *
      * @param string $role The backend user who should be logged in.
+     * @param int|float $waitTime Used waitTime in seconds between single steps. Default: 0.5
      * @throws ConfigurationException
      */
-    public function useExistingSession($role = '')
+    public function useExistingSession(string $role, float|int $waitTime = 0.5)
     {
-        $waitTime = 0.5;
         $webDriver = $this->getWebDriver();
         $newUserSessionId = $this->getUserSessionIdByRole($role);
 
@@ -72,12 +72,16 @@ class Login extends Module
         $webDriver->wait($waitTime);
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions ..
+        $webDriver->debugSection('IFRAME', 'Switch to list_frame');
         $webDriver->waitForElement('iframe[name="list_frame"]');
         $webDriver->switchToIFrame('list_frame');
         $webDriver->waitForElement(Locator::firstElement('div.module'));
         $webDriver->wait($waitTime);
         // .. and switch back to main frame.
+        $webDriver->debugSection('IFRAME', 'Switch to main frame');
         $webDriver->switchToIFrame();
+
+        $webDriver->debug(sprintf('useExistingSession("%s", %s) finished.', $role, $waitTime));
     }
 
     /**
