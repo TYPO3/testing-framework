@@ -36,8 +36,6 @@ use TYPO3\CMS\Core\Utility\PathUtility;
  */
 class PackageCollection
 {
-    protected \Closure $isComposerDependency;
-
     /**
      * @var array<PackageKey, PackageInterface>
      */
@@ -61,7 +59,6 @@ class PackageCollection
 
     public function __construct(PackageInterface ...$packages)
     {
-        $this->isComposerDependency = static fn (): bool => false;
         $this->packages = array_combine(
             array_map(
                 static fn (PackageInterface $package) => $package->getPackageKey(),
@@ -293,5 +290,10 @@ class PackageCollection
             }
         }
         return $frameworkKeys;
+    }
+
+    protected function isComposerDependency(string $packageKey): bool
+    {
+        return false;
     }
 }
