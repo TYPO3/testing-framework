@@ -27,12 +27,15 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
- * The default TYPO3 Package Manager
+ * Collection for extension packages to resolve their dependencies in a test-base.
+ * Most of the code has been duplicated and adjusted from `\TYPO3\CMS\Core\Package\PackageManager`.
  *
  * @phpstan-type PackageKey non-empty-string
  * @phpstan-type PackageName non-empty-string
  * @phpstan-type PackageConstraints array{dependencies: list<PackageKey>, suggestions: list<PackageKey>}
  * @phpstan-type StateConfiguration array{packagePath?: non-empty-string}
+ *
+ * @internal
  */
 class PackageCollection
 {
@@ -60,10 +63,7 @@ class PackageCollection
     public function __construct(PackageInterface ...$packages)
     {
         $this->packages = array_combine(
-            array_map(
-                static fn (PackageInterface $package) => $package->getPackageKey(),
-                $packages
-            ),
+            array_map(static fn (PackageInterface $package) => $package->getPackageKey(), $packages),
             $packages
         );
     }
@@ -236,6 +236,7 @@ class PackageCollection
      *
      * @param list<PackageInterface> $trace An array of already visited packages, to detect circular dependencies
      * @return list<PackageKey> An array of direct or indirect dependent packages
+     * @throws Exception
      */
     protected function getDependencyArrayForPackage(PackageInterface $package, array &$dependentPackageKeys = [], array $trace = []): array
     {
@@ -250,6 +251,16 @@ class PackageCollection
                 $dependentPackageKey = $constraint->getValue();
                 if (!in_array($dependentPackageKey, $dependentPackageKeys, true) && !in_array($dependentPackageKey, $trace, true)) {
                     $dependentPackageKeys[] = $dependentPackageKey;
+                }
+                if (!isset($this->packages[$dependentPackageKey])) {
+                    throw new Exception(
+                        sprintf(
+                            'Package "%s" depends on package "%s" which does not exist.',
+                            $package->getPackageKey(),
+                            $dependentPackageKey
+                        ),
+                        1695119749
+                    );
                 }
                 $this->getDependencyArrayForPackage($this->packages[$dependentPackageKey], $dependentPackageKeys, $trace);
             }
