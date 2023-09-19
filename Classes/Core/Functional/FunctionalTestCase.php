@@ -787,14 +787,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * Parameter `$typoScriptFiles` can either be
      * + `[
-     *      'path/first.typoscript',
-     *      'path/second.typoscript'
+     *      'EXT:extension/path/first.typoscript',
+     *      'EXT:extension/path/second.typoscript'
      *    ]`
      *   which just loads files to the setup setion of the TypoScript template
      *   record (legacy behavior of this method)
      * + `[
-     *      'constants' => ['path/constants.typoscript'],
-     *      'setup' => ['path/setup.typoscript']
+     *      'constants' => ['EXT:extension/path/constants.typoscript'],
+     *      'setup' => ['EXT:extension/path/setup.typoscript']
      *    ]`
      *   which allows to define contents for the `constants` and `setup` part
      *   of the TypoScript template record at the same time
@@ -803,7 +803,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $connection = $this->getConnectionPool()->getConnectionForTable('pages');
         $page = $connection->select(['*'], 'pages', ['uid' => $pageId])->fetchAssociative();
-
         if (empty($page)) {
             self::fail('Cannot set up frontend root page "' . $pageId . '"');
         }
@@ -814,11 +813,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             && empty($typoScriptFiles['setup'])
         ) {
             $typoScriptFiles = ['setup' => $typoScriptFiles];
-        }
-
-        $databasePlatform = 'mysql';
-        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $databasePlatform = 'postgresql';
         }
 
         $connection->update(
@@ -840,13 +834,27 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 'root' => 1,
             ]
         );
-
         foreach ($typoScriptFiles['constants'] ?? [] as $typoScriptFile) {
-            $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+            if (!str_starts_with($typoScriptFile, 'EXT:')) {
+                // @deprecated will be removed in version 8, use "EXT:" syntax instead
+                $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+            } else {
+                $templateFields['constants'] .= '@import \'' . $typoScriptFile . '\'' . LF;
+            }
+        }
+        // @todo: Check if this constant is still needed
+        $databasePlatform = 'mysql';
+        if ($connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $databasePlatform = 'postgresql';
         }
         $templateFields['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
         foreach ($typoScriptFiles['setup'] ?? [] as $typoScriptFile) {
-            $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+            if (!str_starts_with($typoScriptFile, 'EXT:')) {
+                // @deprecated will be removed in version 8, use "EXT:" syntax instead
+                $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+            } else {
+                $templateFields['config'] .= '@import \'' . $typoScriptFile . '\'' . LF;
+            }
         }
 
         $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
