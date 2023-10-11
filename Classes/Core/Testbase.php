@@ -18,12 +18,12 @@ namespace TYPO3\TestingFramework\Core;
  */
 
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\MariaDBPlatform as DoctrineMariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform as DoctrineMySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform as DoctrineSQLitePlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use Psr\Container\ContainerInterface;
@@ -673,21 +673,25 @@ class Testbase
             );
             $configuration->setSchemaManagerFactory($coreSchemaFactory);
         }
-        $connection = DriverManager::getConnection($connectionParameters, $configuration);
-        $schemaManager = $connection->createSchemaManager();
-        $platform = $connection->getDatabasePlatform();
-        $isSQLite = $platform instanceof DoctrineSQLitePlatform;
+        $driverConnection = DriverManager::getConnection($connectionParameters, $configuration);
+        $schemaManager = $driverConnection->createSchemaManager();
+        $platform = $driverConnection->getDatabasePlatform();
+        $isSQLite = self::isSQLite($driverConnection);
 
-        if ($isSQLite) {
-            // This is the "path" option in sqlite: one file = one db
+        // doctrine/dbal no longer supports createDatabase() and dropDatabase() statements. Guard it.
+        if (!$isSQLite && in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $schemaManager->dropDatabase($databaseName);
-        } elseif (in_array($databaseName, $schemaManager->listDatabases(), true)) {
-            // Suppress listDatabases() call on sqlite which is not implemented there, but
-            // check db existence on all other platforms before drop call
-            $schemaManager->dropDatabase($databaseName);
+        } elseif ($isSQLite && is_file($databaseName)) {
+            // Remove the sqlite file. Prior to Doctrine DBAL 4 the SqliteSchemaManager supported the
+            // `dropDatabase()` method removing the file. Due to the removal we do it directly now.
+            @unlink($databaseName);
         }
         try {
-            $schemaManager->createDatabase($databaseName);
+            // doctrine/dbal no longer supports createDatabase() and dropDatabase() statements. Guard it.
+            // The engine will create the database file automatically.
+            if (!$isSQLite) {
+                $schemaManager->createDatabase($databaseName);
+            }
         } catch (DBALException $e) {
             $user = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['user'];
             $host = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['host'];
@@ -912,7 +916,7 @@ class Testbase
                     )
                 );
             }
-        } elseif ($platform instanceof DoctrineSQLitePlatform) {
+        } elseif (self::isSQLite($connection)) {
             // Drop eventually existing sqlite sequence for this table
             $connection->executeStatement(
                 sprintf(
@@ -996,5 +1000,18 @@ class Testbase
     {
         echo $message . chr(10);
         exit(1);
+    }
+
+    /**
+     * @todo Replace usages by direct instanceof checks when TYPO3 v13.0 / Doctrine DBAL 4 is lowes supported version.
+     *
+     * @param Connection|DoctrineConnection $connection
+     * @return bool
+     * @throws DBALException
+     */
+    private static function isSQLite(Connection|DoctrineConnection $connection): bool
+    {
+        /** @phpstan-ignore-next-line */
+        return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
     }
 }
