@@ -18,7 +18,6 @@ declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Platforms\SqlitePlatform as DoctrineSQLitePlatform;
 
 /**
  * Implement the database snapshot and callback logic.
@@ -62,7 +61,7 @@ class DatabaseSnapshot
      */
     public function create(DatabaseAccessor $accessor, Connection $connection): void
     {
-        if ($connection->getDatabasePlatform() instanceof DoctrineSQLitePlatform) {
+        if ($this->isSQLite($connection)) {
             // With sqlite, we simply copy the db-file to a different place
             $connection->close();
             copy(
@@ -88,7 +87,7 @@ class DatabaseSnapshot
      */
     public function restore(DatabaseAccessor $accessor, Connection $connection): void
     {
-        if ($connection->getDatabasePlatform() instanceof DoctrineSQLitePlatform) {
+        if ($this->isSQLite($connection)) {
             $connection->close();
             copy(
                 $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite',
@@ -100,5 +99,18 @@ class DatabaseSnapshot
             }
             $accessor->import($this->inMemoryImport);
         }
+    }
+
+    /**
+     * @todo Replace usages by direct instanceof checks when TYPO3 v13.0 / Doctrine DBAL 4 is lowes supported version.
+     *
+     * @param Connection $connection
+     * @return bool
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function isSQLite(Connection $connection): bool
+    {
+        /** @phpstan-ignore-next-line */
+        return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
     }
 }
