@@ -32,6 +32,7 @@ use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -603,7 +604,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
         $result = $queryBuilder->select('*')
             ->from('be_users')
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, Connection::PARAM_INT)))
             ->executeQuery();
         return $result->fetchAssociative() ?: null;
     }
