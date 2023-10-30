@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 /*
@@ -26,7 +27,7 @@ class DatabaseSnapshot
     /**
      * Data up to 10 MiB is kept in memory
      */
-    private const VALUE_IN_MEMORY_THRESHOLD = 1024**2 * 10;
+    private const VALUE_IN_MEMORY_THRESHOLD = 1024 ** 2 * 10;
 
     private static $instance;
     private string $sqliteDir;

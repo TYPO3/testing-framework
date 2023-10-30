@@ -22,7 +22,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  */
 class Response
 {
-    const STATUS_Failure = 'failure';
+    public const STATUS_Failure = 'failure';
 
     /**
      * @var string

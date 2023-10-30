@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
@@ -111,7 +112,7 @@ class Acceptance extends Module
      */
     protected function isJSError($logEntryLevel, $message)
     {
-        return $logEntryLevel === 'SEVERE' && strpos($message, 'ERR_PROXY_CONNECTION_FAILED') === false;
+        return $logEntryLevel === 'SEVERE' && !str_contains($message, 'ERR_PROXY_CONNECTION_FAILED');
     }
 
     /**

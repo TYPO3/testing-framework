@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
 
 /*
@@ -16,7 +17,6 @@ namespace TYPO3\TestingFramework\Core\Acceptance\Helper;
  * The TYPO3 project - inspiring people to share!
  */
 
-use AcceptanceTester;
 use Facebook\WebDriver\Remote\RemoteWebElement;
 
 /**
@@ -31,7 +31,7 @@ abstract class AbstractPageTree
     public static $treeItemAnchorSelector = 'text.node-name';
 
     /**
-     * @var AcceptanceTester
+     * @var \AcceptanceTester
      */
     protected $tester;
 

@@ -130,7 +130,7 @@ final class PackageInfo
         if ($this->isMonoRepository()) {
             // Monorepo root composer.json replaces core system extension. We do not want that happen, so
             // ignore only replaced core extensions.
-            $keys = array_filter($keys, static fn ($value) => !str_starts_with($value, 'typo3/cms-'));
+            $keys = array_filter($keys, static fn($value) => !str_starts_with($value, 'typo3/cms-'));
         }
         return $keys;
     }

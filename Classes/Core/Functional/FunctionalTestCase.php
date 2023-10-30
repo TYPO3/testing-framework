@@ -289,7 +289,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $testbase->setTypo3TestingContext();
 
         // See if we're the first test of this test case.
-        $currentTestCaseClass = get_called_class();
+        $currentTestCaseClass = static::class;
         if (self::$currentTestCaseClass !== $currentTestCaseClass) {
             self::$currentTestCaseClass = $currentTestCaseClass;
         } else {
@@ -931,7 +931,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         foreach ($columns as $columnIndex => $column) {
             $columnLength = null;
             foreach ($column as $value) {
-                if (strpos((string)$value, '<?xml') === 0) {
+                if (str_starts_with((string)$value, '<?xml')) {
                     $value = '[see diff]';
                 }
                 $valueLength = strlen((string)$value);
@@ -940,7 +940,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 }
             }
             foreach ($column as $valueIndex => $value) {
-                if (strpos((string)$value, '<?xml') === 0) {
+                if (str_starts_with((string)$value, '<?xml')) {
                     if ($columnIndex === 'assertion') {
                         try {
                             self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$columns['fields'][$valueIndex]]);
@@ -975,7 +975,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $differentFields = [];
 
         foreach ($assertion as $field => $value) {
-            if (strpos((string)$value, '\\*') === 0) {
+            if (str_starts_with((string)$value, '\\*')) {
                 continue;
             }
 
@@ -983,7 +983,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
             }
 
-            if (strpos((string)$value, '<?xml') === 0) {
+            if (str_starts_with((string)$value, '<?xml')) {
                 try {
                     self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
                 } catch (\PHPUnit\Framework\ExpectationFailedException $e) {

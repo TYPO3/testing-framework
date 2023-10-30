@@ -30,6 +30,4 @@ if (method_exists(\Codeception\Suite::class, 'backupGlobals')) {
     class_alias(BackendEnvironmentCodeceptionFour::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Extension\\BackendEnvironmentCoreConditionalParent');
 }
 
-abstract class BackendEnvironment extends BackendEnvironmentCoreConditionalParent
-{
-}
+abstract class BackendEnvironment extends BackendEnvironmentCoreConditionalParent {}

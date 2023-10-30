@@ -215,7 +215,7 @@ class InternalRequest extends Request implements \JsonSerializable
         return $this->instructions[$identifier] ?? null;
     }
 
-    public function withParsedBody(?array $parsedBody=null): InternalRequest
+    public function withParsedBody(?array $parsedBody = null): InternalRequest
     {
         $target = clone $this;
         $target->parsedBody = $parsedBody;

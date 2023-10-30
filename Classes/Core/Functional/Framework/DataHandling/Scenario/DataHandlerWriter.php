@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario;
 
 /*
@@ -117,10 +118,10 @@ class DataHandlerWriter
                         if (!is_string($value)) {
                             return $value;
                         }
-                        if (strpos($value, 'NEW') === 0) {
+                        if (str_starts_with($value, 'NEW')) {
                             return $this->dataHandler->substNEWwithIDs[$value] ?? $value;
                         }
-                        if (strpos($value, '-NEW') === 0) {
+                        if (str_starts_with($value, '-NEW')) {
                             return $this->dataHandler->substNEWwithIDs[substr($value, 1)] ?? $value;
                         }
                         return $value;
@@ -151,10 +152,10 @@ class DataHandlerWriter
                         if (!is_string($value)) {
                             return $value;
                         }
-                        if (strpos($value, 'NEW') === 0) {
+                        if (str_starts_with($value, 'NEW')) {
                             return $this->dataHandler->substNEWwithIDs[$value] ?? $value;
                         }
-                        if (strpos($value, '-NEW') === 0) {
+                        if (str_starts_with($value, '-NEW')) {
                             return $this->dataHandler->substNEWwithIDs[substr($value, 1)] ?? $value;
                         }
                         return $value;
