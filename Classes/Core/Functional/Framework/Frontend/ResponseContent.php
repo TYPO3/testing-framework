@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 /*
@@ -44,9 +45,7 @@ class ResponseContent
      */
     protected $scope = [];
 
-    final public function __construct()
-    {
-    }
+    final public function __construct() {}
 
     public static function fromString(string $data, ResponseContent $target = null): ResponseContent
     {

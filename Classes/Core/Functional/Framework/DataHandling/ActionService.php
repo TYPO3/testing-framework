@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
 /*
@@ -164,7 +165,7 @@ class ActionService
             if ($recordData['uid'] === '__NEW') {
                 $currentUid = $this->getUniqueIdForNewRecords();
             }
-            if (strpos((string)$currentUid, 'NEW') === 0) {
+            if (str_starts_with((string)$currentUid, 'NEW')) {
                 $recordData['pid'] = $pageId;
             }
             unset($recordData['uid']);
@@ -482,7 +483,7 @@ class ActionService
             return $recordData;
         }
         foreach ($recordData as $fieldName => $fieldValue) {
-            if (strpos((string)$fieldValue, '__previousUid') === false) {
+            if (!str_contains((string)$fieldValue, '__previousUid')) {
                 continue;
             }
             $recordData[$fieldName] = str_replace('__previousUid', $previousUid, $fieldValue);
@@ -501,7 +502,7 @@ class ActionService
             return $recordData;
         }
         foreach ($recordData as $fieldName => $fieldValue) {
-            if (is_array($fieldValue) || strpos((string)$fieldValue, '__nextUid') === false) {
+            if (is_array($fieldValue) || !str_contains((string)$fieldValue, '__nextUid')) {
                 continue;
             }
             $recordData[$fieldName] = str_replace('__nextUid', $nextUid, $fieldValue);

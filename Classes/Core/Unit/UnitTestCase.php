@@ -141,8 +141,8 @@ abstract class UnitTestCase extends BaseTestCase
             if (!GeneralUtility::validPathStr($absoluteFileName)) {
                 throw new \RuntimeException('tearDown() cleanup: Filename contains illegal characters', 1410633087);
             }
-            if (strpos($absoluteFileName, Environment::getVarPath()) !== 0
-                && strpos($absoluteFileName, Environment::getPublicPath() . '/typo3temp/') !== 0
+            if (!str_starts_with($absoluteFileName, Environment::getVarPath())
+                && !str_starts_with($absoluteFileName, Environment::getPublicPath() . '/typo3temp/')
             ) {
                 throw new \RuntimeException(
                     'tearDown() cleanup:  Files to delete must be within ' . Environment::getVarPath() . ' or ' . Environment::getPublicPath() . '/typo3temp/',
@@ -186,7 +186,7 @@ abstract class UnitTestCase extends BaseTestCase
 
         self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
             . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
-            . get_class($this) . '"');
+            . static::class . '"');
 
         parent::tearDown();
     }

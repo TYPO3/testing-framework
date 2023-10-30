@@ -63,7 +63,7 @@ class PackageCollection
     public function __construct(PackageInterface ...$packages)
     {
         $this->packages = array_combine(
-            array_map(static fn (PackageInterface $package) => $package->getPackageKey(), $packages),
+            array_map(static fn(PackageInterface $package) => $package->getPackageKey(), $packages),
             $packages
         );
     }
@@ -81,7 +81,7 @@ class PackageCollection
         $sortedPackageKeys = $this->resolveSortedPackageKeys($dependencyOrderingService);
         usort(
             $this->packages,
-            static fn (PackageInterface $a, PackageInterface $b) =>
+            static fn(PackageInterface $a, PackageInterface $b) =>
                 array_search($a->getPackageKey(), $sortedPackageKeys, true)
                 <=> array_search($b->getPackageKey(), $sortedPackageKeys, true)
         );
@@ -96,7 +96,7 @@ class PackageCollection
         $sortedPackageKeys = $this->resolveSortedPackageKeys($dependencyOrderingService);
         uksort(
             $packageStates,
-            static fn (string $a, string $b) =>
+            static fn(string $a, string $b) =>
                 array_search($a, $sortedPackageKeys, true)
                 <=> array_search($b, $sortedPackageKeys, true)
         );
