@@ -255,7 +255,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $testbase->setTypo3TestingContext();
 
         // See if we're the first test of this test case.
-        $currentTestCaseClass = get_called_class();
+        $currentTestCaseClass = static::class;
         if (self::$currentTestCaseClass !== $currentTestCaseClass) {
             self::$currentTestCaseClass = $currentTestCaseClass;
         } else {
