@@ -78,7 +78,7 @@ abstract class AbstractInstruction implements \JsonSerializable
     {
         return array_merge(
             get_object_vars($this),
-            ['__type' => get_class($this)]
+            ['__type' => static::class]
         );
     }
 

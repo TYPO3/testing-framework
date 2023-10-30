@@ -30,6 +30,4 @@ if (method_exists(\Codeception\Suite::class, 'backupGlobals')) {
     class_alias(LoginCodeceptionFour::class, 'TYPO3\\TestingFramework\\Core\\Acceptance\\Helper\\LoginConditionalParent');
 }
 
-class Login extends LoginConditionalParent
-{
-}
+class Login extends LoginConditionalParent {}

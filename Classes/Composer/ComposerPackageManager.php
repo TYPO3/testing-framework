@@ -374,7 +374,7 @@ final class ComposerPackageManager
         }
         try {
             return json_decode((string)file_get_contents($composerFile), true, JSON_THROW_ON_ERROR);
-        } catch(\Throwable $t) {
+        } catch (\Throwable $t) {
             // skipped
         }
         return null;
@@ -490,7 +490,7 @@ final class ComposerPackageManager
         if (str_starts_with($path, '/')) {
             $root .= '/';
             $path = $length > 1 ? substr($path, 1) : '';
-        } elseif ($length > 1 && ctype_alpha($path[0]) && ':' === $path[1]) {
+        } elseif ($length > 1 && ctype_alpha($path[0]) && $path[1] === ':') {
             if ($length === 2) {
                 // Windows special case: "C:"
                 $root .= $path . '/';

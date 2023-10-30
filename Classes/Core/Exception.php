@@ -19,6 +19,4 @@ namespace TYPO3\TestingFramework\Core;
  * An exception - Thrown in abstract test cases to mark
  * a test configuration or setup error.
  */
-class Exception extends \Exception
-{
-}
+class Exception extends \Exception {}

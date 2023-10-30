@@ -141,16 +141,16 @@ class Testbase
         }
 
         $commonPath = $to;
-        while (strpos($from . '/', $commonPath . '/') !== 0 && $commonPath !== '/' && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && $commonPath !== '.') {
+        while (!str_starts_with($from . '/', $commonPath . '/')   && $commonPath !== '/' && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && $commonPath !== '.') {
             $commonPath = str_replace('\\', '/', \dirname($commonPath));
         }
 
-        if ($commonPath === '/' || $commonPath === '.' || strpos($from, $commonPath) !== 0) {
+        if ($commonPath === '/' || $commonPath === '.' || !str_starts_with($from, $commonPath)) {
             return var_export($to, true);
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        if (strpos($to, $from . '/') === 0) {
+        if (str_starts_with($to, $from . '/')) {
             return '__DIR__ . ' . var_export(substr($to, \strlen($from)), true);
         }
         $sourcePathDepth = substr_count(substr($from, \strlen($commonPath)), '/');
@@ -170,7 +170,7 @@ class Testbase
     public function removeOldInstanceIfExists($instancePath): void
     {
         if (is_dir($instancePath)) {
-            if (strpos($instancePath, 'typo3temp') === false) {
+            if (!str_contains($instancePath, 'typo3temp')) {
                 // Simple safe guard to not delete something else - test instance must contain at least typo3temp
                 throw new \RuntimeException(
                     'Test instance to delete must be within typo3temp',
@@ -1066,11 +1066,11 @@ class Testbase
      */
     protected function resolvePath(string $path): string
     {
-        if (strpos($path, 'EXT:') === 0) {
+        if (str_starts_with($path, 'EXT:')) {
             return GeneralUtility::getFileAbsFileName($path);
         }
 
-        if (strpos($path, 'PACKAGE:') === 0) {
+        if (str_starts_with($path, 'PACKAGE:')) {
             return $this->getPackagesPath() . '/' . str_replace('PACKAGE:', '', $path);
         }
         return $path;
