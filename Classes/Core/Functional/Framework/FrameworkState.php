@@ -50,6 +50,7 @@ class FrameworkState
         // different. And code that runs after that within the test scope may fail (eg. the referenceIndex check in tearDown() that
         // relies on TCA). So we back up TCA for now before executing frontend tests.
         $state['globals-tca'] = $GLOBALS['TCA'];
+        $state['request'] = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
         // Can be dropped when GeneralUtility::getIndpEnv() is abandoned
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
@@ -67,6 +68,7 @@ class FrameworkState
     public static function reset()
     {
         unset($GLOBALS['BE_USER']);
+        unset($GLOBALS['TYPO3_REQUEST']);
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
@@ -91,6 +93,7 @@ class FrameworkState
         }
 
         $GLOBALS['TCA'] = $state['globals-tca'];
+        $GLOBALS['TYPO3_REQUEST'] = $state['request'];
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
