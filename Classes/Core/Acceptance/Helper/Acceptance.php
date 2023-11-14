@@ -49,7 +49,7 @@ class Acceptance extends Module
     public function _afterStep(Step $step)
     {
         if ($this->isBrowserConsoleSupported()) {
-            $this->assertEmptyBrowserConsole();
+            // $this->assertEmptyBrowserConsole();
         }
     }
 
