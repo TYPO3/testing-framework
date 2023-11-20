@@ -613,9 +613,10 @@ class Testbase
         );
         // PackageManager is required to create a Package instance...
         $packageCollection = PackageCollection::fromPackageStates(
+            $this->composerPackageManager,
             $packageManager,
             $instancePath,
-            $packageStates['packages']
+            $packageStates['packages'],
         );
         $packageStates['packages'] = $packageCollection->sortPackageStates(
             $packageStates['packages'],

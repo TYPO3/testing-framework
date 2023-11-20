@@ -25,6 +25,7 @@ use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 
 /**
  * Collection for extension packages to resolve their dependencies in a test-base.
@@ -45,23 +46,28 @@ class PackageCollection
     protected array $packages;
 
     /**
+     * @param ComposerPackageManager $composerPackageManager
      * @param PackageManager $packageManager
      * @param array<PackageKey, StateConfiguration> $packageStates
      */
-    public static function fromPackageStates(PackageManager $packageManager, string $basePath, array $packageStates): self
+    public static function fromPackageStates(ComposerPackageManager $composerPackageManager, PackageManager $packageManager, string $basePath, array $packageStates): self
     {
         $packages = [];
         foreach ($packageStates as $packageKey => $packageStateConfiguration) {
             $packagePath = PathUtility::sanitizeTrailingSeparator(
                 rtrim($basePath, '/') . '/' . $packageStateConfiguration['packagePath']
             );
-            $packages[] = new Package($packageManager, $packageKey, $packagePath);
+            $packages[] = $package = new Package($packageManager, $packageKey, $packagePath);
+            $packageManager->registerPackage($package);
         }
-        return new self(...$packages);
+
+        return new self($composerPackageManager, ...$packages);
     }
 
-    public function __construct(PackageInterface ...$packages)
-    {
+    public function __construct(
+        private ComposerPackageManager $composerPackageManager,
+        PackageInterface ...$packages,
+    ) {
         $this->packages = array_combine(
             array_map(static fn(PackageInterface $package) => $package->getPackageKey(), $packages),
             $packages
@@ -253,6 +259,11 @@ class PackageCollection
                     $dependentPackageKeys[] = $dependentPackageKey;
                 }
                 if (!isset($this->packages[$dependentPackageKey])) {
+                    if ($this->isComposerDependency($dependentPackageKey)) {
+                        // The given package has a dependency to a Composer package that has no relation to TYPO3
+                        // We can ignore those, when calculating the extension order
+                        continue;
+                    }
                     throw new Exception(
                         sprintf(
                             'Package "%s" depends on package "%s" which does not exist.',
@@ -305,6 +316,7 @@ class PackageCollection
 
     protected function isComposerDependency(string $packageKey): bool
     {
-        return false;
+        $packageInfo = $this->composerPackageManager->getPackageInfo($packageKey);
+        return !(($packageInfo?->isSystemExtension() ?? false) || ($packageInfo?->isExtension()));
     }
 }
