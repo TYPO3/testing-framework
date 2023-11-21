@@ -659,9 +659,10 @@ class Testbase
         // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
-        $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
+        $connection = DriverManager::getConnection($connectionParameters);
+        $schemaManager = $connection->createSchemaManager();
 
-        if ($schemaManager->getDatabasePlatform()->getName() === 'sqlite') {
+        if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
             // This is the "path" option in sqlite: one file = one db
             $schemaManager->dropDatabase($databaseName);
         } elseif (in_array($databaseName, $schemaManager->listDatabases(), true)) {
