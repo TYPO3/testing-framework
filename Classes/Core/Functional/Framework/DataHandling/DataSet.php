@@ -73,7 +73,7 @@ final class DataSet
             $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($tableName);
             $platform = $connection->getDatabasePlatform();
             // @todo Check if we can use the cached schema information here instead.
-            $tableDetails = $connection->createSchemaManager()->listTableDetails($tableName);
+            $tableDetails = $connection->createSchemaManager()->introspectTable($tableName);
             foreach ($dataSet->getElements($tableName) as $element) {
                 // Some DBMS like postgresql are picky about inserting blob types with correct cast, setting
                 // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
