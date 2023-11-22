@@ -31,8 +31,7 @@ final class PackageInfo
         private readonly string $extensionKey,
         private readonly ?array $info = null,
         private readonly ?array $extEmConf = null,
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -96,12 +95,12 @@ final class PackageInfo
 
     public function getVendorDir(): string
     {
-        return (string)($this?->info['config']['vendor-dir'] ?? '');
+        return (string)($this->info['config']['vendor-dir'] ?? '');
     }
 
     public function getWebDir(): string
     {
-        return (string)($this?->info['extra']['typo3/cms']['web-dir'] ?? '');
+        return (string)($this->info['extra']['typo3/cms']['web-dir'] ?? '');
     }
 
     /**
@@ -113,7 +112,7 @@ final class PackageInfo
         if ($this->isMonoRepository()) {
             // Monorepo root composer.json replaces core system extension. We do not want that happen, so
             // ignore only replaced core extensions.
-            $keys = array_filter($keys, static fn ($value) => !str_starts_with($value, 'typo3/cms-'));
+            $keys = array_filter($keys, static fn($value) => !str_starts_with($value, 'typo3/cms-'));
         }
         return $keys;
     }

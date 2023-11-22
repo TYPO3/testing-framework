@@ -28,6 +28,7 @@ use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -254,7 +255,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $testbase->setTypo3TestingContext();
 
         // See if we're the first test of this test case.
-        $currentTestCaseClass = get_called_class();
+        $currentTestCaseClass = static::class;
         if (self::$currentTestCaseClass !== $currentTestCaseClass) {
             self::$currentTestCaseClass = $currentTestCaseClass;
         } else {
@@ -486,7 +487,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $queryBuilder->getRestrictions()->removeAll();
         $result = $queryBuilder->select('*')
             ->from('be_users')
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, \PDO::PARAM_INT)))
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($userId, Connection::PARAM_INT)))
             ->executeQuery();
         return $result->fetchAssociative() ?: null;
     }

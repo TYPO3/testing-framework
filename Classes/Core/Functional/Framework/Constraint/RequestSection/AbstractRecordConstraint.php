@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Constraint\RequestSection;
 
 /*
@@ -109,7 +110,7 @@ abstract class AbstractRecordConstraint extends Constraint
         $values = $this->values;
 
         foreach ($records as $recordIdentifier => $recordData) {
-            if (strpos($recordIdentifier, $this->table . ':') !== 0) {
+            if (!str_starts_with($recordIdentifier, $this->table . ':')) {
                 continue;
             }
             if (isset($recordData[$this->field])
@@ -131,7 +132,7 @@ abstract class AbstractRecordConstraint extends Constraint
         $values = $this->values;
 
         foreach ($records as $recordIdentifier => $recordData) {
-            if (strpos($recordIdentifier, $this->table . ':') !== 0) {
+            if (!str_starts_with($recordIdentifier, $this->table . ':')) {
                 unset($records[$recordIdentifier]);
                 continue;
             }

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core;
 
 /*
@@ -75,7 +76,7 @@ abstract class BaseTestCase extends TestCase
                 self::fail(
                     'tearDown() integrity check found changed error_reporting. Before was '
                     . $backupErrorReporting . ' compared to current ' . $currentErrorReporting . ' in '
-                    . '"' . get_class($this) . '".'
+                    . '"' . static::class . '".'
                     . 'Please check and verify that this is intended and add proper cleanup to the test.'
                 );
             }

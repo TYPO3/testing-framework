@@ -133,16 +133,16 @@ class Testbase
         }
 
         $commonPath = $to;
-        while (strpos($from . '/', $commonPath . '/') !== 0 && $commonPath !== '/' && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && $commonPath !== '.') {
+        while (!str_starts_with($from . '/', $commonPath . '/')   && $commonPath !== '/' && preg_match('{^[a-z]:/?$}i', $commonPath) !== false && $commonPath !== '.') {
             $commonPath = str_replace('\\', '/', \dirname($commonPath));
         }
 
-        if ($commonPath === '/' || $commonPath === '.' || strpos($from, $commonPath) !== 0) {
+        if ($commonPath === '/' || $commonPath === '.' || !str_starts_with($from, $commonPath)) {
             return var_export($to, true);
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        if (strpos($to, $from . '/') === 0) {
+        if (str_starts_with($to, $from . '/')) {
             return '__DIR__ . ' . var_export(substr($to, \strlen($from)), true);
         }
         $sourcePathDepth = substr_count(substr($from, \strlen($commonPath)), '/');
@@ -162,7 +162,7 @@ class Testbase
     public function removeOldInstanceIfExists($instancePath): void
     {
         if (is_dir($instancePath)) {
-            if (strpos($instancePath, 'typo3temp') === false) {
+            if (!str_contains($instancePath, 'typo3temp')) {
                 // Simple safe guard to not delete something else - test instance must contain at least typo3temp
                 throw new \RuntimeException(
                     'Test instance to delete must be within typo3temp',
@@ -204,7 +204,7 @@ class Testbase
         }
         foreach ($coreExtensions as $coreExtension) {
             $packageInfo = $this->composerPackageManager->getPackageInfoWithFallback($coreExtension);
-            if (! ($packageInfo?->isSystemExtension() ?? false)) {
+            if (!($packageInfo?->isSystemExtension() ?? false)) {
                 continue;
             }
             $linksToSet[$packageInfo->getRealPath() . '/'] = 'typo3/sysext/' . $packageInfo->getExtensionKey();
@@ -659,9 +659,10 @@ class Testbase
         // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
-        $schemaManager = DriverManager::getConnection($connectionParameters)->createSchemaManager();
+        $connection = DriverManager::getConnection($connectionParameters);
+        $schemaManager = $connection->createSchemaManager();
 
-        if ($schemaManager->getDatabasePlatform()->getName() === 'sqlite') {
+        if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
             // This is the "path" option in sqlite: one file = one db
             $schemaManager->dropDatabase($databaseName);
         } elseif (in_array($databaseName, $schemaManager->listDatabases(), true)) {

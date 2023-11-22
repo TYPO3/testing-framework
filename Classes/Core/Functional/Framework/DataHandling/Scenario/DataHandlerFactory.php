@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario;
 
 /*
@@ -477,7 +478,7 @@ class DataHandlerFactory
         // current item did not have any values in data map, use last identifer
         if ($currentIndex === false && !empty($identifiers)) {
             $values['pid'] = '-' . $identifiers[count($identifiers) - 1];
-            // current item does have values in data map, use previous identifier
+        // current item does have values in data map, use previous identifier
         } elseif ($currentIndex > 0) {
             $previousIndex = $identifiers[$currentIndex - 1];
             $values['pid'] = '-' . $identifiers[$previousIndex];
