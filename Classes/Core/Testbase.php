@@ -19,9 +19,10 @@ namespace TYPO3\TestingFramework\Core;
 
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\MariaDBPlatform as DoctrineMariaDBPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform as DoctrineMySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform as DoctrineSQLitePlatform;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -662,8 +663,10 @@ class Testbase
         unset($connectionParameters['dbname']);
         $connection = DriverManager::getConnection($connectionParameters);
         $schemaManager = $connection->createSchemaManager();
+        $platform = $connection->getDatabasePlatform();
+        $isSQLite = $platform instanceof DoctrineSQLitePlatform;
 
-        if ($connection->getDatabasePlatform()->getName() === 'sqlite') {
+        if ($isSQLite) {
             // This is the "path" option in sqlite: one file = one db
             $schemaManager->dropDatabase($databaseName);
         } elseif (in_array($databaseName, $schemaManager->listDatabases(), true)) {
@@ -742,7 +745,7 @@ class Testbase
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $platform = $connection->getDatabasePlatform();
-        if ($platform instanceof MySQLPlatform) {
+        if ($platform instanceof DoctrineMariaDBPlatform || $platform instanceof DoctrineMySQLPlatform) {
             $this->truncateAllTablesForMysql();
         } else {
             $this->truncateAllTablesForOtherDatabases();
@@ -866,7 +869,7 @@ class Testbase
     public static function resetTableSequences(Connection $connection, string $tableName): void
     {
         $platform = $connection->getDatabasePlatform();
-        if ($platform instanceof PostgreSqlPlatform) {
+        if ($platform instanceof DoctrinePostgreSQLPlatform) {
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->getRestrictions()->removeAll();
             $row = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
@@ -897,7 +900,7 @@ class Testbase
                     )
                 );
             }
-        } elseif ($platform instanceof SqlitePlatform) {
+        } elseif ($platform instanceof DoctrineSQLitePlatform) {
             // Drop eventually existing sqlite sequence for this table
             $connection->executeStatement(
                 sprintf(
