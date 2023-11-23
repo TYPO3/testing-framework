@@ -17,12 +17,15 @@ namespace TYPO3\TestingFramework\Core;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\MariaDBPlatform as DoctrineMariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform as DoctrineMySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform as DoctrineSQLitePlatform;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -661,7 +664,16 @@ class Testbase
         // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
-        $connection = DriverManager::getConnection($connectionParameters);
+        $configuration = (new Configuration())->setSchemaManagerFactory(GeneralUtility::makeInstance(DefaultSchemaManagerFactory::class));
+        // @todo Remove class exist check if supported minimal TYPO3 version is raised to v13+.
+        if (class_exists(\TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory::class)) {
+            /** @var SchemaManagerFactory|\TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory $coreSchemaFactory */
+            $coreSchemaFactory = GeneralUtility::makeInstance(
+                \TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory::class
+            );
+            $configuration->setSchemaManagerFactory($coreSchemaFactory);
+        }
+        $connection = DriverManager::getConnection($connectionParameters, $configuration);
         $schemaManager = $connection->createSchemaManager();
         $platform = $connection->getDatabasePlatform();
         $isSQLite = $platform instanceof DoctrineSQLitePlatform;
