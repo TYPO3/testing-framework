@@ -21,6 +21,8 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types\JsonType;
+use PHPUnit\Metadata\MetadataCollection;
+use PHPUnit\Metadata\Parser\Registry as MetadataRegistry;
 use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\ErrorHandler as ErrorHandlerPrePhpUnit101;
 use PHPUnit\Util\PHP\AbstractPhpProcess;
@@ -472,9 +474,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // @see: https://github.com/sebastianbergmann/phpunit/issues/4801
             $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
             restore_error_handler();
-            if (!$previousErrorHandler instanceof ErrorHandler
-                // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
-                && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101
+            $phpUnitUseErrorHandler = $this->shouldErrorHandlerBeUsed();
+            if (($phpUnitUseErrorHandler
+                 && !$previousErrorHandler instanceof ErrorHandler
+                     // @todo Remove this check after PhpUnit 10.1 is set as minimum requirement.
+                 && !$previousErrorHandler instanceof ErrorHandlerPrePhpUnit101)
+                || (!$phpUnitUseErrorHandler && $previousErrorHandler !== null)
             ) {
                 self::fail('tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.');
             }
@@ -1561,5 +1566,28 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $identifier = self::getInstanceIdentifier();
         return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
+    }
+
+    /**
+     * @see \PHPUnit\Framework\TestRunner::shouldErrorHandlerBeUsed()
+     * @return bool
+     */
+    private function shouldErrorHandlerBeUsed(): bool
+    {
+        if (!class_exists(MetadataRegistry::class)
+            || !class_exists(MetadataCollection::class)
+            || !method_exists(MetadataCollection::class, 'isWithoutErrorHandler') /** @phpstan-ignore-line */
+            || !method_exists($this, 'name')
+        ) {
+            // Compat layer for phpunit versions earlier than the `WithoutErrorHandler` attribute.
+            return true;
+        }
+
+        $test = $this;
+        if (MetadataRegistry::parser()->forMethod(get_class($test), $test->name())->isWithoutErrorHandler()->isNotEmpty()) {
+            return false;
+        }
+
+        return true;
     }
 }
