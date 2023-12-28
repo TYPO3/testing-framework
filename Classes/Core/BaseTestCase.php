@@ -19,6 +19,8 @@ namespace TYPO3\TestingFramework\Core;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Metadata\MetadataCollection;
+use PHPUnit\Metadata\Parser\Registry as MetadataRegistry;
 use PHPUnit\Runner\ErrorHandler;
 
 /**
@@ -54,7 +56,10 @@ abstract class BaseTestCase extends TestCase
         // fails to unset/restore it's custom error handler as "risky".
         $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
         restore_error_handler();
-        if (!$previousErrorHandler instanceof ErrorHandler) {
+        $phpUnitUseErrorHandler = $this->shouldErrorHandlerBeUsed();
+        if (($phpUnitUseErrorHandler && !$previousErrorHandler instanceof ErrorHandler)
+            || (!$phpUnitUseErrorHandler && $previousErrorHandler !== null)
+        ) {
             self::fail('tearDown() check: A dangling error handler has been found. Use restore_error_handler() to unset it.');
         }
 
@@ -225,5 +230,24 @@ abstract class BaseTestCase extends TestCase
     {
         $uniqueId = uniqid((string)mt_rand(), true);
         return $prefix . str_replace('.', '', $uniqueId);
+    }
+
+    /**
+     * @see \PHPUnit\Framework\TestRunner::shouldErrorHandlerBeUsed()
+     * @return bool
+     */
+    private function shouldErrorHandlerBeUsed(): bool
+    {
+        if (!method_exists(MetadataCollection::class, 'isWithoutErrorHandler')) {
+            // Compat layer for phpunit versions earlier than the `WithoutErrorHandler` attribute.
+            return true;
+        }
+
+        $test = $this;
+        if (MetadataRegistry::parser()->forMethod($test::class, $test->name())->isWithoutErrorHandler()->isNotEmpty()) {
+            return false;
+        }
+
+        return true;
     }
 }
