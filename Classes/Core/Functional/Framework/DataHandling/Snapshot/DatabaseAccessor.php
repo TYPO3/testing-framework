@@ -17,7 +17,10 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder as TYPO3QueryBuilder;
 use TYPO3\TestingFramework\Core\Testbase;
@@ -116,9 +119,19 @@ class DatabaseAccessor
     {
         $columnTypes = array_map(
             function (string $columnName) use ($table) {
-                return $table->getColumn($columnName)
-                    ->getType()
-                    ->getBindingType();
+                // Doctrine DBAL v4 converted the `*ParameterType` to an enum, and therefore returning this enum instead
+                // of the string value like before. As this is a non-baked enum, it cannot be serialized or json_encoded,
+                // and breaking the snapshot export badly. Due to the requirement to support Doctrine DBAL v3 and v4 it
+                // is necessary to detect the enum end return the doctrine type name instead. The `Connection->insert()`
+                // adjustment is adjusted to transform the provided types during import to the correct ParameterType
+                // again.
+                // @see https://github.com/doctrine/dbal/blob/4.0.x/UPGRADE.md#bc-break-converted-enum-like-classes-to-enums
+                // @todo Simplify this after Doctine DBAL v3 support can be dropped.
+                $type = $table->getColumn($columnName)->getType();
+                $bindingType = $type->getBindingType();
+                return (enum_exists(ParameterType::class))
+                    ? Type::lookupName($type)
+                    : $type->getBindingType();
             },
             $columnNames
         );
