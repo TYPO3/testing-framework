@@ -39,7 +39,7 @@ class Login extends Module
     ];
 
     /**
-     * Set a backend user session cookie and load the backend index.php.
+     * Set a backend user session cookie and load the backend entrypoint.
      *
      * Use this action to change the backend user and avoid switching between users in the backend module
      * "Backend Users" as this will change the user session ID and make it useless for subsequent calls of this action.
@@ -55,21 +55,21 @@ class Login extends Module
 
         $hasSession = $this->_loadSession();
         if ($hasSession && $newUserSessionId !== '' && $newUserSessionId !== $this->getUserSessionId()) {
-            $webDriver->amOnPage('/typo3/index.php');
+            $webDriver->amOnPage('/typo3');
             $webDriver->wait($waitTime);
             $this->_deleteSession();
             $hasSession = false;
         }
 
         if (!$hasSession) {
-            $webDriver->amOnPage('/typo3/index.php');
+            $webDriver->amOnPage('/typo3');
             $webDriver->wait($waitTime);
             $webDriver->waitForElement('body[data-typo3-login-ready]');
             $this->_createSession($newUserSessionId);
         }
 
         // Reload the page to have a logged in backend.
-        $webDriver->amOnPage('/typo3/index.php');
+        $webDriver->amOnPage('/typo3');
         $webDriver->wait($waitTime);
 
         // Ensure main content frame is fully loaded, otherwise there are load-race-conditions ..

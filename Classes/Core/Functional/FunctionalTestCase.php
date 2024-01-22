@@ -30,6 +30,7 @@ use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Http\Application as CoreHttpApplication;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
@@ -496,6 +497,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $requestUrlParts = parse_url($url);
         $docRoot = $this->instancePath;
+
+        // @todo: Remove when dropping support for v12
+        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : '/typo3';
+
         $serverParams = [
             'DOCUMENT_ROOT' => $docRoot,
             'HTTP_USER_AGENT' => 'TYPO3 Functional Test Request',
@@ -503,8 +509,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             'SERVER_NAME' => $requestUrlParts['host'] ?? 'localhost',
             'SERVER_ADDR' => '127.0.0.1',
             'REMOTE_ADDR' => '127.0.0.1',
-            'SCRIPT_NAME' => '/typo3/index.php',
-            'PHP_SELF' => '/typo3/index.php',
+            'SCRIPT_NAME' => $scriptPrefix . '/index.php',
+            'PHP_SELF' => $scriptPrefix . '/index.php',
             'SCRIPT_FILENAME' => $docRoot . '/index.php',
             'PATH_TRANSLATED' => $docRoot . '/index.php',
             'QUERY_STRING' => $requestUrlParts['query'] ?? '',
@@ -944,19 +950,23 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         FrameworkState::push();
         FrameworkState::reset();
 
-        // Re-init Environment $currentScript: Entry point to FE calls is /index.php, not /typo3/index.php
-        // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
-        Environment::initialize(
-            Environment::getContext(),
-            Environment::isCli(),
-            false,
-            Environment::getProjectPath(),
-            Environment::getPublicPath(),
-            Environment::getVarPath(),
-            Environment::getConfigPath(),
-            Environment::getPublicPath() . '/index.php',
-            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-        );
+        // @todo: Remove when dropping support for v12
+        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        if (!$hasConsolidatedHttpEntryPoint) {
+            // Re-init Environment $currentScript: Entry point to FE calls is /index.php, not /typo3/index.php
+            // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
+            Environment::initialize(
+                Environment::getContext(),
+                Environment::isCli(),
+                false,
+                Environment::getProjectPath(),
+                Environment::getPublicPath(),
+                Environment::getVarPath(),
+                Environment::getConfigPath(),
+                Environment::getPublicPath() . '/index.php',
+                Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+            );
+        }
 
         // Needed for GeneralUtility::getIndpEnv('SCRIPT_NAME') to return correct value
         // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
@@ -1023,19 +1033,22 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
             FrameworkState::pop();
 
-            // Reset Environment $currentScript: Entry point is /typo3/index.php again.
-            // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
-            Environment::initialize(
-                Environment::getContext(),
-                Environment::isCli(),
-                false,
-                Environment::getProjectPath(),
-                Environment::getPublicPath(),
-                Environment::getVarPath(),
-                Environment::getConfigPath(),
-                Environment::getPublicPath() . '/typo3/index.php',
-                Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-            );
+            // @todo: Remove when dropping support for v12
+            if (!$hasConsolidatedHttpEntryPoint) {
+                // Reset Environment $currentScript: Entry point is /typo3/index.php again.
+                // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
+                Environment::initialize(
+                    Environment::getContext(),
+                    Environment::isCli(),
+                    false,
+                    Environment::getProjectPath(),
+                    Environment::getPublicPath(),
+                    Environment::getVarPath(),
+                    Environment::getConfigPath(),
+                    Environment::getPublicPath() . '/typo3/index.php',
+                    Environment::isWindows() ? 'WINDOWS' : 'UNIX'
+                );
+            }
         }
         return $response;
     }

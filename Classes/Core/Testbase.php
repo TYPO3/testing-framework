@@ -34,6 +34,7 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
+use TYPO3\CMS\Core\Http\Application as CoreHttpApplication;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -75,7 +76,11 @@ class Testbase
      */
     public function defineSitePath(): void
     {
-        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'typo3/index.php';
+        // @todo: Remove when dropping support for v12
+        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : 'typo3/';
+
+        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . $scriptPrefix . 'index.php';
         if (!file_exists($_SERVER['SCRIPT_NAME'])) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
@@ -229,11 +234,20 @@ class Testbase
         // We can't just link the entry scripts here, because acceptance tests will make use of them
         // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
         // of the testing framework.
-        $entryPointsToSet = [
-            $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
-            $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
-            $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
-        ];
+        // @todo: Remove else branch when dropping support for v12
+        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        if ($hasConsolidatedHttpEntryPoint) {
+            $entryPointsToSet = [
+                $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
+                $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
+            ];
+        } else {
+            $entryPointsToSet = [
+                $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
+                $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
+                $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
+            ];
+        }
         $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
 
         foreach ($entryPointsToSet as $source => $target) {
@@ -715,13 +729,21 @@ class Testbase
     public function setUpBasicTypo3Bootstrap($instancePath): ContainerInterface
     {
         $_SERVER['PWD'] = $instancePath;
-        $_SERVER['argv'][0] = 'typo3/index.php';
+        // @todo: Remove when dropping support for v12
+        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : 'typo3/';
+        $_SERVER['argv'][0] = $scriptPrefix . 'index.php';
 
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
-        SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+        // @todo: Remove else branch when dropping support for v12
+        if ($hasConsolidatedHttpEntryPoint) {
+            SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+        } else {
+            SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+        }
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
