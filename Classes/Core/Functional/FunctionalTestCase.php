@@ -34,6 +34,7 @@ use TYPO3\CMS\Core\Http\Application as CoreHttpApplication;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -293,9 +294,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 'backend',
                 'frontend',
                 'extbase',
-                'install',
                 'fluid',
             ];
+            if ((new Typo3Version())->getMajorVersion() < 13) {
+                // @todo: Remove with next major TF version
+                $defaultCoreExtensionsToLoad[] = 'install';
+            }
             $frameworkExtension = [
                 'Resources/Core/Functional/Extensions/json_response',
                 'Resources/Core/Functional/Extensions/private_container',
