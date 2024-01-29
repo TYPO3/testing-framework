@@ -239,8 +239,10 @@ class Testbase
         if ($hasConsolidatedHttpEntryPoint) {
             $entryPointsToSet = [
                 $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
-                $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
             ];
+            if (in_array('install', $coreExtensions, true)) {
+                $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
+            }
         } else {
             $entryPointsToSet = [
                 $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
