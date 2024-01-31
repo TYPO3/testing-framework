@@ -427,10 +427,9 @@ class Testbase
 
     /**
      * Database settings for functional and acceptance tests can be either set by
-     * environment variables (recommended), or from an existing LocalConfiguration as fallback.
-     * The method fetches these.
+     * environment variables (recommended). The method fetches these.
      *
-     * An unique name will be added to the database name later.
+     * A unique name will be added to the database name later.
      *
      * @param array $config Incoming config arguments, used especially in acceptance test setups
      * @throws Exception
@@ -482,9 +481,6 @@ class Testbase
             if ($databaseCharset) {
                 $originalConfigurationArray['DB']['Connections']['Default']['charset'] = $databaseCharset;
             }
-        } elseif (file_exists(ORIGINAL_ROOT . 'typo3conf/LocalConfiguration.php')) {
-            // See if a LocalConfiguration file exists in "parent" instance to get db credentials from
-            $originalConfigurationArray = require ORIGINAL_ROOT . 'typo3conf/LocalConfiguration.php';
         } else {
             throw new Exception(
                 'Database credentials for tests are neither set through environment'
@@ -496,7 +492,7 @@ class Testbase
         // Instead of letting code run and retrieving mysterious result and errors, check for dropped sql driver
         // support and throw a corresponding exception with a proper message.
         // @todo Remove this in core v13 compatible testing-framework.
-        if (in_array($originalConfigurationArray['DB']['Connections']['Default']['driver'] ?? '', ['sqlsrv', 'pdo_sqlsrv'], true)) {
+        if (in_array($originalConfigurationArray['DB']['Connections']['Default']['driver'], ['sqlsrv', 'pdo_sqlsrv'], true)) {
             throw new \RuntimeException(
                 'Microsoft SQL Server support has been dropped for TYPO3 v12 and testing-framework.'
                 . ' Therefore driver "' . $databaseDriver . '" is invalid.',
