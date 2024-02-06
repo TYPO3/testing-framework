@@ -102,15 +102,12 @@ class DatabaseSnapshot
     }
 
     /**
-     * @todo Replace usages by direct instanceof checks when TYPO3 v13.0 / Doctrine DBAL 4 is lowes supported version.
-     *
-     * @param Connection $connection
-     * @return bool
+     * @todo Replace usages by direct instanceof checks when
+     *       TYPO3 v13.0 / Doctrine DBAL 4 is lowest supported version.
      * @throws \Doctrine\DBAL\Exception
      */
     private function isSQLite(Connection $connection): bool
     {
-        /** @phpstan-ignore-next-line */
         return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
     }
 }
