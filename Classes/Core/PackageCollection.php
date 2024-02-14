@@ -26,10 +26,38 @@ use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\TestingFramework\Composer\ComposerPackageManager;
+use TYPO3\TestingFramework\Composer\PackageInfo;
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /**
- * Collection for extension packages to resolve their dependencies in a test-base.
- * Most of the code has been duplicated and adjusted from `\TYPO3\CMS\Core\Package\PackageManager`.
+ * Composer package collection to resolve extension dependencies for classic-mode based test instances.
+ *
+ * This class resolves extension dependencies for composer packages to sort classic-mode PackageStates,
+ * which only takes TYPO3 extensions into account with a fallback to read composer information when the
+ * `ext_emconf.php` file is missing.
+ *
+ * Most of the code has been duplicated and adjusted from {@see PackageManager}.
+ *
+ * Background:
+ * ===========
+ *
+ * TYPO3 has the two installation mode "composer" and "classic". For the "composer" mode the package dependency handling
+ * is mainly done by composer and dependency detection and sorting is purely based on composer.json information. "Classic"
+ * mode uses only "ext_emconf.php" information to do the same job, not mixing it with the composer.json information when
+ * available.
+ *
+ * Since TYPO3 v12 extensions installed in "composer" mode are not required to provide a "ext_emconf.php" anymore, which
+ * makes them only installable within a "composer" mode installation. Agencies used to drop that file from local path
+ * extensions in "composer" mode projects, because it is a not needed requirement for them and avoids maintenance of it.
+ *
+ * typo3/testing-framework builds "classic" mode functional test instances while used within composer installations only,
+ * and introduced an extension sorting with this class to ensure to have a deterministic extension sorting like a real
+ * "classic" mode installation would provide in case extensions are not manually provided in the correct order within
+ * {@see FunctionalTestCase::$testExtensionToLoad} property.
+ *
+ * {@see PackageCollection} is based on the TYPO3 core {@see PackageManager} to provide a sorting for functional test
+ * instances, falling back to use composer.json information in case no "ext_emconf.php" are given limiting it only to
+ * TYPO3 compatible extensions (typo3-cms-framework and typo3-cms-extension composer package types).
  *
  * @phpstan-type PackageKey non-empty-string
  * @phpstan-type PackageName non-empty-string
@@ -54,6 +82,10 @@ class PackageCollection
     {
         $packages = [];
         foreach ($packageStates as $packageKey => $packageStateConfiguration) {
+            // @todo Verify retrieving package information and throwing early exception after extension without
+            //       composer.json support has been dropped, even for simplified test fixture extensions. Think
+            //       about triggering deprecation for this case first, which may also breaking from a testing
+            //       perspective.
             $packagePath = PathUtility::sanitizeTrailingSeparator(
                 rtrim($basePath, '/') . '/' . $packageStateConfiguration['packagePath']
             );
@@ -162,8 +194,11 @@ class PackageCollection
             ];
             if (isset($allPackageConstraints[$packageKey]['dependencies'])) {
                 foreach ($allPackageConstraints[$packageKey]['dependencies'] as $dependentPackageKey) {
-                    if (!in_array($dependentPackageKey, $packageKeys, true)) {
-                        if ($this->isComposerDependency($dependentPackageKey)) {
+                    $extensionKey = $this->getPackageExtensionKey($dependentPackageKey);
+                    if (!in_array($dependentPackageKey, $packageKeys, true)
+                        && !in_array($extensionKey, $packageKeys, true)
+                    ) {
+                        if (!$this->isTypo3SystemOrCustomExtension($dependentPackageKey)) {
                             // The given package has a dependency to a Composer package that has no relation to TYPO3
                             // We can ignore those, when calculating the extension order
                             continue;
@@ -174,21 +209,30 @@ class PackageCollection
                             1519931815
                         );
                     }
-                    $dependencies[$packageKey]['after'][] = $dependentPackageKey;
+                    $dependencies[$packageKey]['after'][] = $extensionKey;
                 }
             }
             if (isset($allPackageConstraints[$packageKey]['suggestions'])) {
                 foreach ($allPackageConstraints[$packageKey]['suggestions'] as $suggestedPackageKey) {
+                    $extensionKey = $this->getPackageExtensionKey($suggestedPackageKey);
                     // skip suggestions on not existing packages
-                    if (in_array($suggestedPackageKey, $packageKeys, true)) {
-                        // Suggestions actually have never been meant to influence loading order.
-                        // We misuse this currently, as there is no other way to influence the loading order
-                        // for not-required packages (soft-dependency).
-                        // When considering suggestions for the loading order, we might create a cyclic dependency
-                        // if the suggested package already has a real dependency on this package, so the suggestion
-                        // has do be dropped in this case and must *not* be taken into account for loading order evaluation.
-                        $dependencies[$packageKey]['after-resilient'][] = $suggestedPackageKey;
+                    if (!in_array($suggestedPackageKey, $packageKeys, true)
+                        && !in_array($extensionKey, $packageKeys, true)
+                    ) {
+                        continue;
                     }
+                    if (!$this->isTypo3SystemOrCustomExtension($extensionKey ?: $suggestedPackageKey)) {
+                        // Ignore non TYPO3 extension packages for suggestion determination/ordering.
+                        continue;
+                    }
+
+                    // Suggestions actually have never been meant to influence loading order.
+                    // We misuse this currently, as there is no other way to influence the loading order
+                    // for not-required packages (soft-dependency).
+                    // When considering suggestions for the loading order, we might create a cyclic dependency
+                    // if the suggested package already has a real dependency on this package, so the suggestion
+                    // has do be dropped in this case and must *not* be taken into account for loading order evaluation.
+                    $dependencies[$packageKey]['after-resilient'][] = $extensionKey;
                 }
             }
         }
@@ -255,25 +299,28 @@ class PackageCollection
         foreach ($dependentPackageConstraints as $constraint) {
             if ($constraint instanceof PackageConstraint) {
                 $dependentPackageKey = $constraint->getValue();
-                if (!in_array($dependentPackageKey, $dependentPackageKeys, true) && !in_array($dependentPackageKey, $trace, true)) {
-                    $dependentPackageKeys[] = $dependentPackageKey;
+                $extensionKey = $this->getPackageExtensionKey($dependentPackageKey) ?: $dependentPackageKey;
+                if (!in_array($extensionKey, $dependentPackageKeys, true)) {
+                    $dependentPackageKeys[] = $extensionKey;
                 }
-                if (!isset($this->packages[$dependentPackageKey])) {
-                    if ($this->isComposerDependency($dependentPackageKey)) {
+
+                if (!isset($this->packages[$extensionKey])) {
+                    if (!$this->isTypo3SystemOrCustomExtension($extensionKey)) {
                         // The given package has a dependency to a Composer package that has no relation to TYPO3
                         // We can ignore those, when calculating the extension order
                         continue;
                     }
+
                     throw new Exception(
                         sprintf(
                             'Package "%s" depends on package "%s" which does not exist.',
                             $package->getPackageKey(),
-                            $dependentPackageKey
+                            $extensionKey
                         ),
                         1695119749
                     );
                 }
-                $this->getDependencyArrayForPackage($this->packages[$dependentPackageKey], $dependentPackageKeys, $trace);
+                $this->getDependencyArrayForPackage($this->packages[$extensionKey], $dependentPackageKeys, $trace);
             }
         }
         return array_reverse($dependentPackageKeys);
@@ -292,9 +339,17 @@ class PackageCollection
         foreach ($suggestedPackageConstraints as $constraint) {
             if ($constraint instanceof PackageConstraint) {
                 $suggestedPackageKey = $constraint->getValue();
-                if (isset($this->packages[$suggestedPackageKey])) {
-                    $suggestedPackageKeys[] = $suggestedPackageKey;
+                $extensionKey = $this->getPackageExtensionKey($suggestedPackageKey) ?: $suggestedPackageKey;
+                if (!$this->isTypo3SystemOrCustomExtension($suggestedPackageKey)) {
+                    // Suggested packages which are not installed or not a TYPO3 extension can be skipped for
+                    // sorting when not available.
+                    continue;
                 }
+                if (!isset($this->packages[$extensionKey])) {
+                    // Suggested extension is not available in test system installation (not symlinked), ignore it.
+                    continue;
+                }
+                $suggestedPackageKeys[] = $extensionKey;
             }
         }
         return array_reverse($suggestedPackageKeys);
@@ -308,15 +363,38 @@ class PackageCollection
         $frameworkKeys = [];
         foreach ($this->packages as $package) {
             if ($package->getPackageMetaData()->isFrameworkType()) {
-                $frameworkKeys[] = $package->getPackageKey();
+                $frameworkKeys[] = $this->getPackageExtensionKey($package->getPackageKey()) ?: $package->getPackageKey();
             }
         }
         return $frameworkKeys;
     }
 
-    protected function isComposerDependency(string $packageKey): bool
+    /**
+     * Determines if given composer package key is either a `typo3-cms-framework` or `typo3-cms-extension` package.
+     */
+    protected function isTypo3SystemOrCustomExtension(string $packageKey): bool
     {
-        $packageInfo = $this->composerPackageManager->getPackageInfo($packageKey);
-        return !(($packageInfo?->isSystemExtension() ?? false) || ($packageInfo?->isExtension()));
+        $packageInfo = $this->getPackageInfo($packageKey);
+        if ($packageInfo === null) {
+            return false;
+        }
+        return $packageInfo->isSystemExtension() || $packageInfo->isExtension();
+    }
+
+    /**
+     * Returns package extension key. Returns empty string if not available.
+     */
+    protected function getPackageExtensionKey(string $packageKey): string
+    {
+        $packageInfo = $this->getPackageInfo($packageKey);
+        if ($packageInfo === null) {
+            return '';
+        }
+        return $packageInfo->getExtensionKey();
+    }
+
+    protected function getPackageInfo(string $packageKey): ?PackageInfo
+    {
+        return $this->composerPackageManager->getPackageInfo($packageKey);
     }
 }
