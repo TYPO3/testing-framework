@@ -16,15 +16,13 @@ namespace TYPO3\TestingFramework\Tests\Unit\Core\Functional\Framework\DataHandli
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class DataSetTest extends UnitTestCase
 {
-    /**
-     * @test
-     */
+    #[Test]
     public function handlesUtf8WithoutBom(): void
     {
         $csvFile = __DIR__ . '/../../../Fixtures/BOM/WithoutBom.csv';
@@ -33,9 +31,7 @@ class DataSetTest extends UnitTestCase
         self::assertEquals(strlen('pages'), strlen($tableName));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function handlesUtf8WithBom(): void
     {
         $csvFile = __DIR__ . '/../../../Fixtures/BOM/WithBom.csv';
@@ -44,9 +40,7 @@ class DataSetTest extends UnitTestCase
         self::assertEquals(strlen('pages'), strlen($tableName));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function notNullJsonFieldDataWithDoubleQuotationCanBeDecoded(): void
     {
         $csvFile = __DIR__ . '/../../../Fixtures/Json/WithJsonValueQuotedWithDoubleQuotes.csv';
