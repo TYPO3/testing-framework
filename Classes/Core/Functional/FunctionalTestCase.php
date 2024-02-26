@@ -17,7 +17,6 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -863,12 +862,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $templateFields['constants'] .= '@import \'' . $typoScriptFile . '\'' . LF;
             }
         }
-        // @todo: Check if this constant is still needed
-        $databasePlatform = 'mysql';
-        if ($connection->getDatabasePlatform() instanceof DoctrinePostgreSQLPlatform) {
-            $databasePlatform = 'postgresql';
-        }
-        $templateFields['constants'] .= 'databasePlatform = ' . $databasePlatform . LF;
         foreach ($typoScriptFiles['setup'] ?? [] as $typoScriptFile) {
             if (!str_starts_with($typoScriptFile, 'EXT:')) {
                 // @deprecated will be removed in version 8, use "EXT:" syntax instead
