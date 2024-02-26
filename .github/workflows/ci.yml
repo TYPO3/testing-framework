@@ -16,7 +16,7 @@ jobs:
         php: [ '8.1' , '8.2', '8.3' ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Composer install
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerUpdate
