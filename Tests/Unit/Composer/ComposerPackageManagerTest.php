@@ -16,7 +16,8 @@ namespace TYPO3\TestingFramework\Tests\Unit\Composer;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 use TYPO3\TestingFramework\Composer\PackageInfo;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -134,10 +135,8 @@ final class ComposerPackageManagerTest extends UnitTestCase
         yield ['phar://C:/../../css/style.css', 'phar://C:/css/style.css'];
     }
 
-    /**
-     * @test
-     * @dataProvider sanitizePathReturnsExpectedValueDataProvider
-     */
+    #[DataProvider('sanitizePathReturnsExpectedValueDataProvider')]
+    #[Test]
     public function sanitizePathReturnsExpectedValue(string $path, string $expectedPath): void
     {
         $subject = new ComposerPackageManager();
@@ -145,9 +144,9 @@ final class ComposerPackageManagerTest extends UnitTestCase
     }
 
     /**
-     * @test
      * @internal Ensure the TF related special case is in place as baseline for followup tests.
      */
+    #[Test]
     public function testingFrameworkCanBeResolvedAsExtensionKey(): void
     {
         $subject = new ComposerPackageManager();
@@ -162,9 +161,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getInfo());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function coreExtensionCanBeResolvedByExtensionKey(): void
     {
         $subject = new ComposerPackageManager();
@@ -176,9 +173,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertTrue($packageInfo->isSystemExtension());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function coreExtensionCanBeResolvedByPackageName(): void
     {
         $subject = new ComposerPackageManager();
@@ -190,9 +185,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertTrue($packageInfo->isSystemExtension());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function coreExtensionCanBeResolvedWithRelativeLegacyPathPrefix(): void
     {
         $subject = new ComposerPackageManager();
@@ -204,9 +197,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertTrue($packageInfo->isSystemExtension());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithoutJsonCanBeResolvedByAbsolutePath(): void
     {
         $subject = new ComposerPackageManager();
@@ -220,9 +211,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithoutJsonCanBeResolvedRelativeFromRoot(): void
     {
         $subject = new ComposerPackageManager();
@@ -236,9 +225,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithoutJsonCanBeResolvedByLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
@@ -252,9 +239,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithJsonCanBeResolvedByAbsolutePath(): void
     {
         $subject = new ComposerPackageManager();
@@ -268,9 +253,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithJsonCanBeResolvedRelativeFromRoot(): void
     {
         $subject = new ComposerPackageManager();
@@ -284,9 +267,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithJsonCanBeResolvedByLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
@@ -300,9 +281,7 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getExtEmConf());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function extensionWithJsonCanBeResolvedByRelativeLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
