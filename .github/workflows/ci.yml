@@ -3,8 +3,7 @@ name: CI
 on:
   push:
   pull_request:
-  schedule:
-    - cron:  '12 6 * * *'
+  workflow_dispatch:
 
 jobs:
 
@@ -15,8 +14,15 @@ jobs:
       matrix:
         php: [ '7.4', '8.0', '8.1', '8.2' ]
     steps:
-      - name: Checkout
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Checkout ${{ steps.extract_branch.outputs.branch }}
         uses: actions/checkout@v4
+        with:
+            ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Composer install
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerUpdate
