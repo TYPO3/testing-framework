@@ -6,7 +6,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    7:
+    nightly-7:
         name: "dispatch-nightly-7"
         runs-on: ubuntu-22.04
         permissions: write-all
