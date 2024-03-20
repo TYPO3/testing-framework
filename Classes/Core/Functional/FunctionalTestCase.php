@@ -1017,10 +1017,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $frontendApplication = $container->get(Application::class);
             $response = $frontendApplication->handle($serverRequest);
         } catch (\Exception $exception) {
+            // @todo: Remove when dropping support for v12.
             // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
-            // @todo: This code may become obsolete, when a __destruct() of TSFE handles release AND
-            //        TSFE instances *always* shut down after use.
-            if (isset($GLOBALS['TSFE']) && $GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
+            if (isset($GLOBALS['TSFE'])
+                && $GLOBALS['TSFE'] instanceof TypoScriptFrontendController
+                && method_exists($GLOBALS['TSFE'], 'releaseLocks')
+            ) {
                 $GLOBALS['TSFE']->releaseLocks();
             }
             throw $exception;
