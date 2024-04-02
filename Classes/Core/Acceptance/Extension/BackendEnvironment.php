@@ -259,6 +259,11 @@ abstract class BackendEnvironment extends Extension
             // Append the unique identifier to the base database name to end up with a single database per test case
             $localConfiguration['DB']['Connections']['Default']['dbname'] = $originalDatabaseName . '_at';
             $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
+            if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
+                $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
+                $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
+                $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
+            }
         } else {
             // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
             $this->output->debug('Database Connection: ' . json_encode($localConfiguration['DB']));
