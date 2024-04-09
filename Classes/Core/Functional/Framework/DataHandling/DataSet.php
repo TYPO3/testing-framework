@@ -160,9 +160,9 @@ final class DataSet
      * Return a list of rows of given table. Keys are the uid or hash
      * index fields of that table.
      */
-    public function getElements(string $tableName): ?array
+    public function getElements(string $tableName): array
     {
-        $elements = null;
+        $elements = [];
         if (isset($this->data[$tableName]['elements'])) {
             $elements = $this->data[$tableName]['elements'];
         }
