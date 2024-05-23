@@ -38,6 +38,15 @@ abstract class BaseTestCase extends TestCase
      */
     private ?int $backupErrorReporting = null;
 
+    public static function setUpBeforeClass():void
+    {
+        gc_collect_cycles();
+        $GLOBALS['memory_usage_start'] = memory_get_usage();
+        echo(PHP_EOL . '# ' . static::class . PHP_EOL);
+
+        parent::setUpBeforeClass();
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -86,6 +95,35 @@ abstract class BaseTestCase extends TestCase
                 );
             }
         }
+
+        /*
+         * Unset properties introduced by the test-class itself
+         *
+         * All these properties should actually be unset by the test-class tearDown
+         * method.
+         * Unfortunately tearDown is not implemented in every test-class or the
+         * implemented tearDown does not accurately unset all properties.
+         *
+         * Note: Private properties are not found and also cannot be automatically
+         * cleaned up here.
+         */
+        $rc = new \ReflectionClass(static::class);
+        foreach ($rc->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED) as $property) {
+            if (!$property->isStatic() && $property->class === static::class && isset($this->{$property->name})) {
+                // Auto-cleanup:
+                unset($this->{$property->name});
+                echo '!';
+            }
+        }
+    }
+
+    public static function tearDownAfterClass():void
+    {
+        parent::tearDownAfterClass();
+
+        gc_collect_cycles();
+        echo(PHP_EOL . 'Memory leak: ' . number_format((memory_get_usage() - $GLOBALS['memory_usage_start']) / 1024 / 1024, 2) . ' MB' . PHP_EOL);
+        unset($GLOBALS['memory_usage_start']);
     }
 
     /**
