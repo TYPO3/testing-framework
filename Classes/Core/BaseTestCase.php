@@ -40,9 +40,13 @@ abstract class BaseTestCase extends TestCase
 
     public static function setUpBeforeClass():void
     {
-        gc_collect_cycles();
-        $GLOBALS['memory_usage_start'] = memory_get_usage();
-        echo(PHP_EOL . '# ' . static::class . PHP_EOL);
+        if(getenv('TYPO3TESTINGFRAMEWORK_MEMORY_INFO')) {
+            echo PHP_EOL . '# \\' . static::class . PHP_EOL;
+
+            // Force garbage collection to measure memory used by these test-cases only.
+            gc_collect_cycles();
+            $GLOBALS['memory_usage_start'] = memory_get_usage();
+        }
 
         parent::setUpBeforeClass();
     }
@@ -97,33 +101,58 @@ abstract class BaseTestCase extends TestCase
         }
 
         /*
-         * Unset properties introduced by the test-class itself
+         * Unset properties from test-object
          *
-         * All these properties should actually be unset by the test-class tearDown
-         * method.
-         * Unfortunately tearDown is not implemented in every test-class or the
-         * implemented tearDown does not accurately unset all properties.
+         * The properties  - introduced in the test-class' setUp method - persist memory for each test-case run until all
+         * test-runs have finished. So memory adds up with every test-case.
          *
-         * Note: Private properties are not found and also cannot be automatically
-         * cleaned up here.
+         * All these properties should actually be unset in the test-class' tearDown method.
+         * Unfortunately tearDown is not implemented in every test-class or tearDown does not accurately unset all
+         * properties.
+         *
+         * Important: Gargbage collection must be triggered to really free up memory. As garbage collection consumes
+         * time this is done only once per test-set in tearDownAfterClass method.
+         *
+         * Note: Private properties cannot be cleaned up here.
          */
-        $rc = new \ReflectionClass(static::class);
-        foreach ($rc->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED) as $property) {
+        $reflection = new \ReflectionClass(static::class);
+        foreach ($reflection->getProperties(
+            \ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED
+        ) as $property) {
             if (!$property->isStatic() && $property->class === static::class && isset($this->{$property->name})) {
-                // Auto-cleanup:
                 unset($this->{$property->name});
-                echo '!';
+                if(getenv('TYPO3TESTINGFRAMEWORK_MEMORY_INFO')) {
+                    echo '!';
+                }
             }
         }
+        unset($reflection);
     }
 
     public static function tearDownAfterClass():void
     {
         parent::tearDownAfterClass();
 
+        /*
+         * In tearDown method all properties of the test-object are unset to free up memory.
+         * This memory is only reclaimed if neccessary, e.g. the memory of the running PHP process is running into its
+         * limitation and thereby an automatic garbage collection is triggered.
+         *
+         * The limit for memory is really high, therefor garbage collection is never triggered and the memory adds up.
+         *
+         * To use as little memory as possible we force a garbage collection here to reclaim free memory after a
+         * test-set is completed.
+         */
         gc_collect_cycles();
-        echo(PHP_EOL . 'Memory leak: ' . number_format((memory_get_usage() - $GLOBALS['memory_usage_start']) / 1024 / 1024, 2) . ' MB' . PHP_EOL);
-        unset($GLOBALS['memory_usage_start']);
+
+        if(getenv('TYPO3TESTINGFRAMEWORK_MEMORY_INFO')) {
+            $memStart = $GLOBALS['memory_usage_start'];
+            $memCurrent = memory_get_usage();
+            echo PHP_EOL . 'Memory: '
+                . sprintf("%0+1.2f", ($memCurrent - $memStart) / 1024 / 1024) . ' MB / '
+                . sprintf("%01.2f", $memCurrent / 1024 / 1024) . ' MB' . PHP_EOL;
+            unset($GLOBALS['memory_usage_start']);
+        }
     }
 
     /**
