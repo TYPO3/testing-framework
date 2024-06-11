@@ -39,8 +39,6 @@ abstract class BaseTestCase extends TestCase
      * @param bool $callAutoload whether to call any autoload function
      *
      * @return MockObject&AccessibleObjectInterface&T a mock of `$originalClassName` with access methods added
-     *
-     * @throws \InvalidArgumentException
      */
     protected function getAccessibleMock(
         $originalClassName,
@@ -51,10 +49,6 @@ abstract class BaseTestCase extends TestCase
         $callOriginalClone = true,
         $callAutoload = true
     ) {
-        if ($originalClassName === '') {
-            throw new \InvalidArgumentException('$originalClassName must not be empty.', 1334701880);
-        }
-
         $mockBuilder = $this->getMockBuilder($this->buildAccessibleProxy($originalClassName))
             ->setConstructorArgs($arguments)
             ->setMockClassName($mockClassName);
@@ -106,10 +100,6 @@ abstract class BaseTestCase extends TestCase
         $callAutoload = true,
         $mockedMethods = []
     ) {
-        if ($originalClassName === '') {
-            throw new \InvalidArgumentException('$originalClassName must not be empty.', 1384268260);
-        }
-
         return $this->getMockForAbstractClass(
             $this->buildAccessibleProxy($originalClassName),
             $arguments,
