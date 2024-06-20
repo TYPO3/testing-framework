@@ -406,15 +406,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         ) {
             @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
         }
-
-        // Unset especially the container after each test, it is a huge memory hog.
-        // Test class instances in phpunit are kept until end of run, this sums up.
-        unset($this->container);
-        unset($this->identifier, $this->instancePath, $this->coreExtensionsToLoad);
-        unset($this->testExtensionsToLoad, $this->pathsToLinkInTestInstance);
-        unset($this->pathsToProvideInTestInstance, $this->configurationToUseInTestInstance);
-        unset($this->additionalFoldersToCreate);
-
         parent::tearDown();
     }
 
