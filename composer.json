@@ -28,7 +28,7 @@
     "php": "^8.2",
     "guzzlehttp/psr7": "^2.5.0",
     "phpunit/phpunit": "^10.1 || ^11.0",
-    "psr/container": "^1.1.0 || ^2.0.0",
+    "psr/container": "^2.0",
     "typo3/cms-backend": "12.*.*@dev || 13.*.*@dev",
     "typo3/cms-core": "12.*.*@dev || 13.*.*@dev",
     "typo3/cms-extbase": "12.*.*@dev || 13.*.*@dev",
