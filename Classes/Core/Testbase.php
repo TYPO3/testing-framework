@@ -236,19 +236,22 @@ class Testbase
         // of the testing framework.
         // @todo: Remove else branch when dropping support for v12
         $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
+        $installPhpExists = file_exists($instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php');
         if ($hasConsolidatedHttpEntryPoint) {
             $entryPointsToSet = [
                 $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
             ];
-            if (in_array('install', $coreExtensions, true)) {
+            if ($installPhpExists && in_array('install', $coreExtensions, true)) {
                 $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
             }
         } else {
             $entryPointsToSet = [
                 $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
                 $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
-                $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php' => $instancePath . '/typo3/install.php',
             ];
+            if ($installPhpExists) {
+                $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
+            }
         }
         $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
 
