@@ -17,7 +17,7 @@ Also used by github actions for test execution.
 
 Usage: $0 [options]
 
-No arguments: Run all unit tests with PHP 8.1
+No arguments: Run all unit tests with PHP 8.2
 
 Options:
     -s <...>
@@ -39,8 +39,7 @@ Options:
 
     -p <8.1|8.2|8.3>
         Specifies the PHP minor version to be used
-            - 8.1 (default): use PHP 8.1
-            - 8.2: use PHP 8.2
+            - 8.2 (default): use PHP 8.2
             - 8.3: use PHP 8.3
 
     -x
@@ -57,11 +56,8 @@ Options:
         Show this help.
 
 Examples:
-    # Run unit tests using default PHP version (8.1)
+    # Run unit tests using default PHP version (8.2)
     ./Build/Scripts/runTests.sh
-
-    # Run unit tests using PHP 8.2
-    ./Build/Scripts/runTests.sh -p 8.2
 
     # Run unit tests using PHP 8.3
     ./Build/Scripts/runTests.sh -p 8.3
@@ -82,7 +78,7 @@ cd ../../ || exit 1
 # Option defaults
 ROOT_DIR=`readlink -f ${PWD}`
 TEST_SUITE="unit"
-PHP_VERSION="8.1"
+PHP_VERSION="8.2"
 PHP_XDEBUG_ON=0
 SCRIPT_VERBOSE=0
 CGLCHECK_DRY_RUN=""
@@ -115,7 +111,7 @@ while getopts ":b:s:p:hxn" OPT; do
             ;;
         p)
             PHP_VERSION=${OPTARG}
-            if ! [[ ${PHP_VERSION} =~ ^(8.1|8.2|8.3)$ ]]; then
+            if ! [[ ${PHP_VERSION} =~ ^(8.2|8.3)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;
