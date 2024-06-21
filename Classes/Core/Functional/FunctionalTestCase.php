@@ -295,7 +295,9 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 'extbase',
                 'fluid',
             ];
-            if ((new Typo3Version())->getMajorVersion() < 13) {
+            if ((new Typo3Version())->getMajorVersion() < 13
+                && class_exists(\TYPO3\CMS\Install\Exception::class)
+            ) {
                 // @todo: Remove with next major TF version
                 $defaultCoreExtensionsToLoad[] = 'install';
             }
