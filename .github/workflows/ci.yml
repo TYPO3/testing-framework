@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [ '8.1' , '8.2', '8.3' ]
+        php: [ '8.2', '8.3' ]
     steps:
 
       - name: Extract branch name
@@ -29,14 +29,12 @@ jobs:
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerUpdate
 
       - name: CGL
-        if: ${{ matrix.php <= '8.1' }}
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s cgl -n
 
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
 
       - name: Phpstan
-        if: ${{ matrix.php >= '8.2' }}
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s phpstan
 
       - name: Unit Tests
