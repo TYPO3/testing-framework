@@ -19,7 +19,6 @@ namespace TYPO3\TestingFramework\Core;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Metadata\MetadataCollection;
 use PHPUnit\Metadata\Parser\Registry as MetadataRegistry;
 use PHPUnit\Runner\ErrorHandler;
 
@@ -162,13 +161,10 @@ abstract class BaseTestCase extends TestCase
     }
 
     /**
-     * Create and return a unique id optionally prepended by a given string
+     * Create and return a unique id optionally prepended by a given string.
      *
-     * This function is used because on windows and in cygwin environments uniqid() has a resolution of one second which
-     * results in identical ids if simply uniqid('Foo'); is called.
-     *
-     * @param string $prefix
-     * @return string
+     * This function is used because on windows and in cygwin environments uniqid() has a resolution
+     * of one second which results in identical ids if simply uniqid('Foo'); is called.
      */
     protected function getUniqueId(string $prefix = ''): string
     {
@@ -178,20 +174,13 @@ abstract class BaseTestCase extends TestCase
 
     /**
      * @see \PHPUnit\Framework\TestRunner::shouldErrorHandlerBeUsed()
-     * @return bool
      */
     private function shouldErrorHandlerBeUsed(): bool
     {
-        if (!method_exists(MetadataCollection::class, 'isWithoutErrorHandler')) {
-            // Compat layer for phpunit versions earlier than the `WithoutErrorHandler` attribute.
-            return true;
-        }
-
         $test = $this;
         if (MetadataRegistry::parser()->forMethod($test::class, $test->name())->isWithoutErrorHandler()->isNotEmpty()) {
             return false;
         }
-
         return true;
     }
 }
