@@ -31,14 +31,11 @@ use TYPO3\TestingFramework\Core\Testbase;
  *
  * @internal Use FunctionalTestCase->withDatabaseSnapshot() to leverage this.
  */
-class DatabaseAccessor
+readonly class DatabaseAccessor
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
+    public function __construct(
+        private Connection $connection
+    ) {}
 
     /**
      * Fetch rows from all tables and return as array.
@@ -71,7 +68,7 @@ class DatabaseAccessor
     /**
      * Import rows to database from rows created by export().
      */
-    public function import(array $import)
+    public function import(array $import): void
     {
         foreach ($import as $tableImport) {
             $this->importTable(
@@ -100,7 +97,6 @@ class DatabaseAccessor
                 1535487373
             );
         }
-
         $columnNames = array_keys($columns);
         foreach ($items as $item) {
             $this->connection->insert(
