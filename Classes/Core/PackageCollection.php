@@ -144,11 +144,6 @@ class PackageCollection
      * Convert the package configuration into a dependency definition
      *
      * This converts "dependencies" and "suggestions" to "after" syntax for the usage in DependencyOrderingService
-     *
-     * @param array $allPackageConstraints
-     * @param array $packageKeys
-     * @return array
-     * @throws \UnexpectedValueException
      */
     protected function convertConfigurationForGraph(array $allPackageConstraints, array $packageKeys): array
     {
