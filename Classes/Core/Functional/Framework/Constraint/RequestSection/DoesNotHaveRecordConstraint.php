@@ -24,34 +24,24 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseSection;
  */
 class DoesNotHaveRecordConstraint extends AbstractRecordConstraint
 {
-    /**
-     * @param ResponseSection $responseSection
-     * @return bool
-     */
-    protected function matchesSection(ResponseSection $responseSection)
+    protected function matchesSection(ResponseSection $responseSection): bool
     {
         $records = $responseSection->getRecords();
-
         if (empty($records) || !is_array($records)) {
             $this->sectionFailures[$responseSection->getIdentifier()] = 'No records found.';
             return false;
         }
-
         $nonMatchingValues = $this->getNonMatchingValues($records);
         $matchingValues = array_diff($this->values, $nonMatchingValues);
-
         if (!empty($matchingValues)) {
             $this->sectionFailures[$responseSection->getIdentifier()] = 'Could not assert not having values for "' . $this->table . '.' . $this->field . '": ' . implode(', ', $matchingValues);
             return false;
         }
-
         return true;
     }
 
     /**
      * Returns a string representation of the constraint.
-     *
-     * @return string
      */
     public function toString(): string
     {

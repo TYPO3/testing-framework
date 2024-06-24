@@ -24,45 +24,33 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseSection;
  */
 class StructureDoesNotHaveRecordConstraint extends AbstractStructureRecordConstraint
 {
-    /**
-     * @param ResponseSection $responseSection
-     * @return bool
-     */
-    protected function matchesSection(ResponseSection $responseSection)
+    protected function matchesSection(ResponseSection $responseSection): bool
     {
         $matchingVariants = [];
-
         foreach ($responseSection->findStructures($this->recordIdentifier, $this->recordField) as $path => $structure) {
             if (empty($structure) || !is_array($structure)) {
                 $this->sectionFailures[$responseSection->getIdentifier()] = 'No records found in "' . $path . '"';
                 return false;
             }
-
             $nonMatchingValues = $this->getNonMatchingValues($structure);
             $matchingValues = array_diff($this->values, $nonMatchingValues);
-
             if (!empty($matchingValues)) {
                 $matchingVariants[$path] = $matchingValues;
             }
         }
-
         if (empty($matchingVariants)) {
             return true;
         }
-
         $matchingMessage = '';
         foreach ($matchingVariants as $path => $matchingValues) {
             $matchingMessage .= '  * Found in "' . $path . '": ' . implode(', ', $matchingValues);
         }
-
         $this->sectionFailures[$responseSection->getIdentifier()] = 'Could not assert not having values for "' . $this->table . '.' . $this->field . '"' . LF . $matchingMessage;
         return false;
     }
 
     /**
      * Returns a string representation of the constraint.
-     *
-     * @return string
      */
     public function toString(): string
     {

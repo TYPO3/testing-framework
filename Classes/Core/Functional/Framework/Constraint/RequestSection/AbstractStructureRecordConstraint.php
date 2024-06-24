@@ -22,23 +22,16 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Constraint\RequestSec
  */
 abstract class AbstractStructureRecordConstraint extends AbstractRecordConstraint
 {
-    /**
-     * @var string
-     */
-    protected $recordIdentifier;
+    protected string $recordIdentifier;
+    protected string $recordField;
 
-    /**
-     * @var string
-     */
-    protected $recordField;
-
-    public function setRecordIdentifier($recordIdentifier): self
+    public function setRecordIdentifier(string $recordIdentifier): self
     {
         $this->recordIdentifier = $recordIdentifier;
         return $this;
     }
 
-    public function setRecordField($recordField): self
+    public function setRecordField(string $recordField): self
     {
         $this->recordField = $recordField;
         return $this;
