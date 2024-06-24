@@ -22,145 +22,75 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario
  */
 class EntityConfiguration
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private bool $isNode = false;
+    private ?string $tableName = null;
+    private ?string $parentColumnName = null;
+    private ?string $nodeColumnName = null;
+    private array $columnNames = [];
+    private array $languageColumnNames = [];
+    private array $defaultValues = [];
+    private array $valueInstructions = [];
 
-    /**
-     * @var bool
-     */
-    private $isNode = false;
-
-    /**
-     * @var string|null
-     */
-    private $tableName;
-
-    /**
-     * @var string|null
-     */
-    private $parentColumnName;
-
-    /**
-     * @var string|null
-     */
-    private $nodeColumnName;
-
-    /**
-     * @var array
-     */
-    private $columnNames = [];
-
-    /**
-     * @var array
-     */
-    private $languageColumnNames = [];
-
-    /**
-     * @var array
-     */
-    private $defaultValues = [];
-
-    /**
-     * @var array
-     */
-    private $valueInstructions = [];
-
-    /**
-     * @param string $name
-     * @param array $settings
-     * @return EntityConfiguration
-     */
-    public static function fromArray(string $name, array $settings)
+    public static function fromArray(string $name, array $settings): EntityConfiguration
     {
         $target = new static($name);
-
         if (isset($settings['isNode'])) {
             $target->isNode = (bool)$settings['isNode'];
         }
-
         if (!empty($settings['tableName'])) {
             $target->tableName = $settings['tableName'];
         }
-
         if (!empty($settings['parentColumnName'])) {
             $target->parentColumnName = $settings['parentColumnName'];
         }
-
         if (!empty($settings['nodeColumnName'])) {
             $target->nodeColumnName = $settings['nodeColumnName'];
         }
-
         if (!empty($settings['columnNames'])) {
             $target->columnNames = $settings['columnNames'];
         }
-
         if (!empty($settings['languageColumnNames'])) {
             $target->languageColumnNames = $settings['languageColumnNames'];
         }
-
         if (!empty($settings['defaultValues'])) {
             $target->defaultValues = $settings['defaultValues'];
         }
-
         if (!empty($settings['valueInstructions'])) {
             $target->assertValueInstructions($settings['valueInstructions']);
             $target->valueInstructions = $settings['valueInstructions'];
         }
-
         return $target;
     }
 
-    final public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
+    final public function __construct(
+        private readonly string $name,
+    ) {}
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return bool
-     */
     public function isNode(): bool
     {
         return $this->isNode;
     }
 
-    /**
-     * @return string
-     */
     public function getTableName(): string
     {
         return $this->tableName ?? $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getParentColumnName(): ?string
     {
         return $this->parentColumnName;
     }
 
-    /**
-     * @return string|null
-     */
     public function getNodeColumnName(): ?string
     {
         return $this->nodeColumnName;
     }
 
-    /**
-     * @param string $name
-     * @return string
-     */
     public function resolveColumnName(string $name): string
     {
         return $this->columnNames[$name] ?? $name;
@@ -169,7 +99,6 @@ class EntityConfiguration
     public function processValues(array $values): array
     {
         $processedValues = $this->defaultValues;
-
         foreach ($values as $name => $value) {
             $processedValues[$this->resolveColumnName($name)] = $value;
         }
@@ -183,10 +112,6 @@ class EntityConfiguration
         return $processedValues;
     }
 
-    /**
-     * @param array $ancestorIds
-     * @return array
-     */
     public function processLanguageValues(array $ancestorIds): array
     {
         if (empty($ancestorIds)) {
@@ -195,16 +120,12 @@ class EntityConfiguration
                 1533744471
             );
         }
-
         $processedValues = [];
-
         if (empty($this->languageColumnNames)) {
             return $processedValues;
         }
-
         $lastAncestorIdsIndex = count($ancestorIds) - 1;
         $lastLanguageColumnNamesIndex = count($this->languageColumnNames) - 1;
-
         foreach ($this->languageColumnNames as $index => $columnName) {
             if ($index === $lastLanguageColumnNamesIndex || $index > $lastAncestorIdsIndex) {
                 $ancestorId = $ancestorIds[$lastAncestorIdsIndex];
@@ -213,17 +134,10 @@ class EntityConfiguration
             }
             $processedValues[$columnName] = $ancestorId;
         }
-
         return $processedValues;
     }
 
-    /**
-     * @param array $values
-     * @param string $name
-     * @param mixed $value
-     * @return array
-     */
-    private function assignValueInstructions(array $values, string $name, $value)
+    private function assignValueInstructions(array $values, string $name, mixed $value): array
     {
         if (empty($this->valueInstructions[$name][$value])) {
             return $values;
@@ -231,9 +145,6 @@ class EntityConfiguration
         return array_merge($values, $this->valueInstructions[$name][$value]);
     }
 
-    /**
-     * @param array $valueInstructions
-     */
     private function assertValueInstructions(array $valueInstructions): void
     {
         foreach ($valueInstructions as $columnName => $valueInstruction) {
