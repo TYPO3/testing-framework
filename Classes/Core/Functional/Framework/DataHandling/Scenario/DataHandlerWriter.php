@@ -22,55 +22,25 @@ use TYPO3\CMS\Core\DataHandling\DataHandler;
 
 class DataHandlerWriter
 {
-    /**
-     * @var DataHandler
-     */
-    private $dataHandler;
+    private array $errors = [];
 
-    /**
-     * @var BackendUserAuthentication
-     */
-    private $backendUser;
+    final public function __construct(
+        private readonly DataHandler $dataHandler,
+        private readonly BackendUserAuthentication $backendUser,
+    ) {}
 
-    /**
-     * @var string[]
-     */
-    private $errors = [];
-
-    /**
-     * @param BackendUserAuthentication $backendUser
-     * @return static
-     */
-    public static function withBackendUser(
-        BackendUserAuthentication $backendUser
-    ): self {
+    public static function withBackendUser(BackendUserAuthentication $backendUser): self
+    {
         $dataHandler = new DataHandler();
         if (isset($backendUser->uc['copyLevels'])) {
             $dataHandler->copyTree = $backendUser->uc['copyLevels'];
         }
-        $target = new static($dataHandler, $backendUser);
-        return $target;
+        return new static($dataHandler, $backendUser);
     }
 
-    /**
-     * @param DataHandler $dataHandler
-     * @param BackendUserAuthentication $backendUser
-     */
-    final public function __construct(
-        DataHandler $dataHandler,
-        BackendUserAuthentication $backendUser
-    ) {
-        $this->dataHandler = $dataHandler;
-        $this->backendUser = $backendUser;
-    }
-
-    /**
-     * @param DataHandlerFactory $factory
-     */
-    public function invokeFactory(DataHandlerFactory $factory)
+    public function invokeFactory(DataHandlerFactory $factory): void
     {
         $this->dataHandler->suggestedInsertUids = $factory->getSuggestedIds();
-
         foreach ($factory->getDataMapPerWorkspace() as $workspaceId => $dataMap) {
             $dataMap = $this->updateDataMap($dataMap);
             $backendUser = clone $this->backendUser;
@@ -103,10 +73,6 @@ class DataHandlerWriter
         return $this->errors;
     }
 
-    /**
-     * @param array $dataMap
-     * @return array
-     */
     private function updateDataMap(array $dataMap): array
     {
         $updatedTableDataMap = [];
@@ -137,10 +103,6 @@ class DataHandlerWriter
         return $updatedTableDataMap;
     }
 
-    /**
-     * @param array $commandMap
-     * @return array
-     */
     private function updateCommandMap(array $commandMap): array
     {
         $updatedTableCommandMap = [];

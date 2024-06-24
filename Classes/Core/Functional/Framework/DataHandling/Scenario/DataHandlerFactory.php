@@ -52,10 +52,6 @@ class DataHandlerFactory
      */
     private array $staticIdsPerEntity = [];
 
-    /**
-     * @param string $yamlFile
-     * @return static
-     */
     public static function fromYamlFile(string $yamlFile): self
     {
         return new static(Yaml::parseFile($yamlFile));
@@ -68,17 +64,11 @@ class DataHandlerFactory
         $this->processEntities($this->settings['entities'] ?? []);
     }
 
-    /**
-     * @return array
-     */
     public function getDataMapPerWorkspace(): array
     {
         return $this->dataMapPerWorkspace;
     }
 
-    /**
-     * @return array
-     */
     public function getCommandMapPerWorkspace(): array
     {
         return $this->commandMapPerWorkspace;
@@ -103,15 +93,10 @@ class DataHandlerFactory
         return $this->suggestedIds;
     }
 
-    /**
-     * @param array $settings
-     * @param string|null $nodeId
-     * @param string|null $parentId
-     */
     private function processEntities(
         array $settings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): void {
         foreach ($settings as $entityName => $entitySettings) {
             $entityConfiguration = $this->provideEntityConfiguration($entityName);
@@ -126,17 +111,11 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param array $itemSettings
-     * @param string|null $nodeId
-     * @param string|null $parentId
-     */
     private function processEntityItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
@@ -144,7 +123,6 @@ class DataHandlerFactory
             $nodeId,
             $parentId
         );
-
         $workspaceId = $itemSettings['version']['workspace'] ?? 0;
         $tableName = $entityConfiguration->getTableName();
         $newId = $this->getUniqueIdForNewRecords();
@@ -152,7 +130,6 @@ class DataHandlerFactory
         if (isset($itemSettings['actions'])) {
             $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
         }
-
         foreach ($itemSettings['versionVariants'] ?? [] as $versionVariantSettings) {
             $this->processVersionVariantItem(
                 $entityConfiguration,
@@ -161,7 +138,6 @@ class DataHandlerFactory
                 $entityConfiguration->isNode() ? $newId : $nodeId
             );
         }
-
         foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
                 $entityConfiguration,
@@ -170,7 +146,6 @@ class DataHandlerFactory
                 $entityConfiguration->isNode() ? '-' . $newId : $nodeId
             );
         }
-
         foreach ($itemSettings['children'] ?? [] as $childItemSettings) {
             $this->processEntityItem(
                 $entityConfiguration,
@@ -179,7 +154,6 @@ class DataHandlerFactory
                 $newId
             );
         }
-
         if (!empty($itemSettings['entities']) && $entityConfiguration->isNode()) {
             $this->processEntities(
                 $itemSettings['entities'],
@@ -189,30 +163,22 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param array $itemSettings
-     * @param array $ancestorIds
-     * @param string|null $nodeId
-     */
     private function processLanguageVariantItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
         array $ancestorIds,
-        string $nodeId = null
+        ?string $nodeId = null
     ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
             $itemSettings,
             $nodeId
         );
-
-        // Language values can be overriden by declared values
+        // Language values can be overridden by declared values
         $values = array_merge(
             $entityConfiguration->processLanguageValues($ancestorIds),
             $values
         );
-
         $tableName = $entityConfiguration->getTableName();
         $newId = $this->getUniqueIdForNewRecords();
         $workspaceId = $itemSettings['version']['workspace'] ?? 0;
@@ -220,7 +186,6 @@ class DataHandlerFactory
         if (isset($itemSettings['actions'])) {
             $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
         }
-
         foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
                 $entityConfiguration,
@@ -231,16 +196,11 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param array $itemSettings
-     * @param string $ancestorId
-     */
     private function processVersionVariantItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
         string $ancestorId,
-        string $nodeId = null
+        ?string $nodeId = null
     ): void {
         if (isset($itemSettings['self'])) {
             throw new \LogicException(
@@ -260,13 +220,11 @@ class DataHandlerFactory
                 1574365936
             );
         }
-
         $values = $this->processEntityValues(
             $entityConfiguration,
             $itemSettings,
             $nodeId
         );
-
         $tableName = $entityConfiguration->getTableName();
         $this->setInDataMap($tableName, $ancestorId, $values, (int)$values['workspace']);
         if (isset($itemSettings['actions'])) {
@@ -274,18 +232,11 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param array $itemSettings
-     * @param string|null $nodeId
-     * @param string|null $parentId
-     * @return array
-     */
     private function processEntityValues(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): array {
         if (isset($itemSettings['self']) && isset($itemSettings['version'])) {
             throw new \LogicException(
@@ -305,9 +256,7 @@ class DataHandlerFactory
                 1534872400
             );
         }
-
         $sourceProperty = isset($itemSettings['version']) ? 'version' : 'self';
-
         if (empty($itemSettings[$sourceProperty]) || !is_array($itemSettings[$sourceProperty])) {
             throw new \LogicException(
                 sprintf(
@@ -318,7 +267,6 @@ class DataHandlerFactory
                 1533734369
             );
         }
-
         $staticId = (int)($itemSettings[$sourceProperty]['id'] ?? 0);
         if ($this->hasStaticId($entityConfiguration, $staticId)) {
             throw new \LogicException(
@@ -329,10 +277,8 @@ class DataHandlerFactory
                 1533734370
             );
         }
-
         $parentColumnName = $entityConfiguration->getParentColumnName();
         $nodeColumnName = $entityConfiguration->getNodeColumnName();
-
         // @todo probably dynamic assignment is a bad idea & we should just use auto incremented values...
         $incrementValue = !empty($itemSettings['version']) ? 2 : 1;
         if ($staticId > 0) {
@@ -344,7 +290,6 @@ class DataHandlerFactory
         $this->addSuggestedId($entityConfiguration, $suggestedId);
         $values = $entityConfiguration->processValues($itemSettings[$sourceProperty]);
         $values['uid'] = $suggestedId;
-
         // Assign node pointer value
         if ($nodeId !== null && !empty($nodeColumnName)) {
             $values[$nodeColumnName] = $nodeId;
@@ -353,13 +298,9 @@ class DataHandlerFactory
         if ($parentId !== null && !empty($parentColumnName)) {
             $values[$parentColumnName] = $parentId;
         }
-
         return $values;
     }
 
-    /**
-     * @param array $settings
-     */
     private function buildEntityConfigurations(array $settings): void
     {
         $defaultSettings = $settings['*'] ?? [];
@@ -378,10 +319,6 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param string $entityName
-     * @return EntityConfiguration
-     */
     private function provideEntityConfiguration(
         string $entityName
     ): EntityConfiguration {
@@ -391,10 +328,6 @@ class DataHandlerFactory
         return $this->entityConfigurations[$entityName];
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param int $suggestedId
-     */
     private function addSuggestedId(
         EntityConfiguration $entityConfiguration,
         int $suggestedId
@@ -413,11 +346,6 @@ class DataHandlerFactory
         $this->suggestedIds[$identifier] = true;
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @param int $id
-     * @return bool
-     */
     private function hasStaticId(
         EntityConfiguration $entityConfiguration,
         int $id
@@ -429,10 +357,6 @@ class DataHandlerFactory
         );
     }
 
-    /**
-     * @param EntityConfiguration $entityConfiguration
-     * @return int
-     */
     private function incrementDynamicId(
         EntityConfiguration $entityConfiguration,
         int $incrementValue = 1
@@ -450,23 +374,17 @@ class DataHandlerFactory
      * Adds values to data map and ensures sorting.
      * Per default DataHandler inserts records to top on according page
      * however, this factory shall insert sequentially one after another.
-     *
-     * @param string $tableName
-     * @param string $identifier
-     * @param array $values
-     * @param int $workspaceId
      */
     private function setInDataMap(
         string $tableName,
         string $identifier,
         array $values,
-        int $workspaceId = 0
+        ?int $workspaceId = 0
     ): void {
         if (empty($values)) {
             $this->dataMapPerWorkspace[$workspaceId][$tableName][$identifier] = $values;
             return;
         }
-
         $tableDataMap = $this->filterDataMapByPageId(
             $workspaceId,
             $tableName,
@@ -474,7 +392,6 @@ class DataHandlerFactory
         );
         $identifiers = array_keys($tableDataMap);
         $currentIndex = array_search($identifier, $identifiers);
-
         // current item did not have any values in data map, use last identifer
         if ($currentIndex === false && !empty($identifiers)) {
             $values['pid'] = '-' . $identifiers[count($identifiers) - 1];
@@ -483,7 +400,6 @@ class DataHandlerFactory
             $previousIndex = $identifiers[$currentIndex - 1];
             $values['pid'] = '-' . $identifiers[$previousIndex];
         }
-
         $this->dataMapPerWorkspace[$workspaceId][$tableName][$identifier] = $values;
     }
 
@@ -492,7 +408,7 @@ class DataHandlerFactory
         string $identifier,
         ?string $nodeId,
         array $actionItems,
-        int $workspaceId = 0
+        ?int $workspaceId = 0
     ): void {
         if (empty($actionItems)) {
             return;
@@ -518,21 +434,14 @@ class DataHandlerFactory
         }
     }
 
-    /**
-     * @param int $workspaceId
-     * @param string $tableName
-     * @param int|string|null $pageId
-     * @return array
-     */
     private function filterDataMapByPageId(
         int $workspaceId,
         string $tableName,
-        $pageId
+        int|string|null $pageId = null
     ): array {
         if ($pageId === null) {
             return [];
         }
-
         return array_filter(
             $this->dataMapPerWorkspace[$workspaceId][$tableName] ?? [],
             function (array $item) use ($pageId, $workspaceId) {
@@ -545,12 +454,7 @@ class DataHandlerFactory
         );
     }
 
-    /**
-     * @param int $workspaceId
-     * @param int|string|null $pageId
-     * @return int|string|null
-     */
-    private function resolveDataMapPageId(int $workspaceId, $pageId)
+    private function resolveDataMapPageId(int $workspaceId, int|string|null $pageId = null): int|string|null
     {
         $normalizePageId = (string)$pageId;
         if ($pageId === null || $normalizePageId[0] !== '-') {
@@ -563,10 +467,7 @@ class DataHandlerFactory
     }
 
     /**
-     * This function generates a unique id by using the more entropy parameter, so it can be used
-     * in DataHandler.
-     *
-     * @return string
+     * This function generates a unique id by using the more entropy parameter, so it can be used in DataHandler.
      */
     private function getUniqueIdForNewRecords(): string
     {
