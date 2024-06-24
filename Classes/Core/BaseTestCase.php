@@ -141,52 +141,6 @@ abstract class BaseTestCase extends TestCase
     }
 
     /**
-     * Returns a mock object which allows for calling protected methods and access
-     * of protected properties. Concrete methods to mock can be specified with
-     * the last parameter.
-     *
-     * Note: This method has no native return types on purpose, but only PHPDoc return type annotations.
-     * The reason is that the combination of "union types with generics in PHPDoc" and "a subset of those types as
-     * native types, but without the generics" tends to confuse PhpStorm's static type analysis (which we want to avoid).
-     *
-     * @deprecated will be removed in version 8 because `getMockForAbstractClass` (which we're using here under the
-     * hood) has been soft-deprecated in PHPUnit 10.1, and using it will result in a deprecation warning in PHPUnit 11.
-     *
-     * @see https://github.com/sebastianbergmann/phpunit/issues/5241
-     *
-     * @template T of object
-     * @param class-string<T> $originalClassName Full qualified name of the original class
-     * @param array $arguments
-     * @param string $mockClassName
-     * @param bool $callOriginalConstructor
-     * @param bool $callOriginalClone
-     * @param bool $callAutoload
-     * @param array $mockedMethods
-     * @return MockObject&AccessibleObjectInterface&T
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function getAccessibleMockForAbstractClass(
-        string $originalClassName,
-        array $arguments = [],
-        string $mockClassName = '',
-        bool $callOriginalConstructor = true,
-        bool $callOriginalClone = true,
-        bool $callAutoload = true,
-        array $mockedMethods = []
-    ) {
-        return $this->getMockForAbstractClass(
-            $this->buildAccessibleProxy($originalClassName),
-            $arguments,
-            $mockClassName,
-            $callOriginalConstructor,
-            $callOriginalClone,
-            $callAutoload,
-            $mockedMethods
-        );
-    }
-
-    /**
      * Creates a proxy class of the specified class which allows
      * for calling even protected methods and access of protected properties.
      *
