@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 cleanUp() {
-    ATTACHED_CONTAINERS=$(${CONTAINER_BIN} ps --filter network=${NETWORK} --format='{{.Names}} 2>/dev/null')
-    if [[ -n $ATTACHED_CONTAINERS ]]; then
-        for ATTACHED_CONTAINER in ${ATTACHED_CONTAINERS}; do
-            ${CONTAINER_BIN} kill ${ATTACHED_CONTAINER} >/dev/null
-        done
+    ATTACHED_CONTAINERS=$(${CONTAINER_BIN} ps --filter network=${NETWORK} --format='{{.Names}}')
+    for ATTACHED_CONTAINER in ${ATTACHED_CONTAINERS}; do
+        ${CONTAINER_BIN} kill ${ATTACHED_CONTAINER} >/dev/null
+    done
+    if [ ${CONTAINER_BIN} = "docker" ]; then
         ${CONTAINER_BIN} network rm ${NETWORK} >/dev/null
+    else
+        ${CONTAINER_BIN} network rm -f ${NETWORK} >/dev/null
     fi
 }
 
