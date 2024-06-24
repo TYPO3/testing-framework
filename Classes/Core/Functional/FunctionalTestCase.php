@@ -34,7 +34,6 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
-use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
@@ -549,11 +548,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function assertCSVDataSet(string $fileName): void
     {
-        if (!PathUtility::isAbsolutePath($fileName)) {
-            // @deprecated: Always feed absolute paths.
-            $fileName = GeneralUtility::getFileAbsFileName($fileName);
-        }
-
         $dataSet = DataSet::read($fileName);
         $failMessages = [];
 
