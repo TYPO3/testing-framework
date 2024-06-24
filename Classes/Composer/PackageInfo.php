@@ -20,17 +20,17 @@ namespace TYPO3\TestingFramework\Composer;
 /**
  * @internal This class is for testing-framework internal processing and not part of public testing API.
  */
-final class PackageInfo
+final readonly class PackageInfo
 {
     public function __construct(
-        private readonly string $name,
-        private readonly string $type,
-        private readonly string $path,
-        private readonly string $realPath,
-        private readonly string $version,
-        private readonly string $extensionKey,
-        private readonly ?array $info = null,
-        private readonly ?array $extEmConf = null,
+        private string $name,
+        private string $type,
+        private string $path,
+        private string $realPath,
+        private string $version,
+        private string $extensionKey,
+        private ?array $info = null,
+        private ?array $extEmConf = null,
     ) {}
 
     public function getName(): string
