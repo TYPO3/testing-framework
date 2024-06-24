@@ -25,38 +25,19 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\ResponseSection;
  */
 abstract class AbstractRecordConstraint extends Constraint
 {
-    /**
-     * @var array
-     */
-    protected $sectionFailures = [];
+    protected array $sectionFailures = [];
+    protected string $table;
+    protected string $field;
+    protected bool $strict = false;
+    protected array $values;
 
-    /**
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * @var string
-     */
-    protected $field;
-
-    /**
-     * @var bool
-     */
-    protected $strict = false;
-
-    /**
-     * @var array
-     */
-    protected $values;
-
-    public function setTable($table): self
+    public function setTable(string $table): self
     {
         $this->table = $table;
         return $this;
     }
 
-    public function setField($field): self
+    public function setField(string $field): self
     {
         $this->field = $field;
         return $this;
@@ -68,9 +49,9 @@ abstract class AbstractRecordConstraint extends Constraint
         return $this;
     }
 
-    public function setStrict($strict): self
+    public function setStrict(bool $strict): self
     {
-        $this->strict = (bool)$strict;
+        $this->strict = $strict;
         return $this;
     }
 
@@ -79,7 +60,6 @@ abstract class AbstractRecordConstraint extends Constraint
      * constraint is met, false otherwise.
      *
      * @param array|ResponseSection|ResponseSection[] $other ResponseSections to evaluate
-     * @return bool
      */
     protected function matches($other): bool
     {
@@ -91,24 +71,14 @@ abstract class AbstractRecordConstraint extends Constraint
             }
             return !empty($success);
         }
-
         return $this->matchesSection($other);
     }
 
-    /**
-     * @param ResponseSection $responseSection
-     * @return bool
-     */
-    abstract protected function matchesSection(ResponseSection $responseSection);
+    abstract protected function matchesSection(ResponseSection $responseSection): bool;
 
-    /**
-     * @param array $records
-     * @return array
-     */
-    protected function getNonMatchingValues(array $records)
+    protected function getNonMatchingValues(array $records): array
     {
         $values = $this->values;
-
         foreach ($records as $recordIdentifier => $recordData) {
             if (!str_starts_with($recordIdentifier, $this->table . ':')) {
                 continue;
@@ -119,30 +89,22 @@ abstract class AbstractRecordConstraint extends Constraint
                 unset($values[$foundValueIndex]);
             }
         }
-
         return $values;
     }
 
-    /**
-     * @param array $records
-     * @return array
-     */
-    protected function getRemainingRecords(array $records)
+    protected function getRemainingRecords(array $records): array
     {
         $values = $this->values;
-
         foreach ($records as $recordIdentifier => $recordData) {
             if (!str_starts_with($recordIdentifier, $this->table . ':')) {
                 unset($records[$recordIdentifier]);
                 continue;
             }
-
             if (($foundValueIndex = array_search($recordData[$this->field], $values)) !== false) {
                 unset($values[$foundValueIndex]);
                 unset($records[$recordIdentifier]);
             }
         }
-
         return $records;
     }
 
@@ -153,9 +115,8 @@ abstract class AbstractRecordConstraint extends Constraint
      * cases. This method should return the second part of that sentence.
      *
      * @param mixed $other Evaluated value or object.
-     * @return string
      */
-    protected function failureDescription($other): string
+    protected function failureDescription(mixed $other): string
     {
         return $this->toString();
     }
@@ -167,9 +128,8 @@ abstract class AbstractRecordConstraint extends Constraint
      * information like a diff
      *
      * @param mixed $other Evaluated value or object.
-     * @return string
      */
-    protected function additionalFailureDescription($other): string
+    protected function additionalFailureDescription(mixed $other): string
     {
         $failureDescription = '';
         foreach ($this->sectionFailures as $sectionIdentifier => $sectionFailure) {

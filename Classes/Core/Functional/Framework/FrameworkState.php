@@ -32,12 +32,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class FrameworkState
 {
-    protected static $state = [];
+    protected static array $state = [];
 
     /**
      * Push current state to stack
      */
-    public static function push()
+    public static function push(): void
     {
         $state = [];
         $state['globals-server'] = $GLOBALS['_SERVER'];
@@ -66,7 +66,7 @@ class FrameworkState
     /**
      * Reset some state before functional frontend tests are executed
      */
-    public static function reset()
+    public static function reset(): void
     {
         unset($GLOBALS['BE_USER']);
         unset($GLOBALS['TYPO3_REQUEST']);
@@ -81,7 +81,7 @@ class FrameworkState
     /**
      * Pop state from stash and apply again to set state back to 'before frontend call'
      */
-    public static function pop()
+    public static function pop(): void
     {
         $state = array_pop(self::$state);
 
