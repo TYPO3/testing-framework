@@ -39,9 +39,9 @@ final class ComposerPackageManager
      *
      * @var array<string, string>
      */
-    private static $buffer = [];
+    private static array $buffer = [];
 
-    private static $bufferSize = 0;
+    private static int $bufferSize = 0;
 
     private static string $vendorPath = '';
 
