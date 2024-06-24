@@ -789,7 +789,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         if (empty($page)) {
             self::fail('Cannot set up frontend root page "' . $pageId . '"');
         }
-
         // migrate legacy definition to support `constants` and `setup`
         if (!empty($typoScriptFiles)
             && empty($typoScriptFiles['constants'])
@@ -797,13 +796,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         ) {
             $typoScriptFiles = ['setup' => $typoScriptFiles];
         }
-
         $connection->update(
             'pages',
             ['is_siteroot' => 1],
             ['uid' => $pageId]
         );
-
         $templateFields = array_merge(
             [
                 'title' => '',
@@ -818,22 +815,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             ]
         );
         foreach ($typoScriptFiles['constants'] ?? [] as $typoScriptFile) {
-            if (!str_starts_with($typoScriptFile, 'EXT:')) {
-                // @deprecated will be removed in version 8, use "EXT:" syntax instead
-                $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
-            } else {
-                $templateFields['constants'] .= '@import \'' . $typoScriptFile . '\'' . LF;
-            }
+            $templateFields['constants'] .= '@import \'' . $typoScriptFile . '\'' . LF;
         }
         foreach ($typoScriptFiles['setup'] ?? [] as $typoScriptFile) {
-            if (!str_starts_with($typoScriptFile, 'EXT:')) {
-                // @deprecated will be removed in version 8, use "EXT:" syntax instead
-                $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
-            } else {
-                $templateFields['config'] .= '@import \'' . $typoScriptFile . '\'' . LF;
-            }
+            $templateFields['config'] .= '@import \'' . $typoScriptFile . '\'' . LF;
         }
-
         $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
         $connection->delete('sys_template', ['pid' => $pageId]);
         $connection->insert(
