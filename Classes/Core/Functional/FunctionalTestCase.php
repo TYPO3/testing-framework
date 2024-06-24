@@ -29,11 +29,9 @@ use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Http\Application as CoreHttpApplication;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
@@ -295,12 +293,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 'extbase',
                 'fluid',
             ];
-            if ((new Typo3Version())->getMajorVersion() < 13
-                && class_exists(\TYPO3\CMS\Install\Exception::class)
-            ) {
-                // @todo: Remove with next major TF version
-                $defaultCoreExtensionsToLoad[] = 'install';
-            }
             $frameworkExtension = [
                 'Resources/Core/Functional/Extensions/json_response',
                 'Resources/Core/Functional/Extensions/private_container',
@@ -413,7 +405,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
     protected function getConnectionPool(): ConnectionPool
     {
-        return GeneralUtility::makeInstance(ConnectionPool::class);
+        return $this->get(ConnectionPool::class);
     }
 
     /**
@@ -494,10 +486,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $requestUrlParts = parse_url($url);
         $docRoot = $this->instancePath;
 
-        // @todo: Remove when dropping support for v12
-        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
-        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : '/typo3';
-
         $serverParams = [
             'DOCUMENT_ROOT' => $docRoot,
             'HTTP_USER_AGENT' => 'TYPO3 Functional Test Request',
@@ -505,8 +493,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             'SERVER_NAME' => $requestUrlParts['host'] ?? 'localhost',
             'SERVER_ADDR' => '127.0.0.1',
             'REMOTE_ADDR' => '127.0.0.1',
-            'SCRIPT_NAME' => $scriptPrefix . '/index.php',
-            'PHP_SELF' => $scriptPrefix . '/index.php',
+            'SCRIPT_NAME' => '/index.php',
+            'PHP_SELF' => '/index.php',
             'SCRIPT_FILENAME' => $docRoot . '/index.php',
             'PATH_TRANSLATED' => $docRoot . '/index.php',
             'QUERY_STRING' => $requestUrlParts['query'] ?? '',
@@ -644,12 +632,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         foreach ($actualRecords as $index => $record) {
             $differentFields = $this->getDifferentFields($expectedRecord, $record);
-
             if (empty($differentFields)) {
                 return $index;
             }
         }
-
         return false;
     }
 
@@ -661,15 +647,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll();
-        $statement = $queryBuilder
-            ->select('*')
-            ->from($tableName)
-            ->executeQuery();
-
+        $statement = $queryBuilder->select('*')->from($tableName)->executeQuery();
         if (!$hasUidField && !$hasHashField) {
             return $statement->fetchAllAssociative();
         }
-
         if ($hasUidField) {
             $allRecords = [];
             while ($record = $statement->fetchAssociative()) {
@@ -683,7 +664,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $allRecords[$index] = $record;
             }
         }
-
         return $allRecords;
     }
 
@@ -769,16 +749,13 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     protected function getDifferentFields(array $assertion, array $record): array
     {
         $differentFields = [];
-
         foreach ($assertion as $field => $value) {
             if (str_starts_with((string)$value, '\\*')) {
                 continue;
             }
-
             if (!array_key_exists($field, $record)) {
                 throw new \ValueError(sprintf('"%s" column not found in the input data.', $field));
             }
-
             if (str_starts_with((string)$value, '<?xml')) {
                 try {
                     self::assertXmlStringEqualsXmlString((string)$value, (string)$record[$field]);
@@ -791,7 +768,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $differentFields[] = $field;
             }
         }
-
         return $differentFields;
     }
 
@@ -879,7 +855,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $connection = $this->getConnectionPool()->getConnectionForTable('sys_template');
         $template = $connection->select(['*'], 'sys_template', ['pid' => $pageId, 'root' => 1])->fetchAssociative();
-
         if (empty($template)) {
             self::fail('Cannot find root template on page with id: "' . $pageId . '"');
         }
@@ -940,24 +915,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         FrameworkState::push();
         FrameworkState::reset();
 
-        // @todo: Remove when dropping support for v12
-        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
-        if (!$hasConsolidatedHttpEntryPoint) {
-            // Re-init Environment $currentScript: Entry point to FE calls is /index.php, not /typo3/index.php
-            // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
-            Environment::initialize(
-                Environment::getContext(),
-                Environment::isCli(),
-                false,
-                Environment::getProjectPath(),
-                Environment::getPublicPath(),
-                Environment::getVarPath(),
-                Environment::getConfigPath(),
-                Environment::getPublicPath() . '/index.php',
-                Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-            );
-        }
-
         // Needed for GeneralUtility::getIndpEnv('SCRIPT_NAME') to return correct value
         // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
         // See second data provider of UriPrefixRenderingTest
@@ -1009,38 +966,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         try {
             $frontendApplication = $container->get(Application::class);
             $response = $frontendApplication->handle($serverRequest);
-        } catch (\Exception $exception) {
-            // @todo: Remove when dropping support for v12.
-            // When a FE call throws an exception, locks are released in any case to prevent a deadlock.
-            if (isset($GLOBALS['TSFE'])
-                && $GLOBALS['TSFE'] instanceof TypoScriptFrontendController
-                && method_exists($GLOBALS['TSFE'], 'releaseLocks')
-            ) {
-                $GLOBALS['TSFE']->releaseLocks();
-            }
-            throw $exception;
         } finally {
             // Somewhere an ob_start() is called in frontend that is not cleaned. Work around that for now.
             ob_end_clean();
-
             FrameworkState::pop();
-
-            // @todo: Remove when dropping support for v12
-            if (!$hasConsolidatedHttpEntryPoint) {
-                // Reset Environment $currentScript: Entry point is /typo3/index.php again.
-                // see also \TYPO3\TestingFramework\Core\SystemEnvironmentBuilder
-                Environment::initialize(
-                    Environment::getContext(),
-                    Environment::isCli(),
-                    false,
-                    Environment::getProjectPath(),
-                    Environment::getPublicPath(),
-                    Environment::getVarPath(),
-                    Environment::getConfigPath(),
-                    Environment::getPublicPath() . '/typo3/index.php',
-                    Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-                );
-            }
         }
         return $response;
     }
