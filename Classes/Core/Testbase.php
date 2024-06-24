@@ -18,23 +18,21 @@ namespace TYPO3\TestingFramework\Core;
  */
 
 use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\MariaDBPlatform as DoctrineMariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform as DoctrineMySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
-use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
-use TYPO3\CMS\Core\Http\Application as CoreHttpApplication;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -76,11 +74,7 @@ class Testbase
      */
     public function defineSitePath(): void
     {
-        // @todo: Remove when dropping support for v12
-        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
-        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : 'typo3/';
-
-        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . $scriptPrefix . 'index.php';
+        $_SERVER['SCRIPT_NAME'] = $this->getWebRoot() . 'index.php';
         if (!file_exists($_SERVER['SCRIPT_NAME'])) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
@@ -96,7 +90,6 @@ class Testbase
         if (!defined('ORIGINAL_ROOT')) {
             define('ORIGINAL_ROOT', $this->getWebRoot());
         }
-
         if (!file_exists(ORIGINAL_ROOT . 'index.php')) {
             $this->exitWithMessage('Unable to determine path to entry script. Please check your path or set an environment variable \'TYPO3_PATH_ROOT\' to your root path.');
         }
@@ -117,7 +110,7 @@ class Testbase
      * @param string $directory Absolute path to directories to create
      * @throws Exception
      */
-    public function createDirectory($directory): void
+    public function createDirectory(string $directory): void
     {
         if (is_dir($directory)) {
             return;
@@ -168,7 +161,7 @@ class Testbase
      * @param non-empty-string $instancePath Absolute path to test instance
      * @throws Exception
      */
-    public function removeOldInstanceIfExists($instancePath): void
+    public function removeOldInstanceIfExists(string $instancePath): void
     {
         if (is_dir($instancePath)) {
             if (!str_contains($instancePath, 'typo3temp')) {
@@ -234,24 +227,12 @@ class Testbase
         // We can't just link the entry scripts here, because acceptance tests will make use of them
         // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
         // of the testing framework.
-        // @todo: Remove else branch when dropping support for v12
-        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
         $installPhpExists = file_exists($instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php');
-        if ($hasConsolidatedHttpEntryPoint) {
-            $entryPointsToSet = [
-                $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
-            ];
-            if ($installPhpExists && in_array('install', $coreExtensions, true)) {
-                $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
-            }
-        } else {
-            $entryPointsToSet = [
-                $instancePath . '/typo3/sysext/backend/Resources/Private/Php/backend.php' => $instancePath . '/typo3/index.php',
-                $instancePath . '/typo3/sysext/frontend/Resources/Private/Php/frontend.php' => $instancePath . '/index.php',
-            ];
-            if ($installPhpExists) {
-                $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
-            }
+        $entryPointsToSet = [
+            $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
+        ];
+        if ($installPhpExists && in_array('install', $coreExtensions, true)) {
+            $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
         }
         $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
 
@@ -491,18 +472,6 @@ class Testbase
                 1397406356
             );
         }
-
-        // Instead of letting code run and retrieving mysterious result and errors, check for dropped sql driver
-        // support and throw a corresponding exception with a proper message.
-        // @todo Remove this in core v13 compatible testing-framework.
-        if (in_array($originalConfigurationArray['DB']['Connections']['Default']['driver'], ['sqlsrv', 'pdo_sqlsrv'], true)) {
-            throw new \RuntimeException(
-                'Microsoft SQL Server support has been dropped for TYPO3 v12 and testing-framework.'
-                . ' Therefore driver "' . $databaseDriver . '" is invalid.',
-                1651335681
-            );
-        }
-
         return $originalConfigurationArray['DB'];
     }
 
@@ -514,7 +483,7 @@ class Testbase
      * @param array $configuration "LocalConfiguration" array with DB settings
      * @throws Exception
      */
-    public function testDatabaseNameIsNotTooLong($originalDatabaseName, array $configuration): void
+    public function testDatabaseNameIsNotTooLong(string $originalDatabaseName, array $configuration): void
     {
         // Maximum database name length for mysql is 64 characters
         if (strlen($configuration['DB']['Connections']['Default']['dbname']) > 64) {
@@ -663,7 +632,7 @@ class Testbase
      *
      * @param string $databaseName Database name of this test instance
      * @param string $originalDatabaseName Original database name before suffix was added
-     * @throws \TYPO3\TestingFramework\Core\Exception
+     * @throws Exception
      */
     public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
@@ -676,24 +645,20 @@ class Testbase
 
         // Drop database if exists. Directly using the Doctrine DriverManager to
         // work around connection caching in ConnectionPool.
-        // @todo: This should by now work with using "our" ConnectionPool again, it does now, though.
+        // @todo: This should by now work with using "our" ConnectionPool again, it does not, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
         $configuration = (new Configuration())->setSchemaManagerFactory(GeneralUtility::makeInstance(DefaultSchemaManagerFactory::class));
-        // @todo Remove class exist check if supported minimal TYPO3 version is raised to v13+.
-        if (class_exists(\TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory::class)) {
-            /** @var SchemaManagerFactory|\TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory $coreSchemaFactory */
-            $coreSchemaFactory = GeneralUtility::makeInstance(
-                \TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory::class
-            );
-            $configuration->setSchemaManagerFactory($coreSchemaFactory);
-        }
+        /** @var CoreSchemaManagerFactory $coreSchemaFactory */
+        $coreSchemaFactory = GeneralUtility::makeInstance(
+            CoreSchemaManagerFactory::class
+        );
+        $configuration->setSchemaManagerFactory($coreSchemaFactory);
         $driverConnection = DriverManager::getConnection($connectionParameters, $configuration);
         $schemaManager = $driverConnection->createSchemaManager();
-        $platform = $driverConnection->getDatabasePlatform();
-        $isSQLite = self::isSQLite($driverConnection);
+        $isSQLite = $driverConnection->getDatabasePlatform() instanceof SQLitePlatform;
 
-        // doctrine/dbal no longer supports createDatabase() and dropDatabase() statements. Guard it.
+        // doctrine/dbal sqlite no longer supports createDatabase() and dropDatabase() statements. Guard it.
         if (!$isSQLite && in_array($databaseName, $schemaManager->listDatabases(), true)) {
             $schemaManager->dropDatabase($databaseName);
         } elseif ($isSQLite && is_file($databaseName)) {
@@ -702,7 +667,7 @@ class Testbase
             @unlink($databaseName);
         }
         try {
-            // doctrine/dbal no longer supports createDatabase() and dropDatabase() statements. Guard it.
+            // doctrine/dbal sqlite no longer supports createDatabase() and dropDatabase() statements. Guard it.
             // The engine will create the database file automatically.
             if (!$isSQLite) {
                 $schemaManager->createDatabase($databaseName);
@@ -725,26 +690,17 @@ class Testbase
      * For functional and acceptance tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
-     * @return ContainerInterface
      */
-    public function setUpBasicTypo3Bootstrap($instancePath): ContainerInterface
+    public function setUpBasicTypo3Bootstrap(string $instancePath): ContainerInterface
     {
         $_SERVER['PWD'] = $instancePath;
-        // @todo: Remove when dropping support for v12
-        $hasConsolidatedHttpEntryPoint = class_exists(CoreHttpApplication::class);
-        $scriptPrefix = $hasConsolidatedHttpEntryPoint ? '' : 'typo3/';
-        $_SERVER['argv'][0] = $scriptPrefix . 'index.php';
+        $_SERVER['argv'][0] = 'index.php';
 
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
-        // @todo: Remove else branch when dropping support for v12
-        if ($hasConsolidatedHttpEntryPoint) {
-            SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-        } else {
-            SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
-        }
+        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests.
@@ -883,13 +839,7 @@ class Testbase
      */
     public function createDatabaseStructure(ContainerInterface $container): void
     {
-        try {
-            $schemaMigrationService = $container->get(SchemaMigrator::class);
-        } catch (ServiceNotFoundException) {
-            // @todo: Remove when core v12 patch level 12.4.6 has been released which
-            //        releases https://review.typo3.org/c/Packages/TYPO3.CMS/+/80530/5/typo3/sysext/core/Configuration/Services.yaml
-            $schemaMigrationService = GeneralUtility::makeInstance(SchemaMigrator::class);
-        }
+        $schemaMigrationService = $container->get(SchemaMigrator::class);
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
         $sqlCode = $sqlReader->getTablesDefinitionString();
         $createTableStatements = $sqlReader->getCreateTableStatementArray($sqlCode);
@@ -900,10 +850,6 @@ class Testbase
      * Perform post processing of database tables after an insert has been performed.
      * Doing this once per insert is rather slow, but due to the soft reference behavior
      * this needs to be done after every row to ensure consistent results.
-     *
-     * @param Connection $connection
-     * @param string $tableName
-     * @throws DBALException
      */
     public static function resetTableSequences(Connection $connection, string $tableName): void
     {
@@ -939,7 +885,7 @@ class Testbase
                     )
                 );
             }
-        } elseif (self::isSQLite($connection)) {
+        } elseif ($connection->getDatabasePlatform() instanceof SQLitePlatform) {
             // Drop eventually existing sqlite sequence for this table
             $connection->executeStatement(
                 sprintf(
@@ -957,7 +903,7 @@ class Testbase
      * @param string $to Absolute target path
      * @return bool True if all went well
      */
-    protected function copyRecursive($from, $to)
+    protected function copyRecursive(string $from, string $to): bool
     {
         $dir = opendir($from);
         if (!file_exists($to)) {
@@ -970,10 +916,10 @@ class Testbase
             }
             if (is_dir($from . DIRECTORY_SEPARATOR . $file)) {
                 $success = $this->copyRecursive($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
-                $result = $result & $success;
+                $result = (bool)($result & $success);
             } else {
                 $success = copy($from . DIRECTORY_SEPARATOR . $file, $to . DIRECTORY_SEPARATOR . $file);
-                $result = $result & $success;
+                $result = (bool)($result & $success);
             }
         }
         closedir($dir);
@@ -994,7 +940,7 @@ class Testbase
     }
 
     /**
-     * Returns the absolute path the TYPO3 document root.
+     * Returns the absolute path the TYPO3 document root with trailing slash.
      * This is the "original" document root, not the "instance" root for functional / acceptance tests.
      *
      * @return string the TYPO3 document root using Unix path separators
@@ -1016,22 +962,10 @@ class Testbase
 
     /**
      * Send http headers, echo out a text message and exit with error code
-     *
-     * @param string $message
      */
-    protected function exitWithMessage($message): void
+    protected function exitWithMessage(string $message): never
     {
         echo $message . chr(10);
         exit(1);
-    }
-
-    /**
-     * @todo Replace usages by direct instanceof checks when
-     *       TYPO3 v13.0 / Doctrine DBAL 4 is lowest supported version.
-     * @throws DBALException
-     */
-    private static function isSQLite(Connection|DoctrineConnection $connection): bool
-    {
-        return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
     }
 }
