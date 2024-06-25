@@ -20,7 +20,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 /**
  * Model of arbitrary array value instruction
  */
-class ArrayValueInstruction extends AbstractInstruction
+class ArrayValueInstruction extends AbstractInstruction implements InstructionInterface
 {
     protected array $array = [];
 

@@ -17,10 +17,7 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
 
-/**
- * @deprecated: Will be removed with TF 9. Use InstructionInterface for type hints.
- */
-abstract class AbstractInstruction
+interface InstructionInterface
 {
-    abstract public function getIdentifier(): string;
+    public function getIdentifier(): string;
 }
