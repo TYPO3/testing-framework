@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 /**
  * Implement the database snapshot and callback logic.
@@ -34,10 +35,8 @@ class DatabaseSnapshot
      */
     private const VALUE_IN_MEMORY_THRESHOLD = 1024 ** 2 * 10;
 
-    private static $instance;
-    private string $sqliteDir;
-    private string $identifier;
-    private array $inMemoryImport;
+    private static DatabaseSnapshot $instance;
+    private array $inMemoryImport = [];
 
     public static function initialize(string $sqliteDir, string $identifier): void
     {
@@ -49,19 +48,17 @@ class DatabaseSnapshot
         return self::$instance;
     }
 
-    private function __construct(string $sqliteDir, string $identifier)
-    {
-        $this->identifier = $identifier;
-        $this->sqliteDir = $sqliteDir;
-        $this->inMemoryImport = [];
-    }
+    private function __construct(
+        private readonly string $sqliteDir,
+        private readonly string $identifier
+    ) {}
 
     /**
      * Create a new snapshot. This is called for the *first* test in a test case.
      */
     public function create(DatabaseAccessor $accessor, Connection $connection): void
     {
-        if ($this->isSQLite($connection)) {
+        if ($connection->getDatabasePlatform() instanceof SQLitePlatform) {
             // With sqlite, we simply copy the db-file to a different place
             $connection->close();
             copy(
@@ -87,27 +84,14 @@ class DatabaseSnapshot
      */
     public function restore(DatabaseAccessor $accessor, Connection $connection): void
     {
-        if ($this->isSQLite($connection)) {
+        if ($connection->getDatabasePlatform() instanceof SQLitePlatform) {
             $connection->close();
             copy(
                 $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite',
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite'
             );
         } else {
-            if (!is_array($this->inMemoryImport)) {
-                throw new \RuntimeException('Invalid import data', 1535487372);
-            }
             $accessor->import($this->inMemoryImport);
         }
-    }
-
-    /**
-     * @todo Replace usages by direct instanceof checks when
-     *       TYPO3 v13.0 / Doctrine DBAL 4 is lowest supported version.
-     * @throws \Doctrine\DBAL\Exception
-     */
-    private function isSQLite(Connection $connection): bool
-    {
-        return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
     }
 }
