@@ -23,27 +23,13 @@ use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
 /**
  * Model of frontend response content
  */
-class ResponseContent
+final class ResponseContent
 {
     /**
-     * @var array|ResponseSection[]
+     * @var ResponseSection[]
      */
-    protected $sections;
-
-    /**
-     * @var array
-     */
-    protected $structure;
-
-    /**
-     * @var array
-     */
-    protected $records;
-
-    /**
-     * @var array
-     */
-    protected $scope = [];
+    private array $sections;
+    private array $scope = [];
 
     final public function __construct() {}
 
@@ -51,8 +37,7 @@ class ResponseContent
     {
         $target = $target ?? new static();
         $content = json_decode($data, true);
-
-        if ($content !== null && is_array($content)) {
+        if (is_array($content)) {
             foreach ($content as $sectionIdentifier => $sectionData) {
                 try {
                     $section = new ResponseSection($sectionIdentifier, $sectionData);
@@ -62,26 +47,18 @@ class ResponseContent
             }
             $target->scope = $content['Scope'] ?? [];
         }
-
         return $target;
     }
 
-    /**
-     * @param string $sectionIdentifier
-     * @return ResponseSection|null
-     * @throws \RuntimeException
-     */
-    public function getSection($sectionIdentifier)
+    public function getSection(string $sectionIdentifier): ResponseSection
     {
         if (isset($this->sections[$sectionIdentifier])) {
             return $this->sections[$sectionIdentifier];
         }
-
         throw new \RuntimeException('ResponseSection "' . $sectionIdentifier . '" does not exist', 1476122151);
     }
 
     /**
-     * @param string ...$sectionIdentifiers
      * @return ResponseSection[]
      */
     public function getSections(string ...$sectionIdentifiers): array
@@ -89,7 +66,6 @@ class ResponseContent
         if (empty($sectionIdentifiers)) {
             $sectionIdentifiers = ['Default'];
         }
-
         return array_map(
             function (string $sectionIdentifier) {
                 return $this->getSection($sectionIdentifier);
@@ -98,14 +74,10 @@ class ResponseContent
         );
     }
 
-    /**
-     * @param string $path
-     * @return mixed|null
-     */
-    public function getScopePath(string $path)
+    public function getScopePath(string $path): mixed
     {
         try {
-            return ArrayUtility::getValueByPath($this->scope, $path, '/');
+            return ArrayUtility::getValueByPath($this->scope, $path);
         } catch (MissingArrayPathException $exception) {
             return null;
         }
