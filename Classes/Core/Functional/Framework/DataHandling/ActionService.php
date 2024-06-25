@@ -38,10 +38,7 @@ use TYPO3\TestingFramework\Core\Exception;
  */
 class ActionService
 {
-    /**
-     * @var DataHandler
-     */
-    protected $dataHandler;
+    protected ?DataHandler $dataHandler = null;
 
     /**
      * A low level method to retrieve the executing DataHandler method after
@@ -51,6 +48,9 @@ class ActionService
      */
     public function getDataHandler(): DataHandler
     {
+        if ($this->dataHandler === null) {
+            throw new Exception('DataHandler is not set', 1719302686);
+        }
         return $this->dataHandler;
     }
 
@@ -93,7 +93,7 @@ class ActionService
         $this->dataHandler->start($dataMap, []);
         $this->dataHandler->process_datamap();
 
-        foreach ($newTableIds as $tableName => &$ids) {
+        foreach ($newTableIds as &$ids) {
             foreach ($ids as &$id) {
                 if (!empty($this->dataHandler->substNEWwithIDs[$id])) {
                     $id = $this->dataHandler->substNEWwithIDs[$id];
@@ -111,7 +111,7 @@ class ActionService
      * modifyRecord('tt_content', 42, ['hidden' => '1']); // Modify a single record
      * modifyRecord('tt_content', 42, ['hidden' => '1'], ['tx_irre_table' => [4]]); // Modify a record and delete a child
      */
-    public function modifyRecord(string $tableName, int $uid, array $recordData, array $deleteTableRecordIds = null)
+    public function modifyRecord(string $tableName, int $uid, array $recordData, array $deleteTableRecordIds = null): void
     {
         $dataMap = [
             $tableName => [
@@ -150,7 +150,7 @@ class ActionService
      *      // ... another record on this page
      * );
      */
-    public function modifyRecords(int $pageId, array $tableRecordData)
+    public function modifyRecords(int $pageId, array $tableRecordData): void
     {
         $dataMap = [];
         $currentUid = null;
@@ -225,7 +225,7 @@ class ActionService
     /**
      * Discard a single workspace record.
      */
-    public function clearWorkspaceRecord(string $tableName, int $uid)
+    public function clearWorkspaceRecord(string $tableName, int $uid): void
     {
         $this->clearWorkspaceRecords(
             [
@@ -243,7 +243,7 @@ class ActionService
      *      ...
      * ]);
      */
-    public function clearWorkspaceRecords(array $tableRecordIds)
+    public function clearWorkspaceRecords(array $tableRecordIds): void
     {
         $commandMap = [];
         foreach ($tableRecordIds as $tableName => $ids) {
@@ -294,13 +294,11 @@ class ActionService
      * Example:
      * moveRecord('tt_content', 42, -5, ['hidden' => '1']);
      *
-     * @param string $tableName
      * @param int $uid uid of the record to move
      * @param int $targetUid target uid of a page or record. if positive, means it's PID where the record will be moved into,
 *                 negative means record will be placed after record with this uid. In this case it's uid of the record from
      *            the same table, and not a PID.
-     * @param array $recordData Additional record data to change when moving.
-     * @return array
+     * @param ?array $recordData Additional record data to change when moving.
      */
     public function moveRecord(string $tableName, int $uid, int $targetUid, array $recordData = null): array
     {
@@ -391,7 +389,7 @@ class ActionService
      *      [ 3, 5, 7 ]
      * );
      */
-    public function modifyReferences(string $tableName, int $uid, string $fieldName, array $referenceIds)
+    public function modifyReferences(string $tableName, int $uid, string $fieldName, array $referenceIds): void
     {
         $dataMap = [
             $tableName => [
@@ -408,7 +406,7 @@ class ActionService
     /**
      * Publish a single workspace record. Use the live record id of the workspace record.
      */
-    public function publishRecord(string $tableName, $liveUid, bool $throwException = true)
+    public function publishRecord(string $tableName, $liveUid, bool $throwException = true): void
     {
         $this->publishRecords([$tableName => [$liveUid]], $throwException);
     }
@@ -422,19 +420,18 @@ class ActionService
      *      ...
      * ]
      */
-    public function publishRecords(array $tableLiveUids, bool $throwException = true)
+    public function publishRecords(array $tableLiveUids, bool $throwException = true): void
     {
         $commandMap = [];
         foreach ($tableLiveUids as $tableName => $liveUids) {
             foreach ($liveUids as $liveUid) {
-                $versionedUid = $this->getVersionedId($tableName, $liveUid);
+                $versionedUid = $this->getVersionedId($tableName, (int)$liveUid);
                 if (empty($versionedUid)) {
                     if ($throwException) {
                         throw new Exception('Versioned UID could not be determined', 1476049592);
                     }
                     continue;
                 }
-
                 $commandMap[$tableName][$liveUid] = [
                     'version' => [
                         'action' => 'swap',
@@ -452,9 +449,9 @@ class ActionService
     /**
      * Publish all records of an entire workspace.
      */
-    public function publishWorkspace(int $workspaceId)
+    public function publishWorkspace(int $workspaceId): void
     {
-        $commandMap = $this->getWorkspaceService()->getCmdArrayForPublishWS($workspaceId, false);
+        $commandMap = $this->getWorkspaceService()->getCmdArrayForPublishWS($workspaceId);
         $this->createDataHandler();
         $this->dataHandler->start([], $commandMap);
         $this->dataHandler->process_cmdmap();
@@ -463,7 +460,7 @@ class ActionService
     /**
      * A low level method to invoke an arbitrary DataHandler data and / or command map.
      */
-    public function invoke(array $dataMap, array $commandMap, array $suggestedIds = [])
+    public function invoke(array $dataMap, array $commandMap, array $suggestedIds = []): void
     {
         $this->createDataHandler();
         $this->dataHandler->suggestedInsertUids = $suggestedIds;
@@ -472,12 +469,7 @@ class ActionService
         $this->dataHandler->process_cmdmap();
     }
 
-    /**
-     * @param array $recordData
-     * @param string|int|null $previousUid
-     * @return array
-     */
-    protected function resolvePreviousUid(array $recordData, $previousUid): array
+    protected function resolvePreviousUid(array $recordData, string|int|null $previousUid): array
     {
         if ($previousUid === null) {
             return $recordData;
@@ -491,12 +483,7 @@ class ActionService
         return $recordData;
     }
 
-    /**
-     * @param array $recordData
-     * @param string|int|null $nextUid
-     * @return array
-     */
-    protected function resolveNextUid(array $recordData, $nextUid): array
+    protected function resolveNextUid(array $recordData, string|int|null $nextUid): array
     {
         if ($nextUid === null) {
             return $recordData;
@@ -510,17 +497,9 @@ class ActionService
         return $recordData;
     }
 
-    /**
-     * @param string $tableName
-     * @param int|string $liveUid
-     * @return int|null
-     */
-    protected function getVersionedId(string $tableName, $liveUid)
+    protected function getVersionedId(string $tableName, int $liveUid): ?int
     {
-        $versionedId = null;
-        $liveUid = (int)$liveUid;
-        $workspaceId = (int)$this->getBackendUser()->workspace;
-
+        $workspaceId = $this->getBackendUser()->workspace;
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($tableName);
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
         $row = $queryBuilder
@@ -541,7 +520,6 @@ class ActionService
         if (!empty($row['uid'])) {
             return (int)$row['uid'];
         }
-
         // Check if the actual record is a new record created in the draft workspace
         // which contains the state of t3ver_state=1, so we verify this by re-fetching the record
         // from the database
@@ -577,9 +555,6 @@ class ActionService
         return null;
     }
 
-    /**
-     * @return DataHandler
-     */
     protected function createDataHandler(): DataHandler
     {
         $this->dataHandler = GeneralUtility::makeInstance(DataHandler::class);
@@ -590,9 +565,6 @@ class ActionService
         return $this->dataHandler;
     }
 
-    /**
-     * @return WorkspaceService
-     */
     protected function getWorkspaceService(): WorkspaceService
     {
         return GeneralUtility::makeInstance(
@@ -600,9 +572,6 @@ class ActionService
         );
     }
 
-    /**
-     * @return BackendUserAuthentication
-     */
     protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
@@ -611,8 +580,6 @@ class ActionService
     /**
      * This function generates a unique id by using the more entropy parameter, so it can be used
      * in DataHandler.
-     *
-     * @return string
      */
     private function getUniqueIdForNewRecords(): string
     {

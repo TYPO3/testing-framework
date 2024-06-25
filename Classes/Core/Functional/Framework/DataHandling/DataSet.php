@@ -48,17 +48,14 @@ use TYPO3\TestingFramework\Core\Testbase;
  *           Use API methods like importCSVDataSet() (in functional & acceptance tests)
  *           and assertCSVDataSet() (in functional tests) instead.
  */
-final class DataSet
+final readonly class DataSet
 {
-    private array $data;
-
     /**
      * Private constructor: An instance of this class is returned using DataSet::read()
      */
-    private function __construct(array $data)
-    {
-        $this->data = $data;
-    }
+    private function __construct(
+        private array $data
+    ) {}
 
     /**
      * Read a file and import it.
@@ -82,9 +79,7 @@ final class DataSet
                     $columnType = $tableDetails->getColumn($columnName)->getType();
                     // JSON-Field data is converted (json-encode'd) within $connection->insert(), and since json field
                     // data can only be provided json encoded in the csv dataset files, we need to decode them here.
-                    if ($element[$columnName] !== null
-                        && $columnType instanceof JsonType
-                    ) {
+                    if ($columnValue !== null && $columnType instanceof JsonType) {
                         $element[$columnName] = $columnType->convertToPHPValue($columnValue, $platform);
                     }
                     $types[] = $columnType->getBindingType();
