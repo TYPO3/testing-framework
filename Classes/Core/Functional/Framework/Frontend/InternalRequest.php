@@ -21,7 +21,7 @@ use GuzzleHttp\Psr7\Query;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\AbstractInstruction;
+use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal\InstructionInterface;
 
 /**
  * Model of internal frontend request context.
@@ -97,7 +97,7 @@ class InternalRequest extends ServerRequest
     }
 
     /**
-     * @param AbstractInstruction[] $instructions
+     * @param InstructionInterface[] $instructions
      */
     public function withInstructions(array $instructions): InternalRequest
     {
@@ -108,7 +108,7 @@ class InternalRequest extends ServerRequest
         return $this->withAttribute('testing-framework-instructions', $currentAttribute);
     }
 
-    public function getInstruction(string $identifier): ?AbstractInstruction
+    public function getInstruction(string $identifier): ?InstructionInterface
     {
         $currentAttribute = $this->getAttribute('testing-framework-instructions', []);
         return $currentAttribute[$identifier] ?? null;
