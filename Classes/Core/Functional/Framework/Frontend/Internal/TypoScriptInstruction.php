@@ -24,7 +24,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend\Internal;
  * TypoScript constants and setup added here are automatically added when executing the Frontend request
  * using an event in ext:json_response, which is loaded for all functional tests by default.
  */
-class TypoScriptInstruction extends AbstractInstruction
+class TypoScriptInstruction extends AbstractInstruction implements InstructionInterface
 {
     protected ?array $constants = null;
     protected ?array $typoScript = null;
