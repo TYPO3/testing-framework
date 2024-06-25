@@ -24,10 +24,7 @@ use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/**
- * Model of frontend response
- */
-class Collector implements SingletonInterface
+final class Collector implements SingletonInterface
 {
     private array $tableFields;
     private array $structure = [];
@@ -44,7 +41,7 @@ class Collector implements SingletonInterface
         $this->cObj = $cObj;
     }
 
-    public function addRecordData($content, array $configuration = null, ServerRequestInterface $request): void
+    public function addRecordData($content, array $configuration, ServerRequestInterface $request): void
     {
         $recordIdentifier = $this->cObj->currentRecord;
         [$tableName] = explode(':', $recordIdentifier);
@@ -63,7 +60,7 @@ class Collector implements SingletonInterface
         }
     }
 
-    public function addFileData($content, array $configuration = null, ServerRequestInterface $request): void
+    public function addFileData($content, array $configuration, ServerRequestInterface $request): void
     {
         $currentFile = $this->cObj->getCurrentFile();
 

@@ -18,38 +18,14 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 /**
  * Model of frontend response content
  */
-class ResponseSection
+final class ResponseSection
 {
-    /**
-     * @var string
-     */
-    protected $identifier;
+    private string $identifier;
+    private array $structure;
+    private array $structurePaths;
+    private array $records;
 
-    /**
-     * @var array
-     */
-    protected $structure;
-
-    /**
-     * @var array
-     */
-    protected $structurePaths;
-
-    /**
-     * @var array
-     */
-    protected $records;
-
-    /**
-     * @var array
-     */
-    protected $queries;
-
-    /**
-     * @param string $identifier
-     * @param array $data
-     */
-    public function __construct($identifier, array $data)
+    public function __construct(string $identifier, array $data)
     {
         if (!isset($data['structure'])
             && !isset($data['structurePaths'])
@@ -60,62 +36,39 @@ class ResponseSection
                 1533666273
             );
         }
-
-        $this->identifier = (string)$identifier;
+        $this->identifier = $identifier;
         $this->structure = $data['structure'];
         $this->structurePaths = $data['structurePaths'];
         $this->records = $data['records'];
-
-        if (!empty($data['queries'])) {
-            $this->queries = $data['queries'];
-        }
     }
 
-    /**
-     * @return string
-     */
-    public function getIdentifier()
+    public function getIdentifier(): string
     {
         return $this->identifier;
     }
 
-    /**
-     * @return array
-     */
-    public function getStructure()
+    public function getStructure(): array
     {
         return $this->structure;
     }
 
-    /**
-     * @return array
-     */
-    public function getRecords()
+    public function getRecords(): array
     {
         return $this->records;
     }
 
-    /**
-     * @param string $recordIdentifier
-     * @param string $fieldName
-     * @return array
-     */
-    public function findStructures($recordIdentifier, $fieldName = '')
+    public function findStructures(string $recordIdentifier, ?string $fieldName = ''): array
     {
         $structures = [];
-
         if (empty($this->structurePaths[$recordIdentifier])) {
             return $structures;
         }
-
         foreach ($this->structurePaths[$recordIdentifier] as $steps) {
             $structure = $this->structure;
             $steps[] = $recordIdentifier;
-
             if (!empty($fieldName)) {
                 $steps[] = $fieldName;
             }
-
             foreach ($steps as $step) {
                 if (!isset($structure[$step])) {
                     $structure = null;
@@ -123,12 +76,10 @@ class ResponseSection
                 }
                 $structure = $structure[$step];
             }
-
             if (!empty($structure)) {
                 $structures[implode('/', $steps)] = $structure;
             }
         }
-
         return $structures;
     }
 }

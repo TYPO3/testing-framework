@@ -24,45 +24,29 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Section renderer for frontend responses.
  */
-class Renderer implements SingletonInterface
+final class Renderer implements SingletonInterface
 {
-    /**
-     * @var array
-     */
-    protected $sections = [];
+    private array $sections = [];
+    private ContentObjectRenderer $cObj;
 
-    /**
-     * @var ContentObjectRenderer
-     */
-    public $cObj;
-
-    /**
-     * @param string $content
-     * @param array|null $configuration
-     */
-    public function parseValues($content, array $configuration = null)
+    public function parseValues(string $content, ?array $configuration = null): void
     {
         if (empty($content)) {
             return;
         }
-
         $values = json_decode($content, true);
-
         if (empty($values) || !is_array($values)) {
             return;
         }
-
         $asPrefix = (!empty($configuration['as']) ? $configuration['as'] . ':' : null);
         foreach ($values as $identifier => $structure) {
             $parser = $this->createParser();
             $parser->parse($structure);
-
             $section = [
                 'structure' => $structure,
                 'structurePaths' => $parser->getPaths(),
                 'records' => $parser->getRecords(),
             ];
-
             $this->addSection($section, $asPrefix . $identifier);
         }
     }
@@ -80,25 +64,17 @@ class Renderer implements SingletonInterface
      *   }
      *   as = CustomData
      * }
-     *
-     * @param string $content
-     * @param array|null $configuration
      */
-    public function renderValues($content, array $configuration = null)
+    public function renderValues(string $content, ?array $configuration = null): void
     {
         if (empty($configuration['values.'])) {
             return;
         }
-
         $as = (!empty($configuration['as']) ? $configuration['as'] : null);
         $this->addSection($this->stdWrapValues($configuration['values.']), $as);
     }
 
-    /**
-     * @param array $section
-     * @param string|null $as
-     */
-    public function addSection(array $section, $as = null)
+    public function addSection(array $section, ?string $as = null): void
     {
         if (!empty($as)) {
             $this->sections[$as] = $section;
@@ -107,12 +83,7 @@ class Renderer implements SingletonInterface
         }
     }
 
-    /**
-     * @param string $content
-     * @param array|null $configuration
-     * @return string
-     */
-    public function renderSections($content, array $configuration = null)
+    public function renderSections(): string
     {
         return json_encode($this->sections);
     }
@@ -127,14 +98,10 @@ class Renderer implements SingletonInterface
      *     propertyB2.intval = 1
      *   }
      * }
-     *
-     * @param array $values
-     * @return array
      */
-    protected function stdWrapValues(array $values)
+    private function stdWrapValues(array $values): array
     {
         $renderedValues = [];
-
         foreach ($values as $propertyName => $propertyInstruction) {
             $plainPropertyName = rtrim($propertyName, '.');
             if (!empty($propertyInstruction['children.'])) {
@@ -148,14 +115,10 @@ class Renderer implements SingletonInterface
                 );
             }
         }
-
         return $renderedValues;
     }
 
-    /**
-     * @return Parser
-     */
-    protected function createParser(): Parser
+    private function createParser(): Parser
     {
         return GeneralUtility::makeInstance(Parser::class);
     }
@@ -163,8 +126,6 @@ class Renderer implements SingletonInterface
     /**
      * This is called from UserContentObject via ContentObjectRenderer->callUserFunction()
      * for nested menu items - those use a USER content object for getDataAsJson().
-     *
-     * @param ContentObjectRenderer $cObj
      */
     public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
     {

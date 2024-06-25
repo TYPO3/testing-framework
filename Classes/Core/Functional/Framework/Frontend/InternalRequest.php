@@ -61,10 +61,8 @@ class InternalRequest extends ServerRequest
 
     /**
      * Adds or overrides parameter on existing query.
-     *
-     * @param int|float|string|null $value
      */
-    public function withQueryParameter(string $parameterName, $value): InternalRequest
+    public function withQueryParameter(string $parameterName, int|float|string|null $value): InternalRequest
     {
         $query = $this->modifyQueryParameter(
             $this->uri->getQuery(),
@@ -130,14 +128,6 @@ class InternalRequest extends ServerRequest
         return Query::build($parameters);
     }
 
-    /**
-     * Retrieves the URI instance.
-     *
-     * This method MUST return a UriInterface instance.
-     *
-     * @link https://tools.ietf.org/html/rfc3986#section-4.3
-     * @return UriInterface Returns a UriInterface instance representing the URI of the request.
-     */
     public function getUri(): UriInterface
     {
         return parent::getUri();

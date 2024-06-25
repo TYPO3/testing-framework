@@ -19,51 +19,27 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 use TYPO3\CMS\Core\SingletonInterface;
 
-/**
- * Model of frontend response
- */
-class Parser implements SingletonInterface
+final class Parser implements SingletonInterface
 {
-    /**
-     * @var array
-     */
-    protected $paths = [];
+    private array $paths = [];
+    private array $records = [];
 
-    /**
-     * @var array
-     */
-    protected $records = [];
-
-    /**
-     * @return array
-     */
-    public function getPaths()
+    public function getPaths(): array
     {
         return $this->paths;
     }
 
-    /**
-     * @return array
-     */
-    public function getRecords()
+    public function getRecords(): array
     {
         return $this->records;
     }
 
-    /**
-     * @param array $structure
-     * @param array $path
-     */
-    public function parse(array $structure, array $path = [])
+    public function parse(array $structure): void
     {
         $this->process($structure);
     }
 
-    /**
-     * @param array $iterator
-     * @param array $path
-     */
-    protected function process(array $iterator, array $path = [])
+    private function process(array $iterator, array $path = []): void
     {
         foreach ($iterator as $identifier => $properties) {
             if (!is_array($properties)) {
@@ -81,35 +57,24 @@ class Parser implements SingletonInterface
         }
     }
 
-    /**
-     * @param string $identifier
-     * @param array $properties
-     */
-    protected function addRecord($identifier, array $properties)
+    private function addRecord(string $identifier, array $properties): void
     {
         if (isset($this->records[$identifier])) {
             return;
         }
-
         foreach ($properties as $propertyName => $propertyValue) {
             if (is_array($propertyValue)) {
                 unset($properties[$propertyName]);
             }
         }
-
         $this->records[$identifier] = $properties;
     }
 
-    /**
-     * @param string $identifier
-     * @param array $path
-     */
-    protected function addPath($identifier, array $path)
+    private function addPath(string $identifier, array $path): void
     {
         if (!isset($this->paths[$identifier])) {
             $this->paths[$identifier] = [];
         }
-
         $this->paths[$identifier][] = $path;
     }
 }
