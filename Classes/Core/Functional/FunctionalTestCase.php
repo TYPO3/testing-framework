@@ -269,9 +269,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
-            if ($this->initializeDatabase) {
-                $testbase->initializeTestDatabaseAndTruncateTables($dbPathSqlite, $dbPathSqliteEmpty);
-            }
+            $this->initializeTestDatabaseAndTruncateTables($testbase, $this->initializeDatabase, $dbPathSqlite, $dbPathSqliteEmpty);
             $testbase->loadExtensionTables();
         } else {
             DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
@@ -361,22 +359,16 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $frameworkExtension
             );
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
-            if ($this->initializeDatabase) {
-                if ($dbDriver !== 'pdo_sqlite') {
-                    $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
-                } else {
-                    $testbase->setUpTestDatabase($dbPathSqlite, $originalDatabaseName);
-                }
-            }
+            $this->initializeTestDatabase(
+                $this->container,
+                $testbase,
+                $dbDriver,
+                $this->initializeDatabase,
+                ($dbDriver !== 'pdo_sqlite' ? $dbName : $dbPathSqlite),
+                $originalDatabaseName,
+                $dbPathSqliteEmpty
+            );
             $testbase->loadExtensionTables();
-            if ($this->initializeDatabase) {
-                $testbase->createDatabaseStructure($this->container);
-                if ($dbDriver === 'pdo_sqlite') {
-                    // Copy sqlite file '/path/functional-sqlite-dbs/test_123.sqlite' to
-                    // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consecutive tests.
-                    copy($dbPathSqlite, $dbPathSqliteEmpty);
-                }
-            }
         }
 
         parent::setUp();
@@ -400,6 +392,45 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
         }
         parent::tearDown();
+    }
+
+    /**
+     * Note executed only for the first test permutation for testcase.
+     *
+     * @internal only. Protected for special case \TYPO3\CMS\Core\Tests\Functional\Database\Schema\SchemaMigratorTest
+     */
+    protected function initializeTestDatabase(
+        ContainerInterface $container,
+        Testbase $testbase,
+        string $dbDriver,
+        bool $initializeDatabase,
+        string $dbName,
+        string $originalDatabaseName,
+        string $dbPathSqliteEmpty,
+    ): void {
+        if (!$initializeDatabase) {
+            return;
+        }
+        $testbase->setUpTestDatabase($dbName, $originalDatabaseName);
+        $testbase->createDatabaseStructure($container);
+        if ($dbDriver === 'pdo_sqlite') {
+            // Copy sqlite file '/path/functional-sqlite-dbs/test_123.sqlite' to
+            // '/path/functional-sqlite-dbs/test_123.empty.sqlite'. This is re-used for consecutive tests.
+            copy($dbName, $dbPathSqliteEmpty);
+        }
+    }
+
+    /**
+     * Note only executed for subsequential test permutations for testcase, not the first one.
+     *
+     * @internal only. Protected for special case \TYPO3\CMS\Core\Tests\Functional\Database\Schema\SchemaMigratorTest
+     */
+    protected function initializeTestDatabaseAndTruncateTables(Testbase $testbase, bool $initializeDatabase, string $dbPathSqlite, string $dbPathSqliteEmpty): void
+    {
+        if (!$initializeDatabase) {
+            return;
+        }
+        $testbase->initializeTestDatabaseAndTruncateTables($dbPathSqlite, $dbPathSqliteEmpty);
     }
 
     protected function getConnectionPool(): ConnectionPool
