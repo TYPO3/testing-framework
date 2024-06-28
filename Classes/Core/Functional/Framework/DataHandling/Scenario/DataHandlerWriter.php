@@ -19,6 +19,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Scenario
 
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class DataHandlerWriter
 {
@@ -31,7 +32,7 @@ class DataHandlerWriter
 
     public static function withBackendUser(BackendUserAuthentication $backendUser): self
     {
-        $dataHandler = new DataHandler();
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
         if (isset($backendUser->uc['copyLevels'])) {
             $dataHandler->copyTree = $backendUser->uc['copyLevels'];
         }
