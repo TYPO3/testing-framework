@@ -111,7 +111,7 @@ class ActionService
      * modifyRecord('tt_content', 42, ['hidden' => '1']); // Modify a single record
      * modifyRecord('tt_content', 42, ['hidden' => '1'], ['tx_irre_table' => [4]]); // Modify a record and delete a child
      */
-    public function modifyRecord(string $tableName, int $uid, array $recordData, array $deleteTableRecordIds = null): void
+    public function modifyRecord(string $tableName, int $uid, array $recordData, ?array $deleteTableRecordIds = null): void
     {
         $dataMap = [
             $tableName => [
@@ -266,7 +266,7 @@ class ActionService
      * Example:
      * copyRecord('tt_content', 42, 5, ['header' => 'Testing #1']);
      */
-    public function copyRecord(string $tableName, int $uid, int $pageId, array $recordData = null): array
+    public function copyRecord(string $tableName, int $uid, int $pageId, ?array $recordData = null): array
     {
         $commandMap = [
             $tableName => [
@@ -300,7 +300,7 @@ class ActionService
      *            the same table, and not a PID.
      * @param ?array $recordData Additional record data to change when moving.
      */
-    public function moveRecord(string $tableName, int $uid, int $targetUid, array $recordData = null): array
+    public function moveRecord(string $tableName, int $uid, int $targetUid, ?array $recordData = null): array
     {
         $commandMap = [
             $tableName => [

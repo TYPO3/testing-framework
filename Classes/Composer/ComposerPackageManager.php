@@ -47,7 +47,7 @@ final class ComposerPackageManager
 
     private static string $publicPath = '';
 
-    private static PackageInfo|null $rootPackage = null;
+    private static ?PackageInfo $rootPackage = null;
 
     /**
      * @var array<string, PackageInfo>
