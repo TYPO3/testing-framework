@@ -898,7 +898,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
-        InternalRequestContext $context = null,
+        ?InternalRequestContext $context = null,
         bool $followRedirects = false
     ): ResponseInterface {
         if ($context === null) {
