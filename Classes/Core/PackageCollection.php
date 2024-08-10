@@ -82,7 +82,7 @@ class PackageCollection
         return $this->packages;
     }
 
-    public function sortPackages(DependencyOrderingService $dependencyOrderingService = null): void
+    public function sortPackages(?DependencyOrderingService $dependencyOrderingService = null): void
     {
         $sortedPackageKeys = $this->resolveSortedPackageKeys($dependencyOrderingService);
         usort(
@@ -97,7 +97,7 @@ class PackageCollection
      * @param array<PackageKey, StateConfiguration> $packageStates
      * @return array<PackageKey, StateConfiguration>
      */
-    public function sortPackageStates(array $packageStates, DependencyOrderingService $dependencyOrderingService = null): array
+    public function sortPackageStates(array $packageStates, ?DependencyOrderingService $dependencyOrderingService = null): array
     {
         $sortedPackageKeys = $this->resolveSortedPackageKeys($dependencyOrderingService);
         uksort(
@@ -117,7 +117,7 @@ class PackageCollection
      *
      * @return list<PackageKey>
      */
-    public function resolveSortedPackageKeys(DependencyOrderingService $dependencyOrderingService = null): array
+    public function resolveSortedPackageKeys(?DependencyOrderingService $dependencyOrderingService = null): array
     {
         $dependencyOrderingService ??= GeneralUtility::makeInstance(DependencyOrderingService::class);
         $allPackageConstraints = $this->resolveAllPackageConstraints();

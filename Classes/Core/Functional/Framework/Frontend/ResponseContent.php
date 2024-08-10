@@ -33,7 +33,7 @@ final class ResponseContent
 
     final public function __construct() {}
 
-    public static function fromString(string $data, ResponseContent $target = null): ResponseContent
+    public static function fromString(string $data, ?ResponseContent $target = null): ResponseContent
     {
         $target = $target ?? new static();
         $content = json_decode($data, true);

@@ -81,7 +81,7 @@ final class Collector implements SingletonInterface
         $this->addToStructure($levelIdentifier, $recordIdentifier, $recordData);
     }
 
-    public function attachSection(string $content, array $configuration = null): void
+    public function attachSection(string $content, ?array $configuration = null): void
     {
         $section = [
             'structure' => $this->structure,
