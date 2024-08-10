@@ -58,7 +58,7 @@ class RequestBootstrap
      * @param string $documentRoot
      * @param array|null $this->requestArguments
      */
-    public function __construct(string $documentRoot, array $requestArguments = null)
+    public function __construct(string $documentRoot, ?array $requestArguments = null)
     {
         $this->documentRoot = $documentRoot;
         $this->requestArguments = $requestArguments;
