@@ -44,7 +44,7 @@ class Collector implements SingletonInterface
         $this->cObj = $cObj;
     }
 
-    public function addRecordData($content, array $configuration = null, ServerRequestInterface $request): void
+    public function addRecordData($content, ?array $configuration = null, ?ServerRequestInterface $request = null): void
     {
         $recordIdentifier = $this->cObj->currentRecord;
         [$tableName] = explode(':', $recordIdentifier);
@@ -63,7 +63,7 @@ class Collector implements SingletonInterface
         }
     }
 
-    public function addFileData($content, array $configuration = null, ServerRequestInterface $request): void
+    public function addFileData($content, ?array $configuration = null, ?ServerRequestInterface $request = null): void
     {
         $currentFile = $this->cObj->getCurrentFile();
 
@@ -84,7 +84,7 @@ class Collector implements SingletonInterface
         $this->addToStructure($levelIdentifier, $recordIdentifier, $recordData);
     }
 
-    public function attachSection(string $content, array $configuration = null): void
+    public function attachSection(string $content, ?array $configuration = null): void
     {
         $section = [
             'structure' => $this->structure,
