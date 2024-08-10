@@ -43,7 +43,7 @@ class ResponseContent
      */
     protected $scope = [];
 
-    public static function fromString(string $data, ResponseContent $target = null): ResponseContent
+    public static function fromString(string $data, ?ResponseContent $target = null): ResponseContent
     {
         $target = $target ?? new static();
         $content = json_decode($data, true);
@@ -65,7 +65,7 @@ class ResponseContent
     /**
      * @param Response $response (deprecated)
      */
-    public function __construct(Response $response = null)
+    public function __construct(?Response $response = null)
     {
         if ($response instanceof Response) {
             static::fromString($response->getContent(), $this);

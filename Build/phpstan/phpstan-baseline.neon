@@ -31,8 +31,13 @@ parameters:
 			path: ../../Classes/Composer/ExtensionTestEnvironment.php
 
 		-
-			message: "#^Cannot access offset string on int\\.$#"
+			message: "#^Strict comparison using \\=\\=\\= between class\\-string\\<T of object\\> and '' will always evaluate to false\\.$#"
 			count: 2
+			path: ../../Classes/Core/BaseTestCase.php
+
+		-
+			message: "#^Cannot access offset string on int\\.$#"
+			count: 1
 			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerFactory.php
 
 		-

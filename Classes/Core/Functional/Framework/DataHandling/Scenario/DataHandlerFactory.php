@@ -119,8 +119,8 @@ class DataHandlerFactory
      */
     private function processEntities(
         array $settings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): void {
         foreach ($settings as $entityName => $entitySettings) {
             $entityConfiguration = $this->provideEntityConfiguration($entityName);
@@ -144,8 +144,8 @@ class DataHandlerFactory
     private function processEntityItem(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
@@ -208,7 +208,7 @@ class DataHandlerFactory
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
         array $ancestorIds,
-        string $nodeId = null
+        ?string $nodeId = null
     ): void {
         $values = $this->processEntityValues(
             $entityConfiguration,
@@ -249,7 +249,7 @@ class DataHandlerFactory
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
         string $ancestorId,
-        string $nodeId = null
+        ?string $nodeId = null
     ): void {
         if (isset($itemSettings['self'])) {
             throw new \LogicException(
@@ -294,8 +294,8 @@ class DataHandlerFactory
     private function processEntityValues(
         EntityConfiguration $entityConfiguration,
         array $itemSettings,
-        string $nodeId = null,
-        string $parentId = null
+        ?string $nodeId = null,
+        ?string $parentId = null
     ): array {
         if (isset($itemSettings['self']) && isset($itemSettings['version'])) {
             throw new \LogicException(
@@ -502,7 +502,7 @@ class DataHandlerFactory
         // current item did not have any values in data map, use last identifer
         if ($currentIndex === false && !empty($identifiers)) {
             $values['pid'] = '-' . $identifiers[count($identifiers) - 1];
-        // current item does have values in data map, use previous identifier
+            // current item does have values in data map, use previous identifier
         } elseif ($currentIndex > 0) {
             $previousIndex = $identifiers[$currentIndex - 1];
             $values['pid'] = '-' . $identifiers[$previousIndex];
