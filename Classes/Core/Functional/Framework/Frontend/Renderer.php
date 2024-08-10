@@ -38,7 +38,7 @@ class Renderer implements SingletonInterface
      * @param string $content
      * @param array|null $configuration
      */
-    public function parseValues($content, array $configuration = null)
+    public function parseValues($content, ?array $configuration = null)
     {
         if (empty($content)) {
             return;
@@ -82,7 +82,7 @@ class Renderer implements SingletonInterface
      * @param string $content
      * @param array|null $configuration
      */
-    public function renderValues($content, array $configuration = null)
+    public function renderValues($content, ?array $configuration = null)
     {
         if (empty($configuration['values.'])) {
             return;
@@ -110,7 +110,7 @@ class Renderer implements SingletonInterface
      * @param array|null $configuration
      * @return string
      */
-    public function renderSections($content, array $configuration = null)
+    public function renderSections($content, ?array $configuration = null)
     {
         return json_encode($this->sections);
     }
