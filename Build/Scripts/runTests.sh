@@ -43,6 +43,7 @@ Options:
         Specifies the PHP minor version to be used
             - 8.2 (default): use PHP 8.2
             - 8.3: use PHP 8.3
+            - 8.4: use PHP 8.4
 
     -x
         Only with -s cgl|unit
@@ -113,7 +114,7 @@ while getopts ":b:s:p:hxn" OPT; do
             ;;
         p)
             PHP_VERSION=${OPTARG}
-            if ! [[ ${PHP_VERSION} =~ ^(8.2|8.3)$ ]]; then
+            if ! [[ ${PHP_VERSION} =~ ^(8.2|8.3|8.4)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;
