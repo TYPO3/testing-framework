@@ -48,7 +48,7 @@ class CsvWriterStreamFilter extends \php_user_filter
      * @param resource $stream
      * @param string $sequence
      */
-    public static function apply($stream, string $sequence = null): \Closure
+    public static function apply($stream, ?string $sequence = null): \Closure
     {
         static::register();
         if ($sequence === null) {

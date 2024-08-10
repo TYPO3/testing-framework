@@ -277,7 +277,7 @@ class DataSet
      * @param int|null $padding
      * @deprecated Will be removed with core v12 compatible testing-framework.
      */
-    public function persist(string $fileName, int $padding = null)
+    public function persist(string $fileName, ?int $padding = null)
     {
         $fileHandle = fopen($fileName, 'w');
         $modifier = CsvWriterStreamFilter::apply($fileHandle);
@@ -308,7 +308,7 @@ class DataSet
      * @return array
      * @deprecated Will be removed with core v12 compatible testing-framework.
      */
-    protected function pad(array $values, int $padding = null): array
+    protected function pad(array $values, ?int $padding = null): array
     {
         if ($padding === null) {
             return $values;

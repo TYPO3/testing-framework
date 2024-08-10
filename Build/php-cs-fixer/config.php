@@ -51,6 +51,10 @@ return (new \PhpCsFixer\Config())
         'no_useless_else' => true,
         'no_whitespace_in_blank_line' => true,
         'ordered_imports' => true,
+        'nullable_type_declaration' => [
+            'syntax' => 'question_mark',
+        ],
+        'nullable_type_declaration_for_default_null_value' => true,
         'php_unit_construct' => ['assertions' => ['assertEquals', 'assertSame', 'assertNotEquals', 'assertNotSame']],
         'php_unit_mock_short_will_return' => true,
         'php_unit_test_case_static_method_calls' => ['call_type' => 'self'],

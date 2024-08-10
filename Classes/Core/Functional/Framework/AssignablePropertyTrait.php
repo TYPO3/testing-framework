@@ -25,7 +25,7 @@ trait AssignablePropertyTrait
      * @param callable|null $cast
      * @return static
      */
-    private function assign(array $data, callable $cast = null)
+    private function assign(array $data, ?callable $cast = null)
     {
         if ($cast !== null) {
             $data = array_map($cast, $data);

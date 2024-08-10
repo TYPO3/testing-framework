@@ -1118,7 +1118,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function executeFrontendSubRequest(
         InternalRequest $request,
-        InternalRequestContext $context = null,
+        ?InternalRequestContext $context = null,
         bool $followRedirects = false
     ): InternalResponse {
         if ((new Typo3Version())->getMajorVersion() < 11) {
@@ -1311,7 +1311,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function executeFrontendRequest(
         InternalRequest $request,
-        InternalRequestContext $context = null,
+        ?InternalRequestContext $context = null,
         bool $followRedirects = false
     ): InternalResponse {
         if ($context === null) {
