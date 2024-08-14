@@ -24,7 +24,6 @@ use Doctrine\DBAL\Platforms\MariaDBPlatform as DoctrineMariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform as DoctrineMySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform as DoctrinePostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
-use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
@@ -637,10 +636,14 @@ class Testbase
     public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
         // First close existing connections from a possible previous test case and
-        // tell our ConnectionPool there are no current connections anymore.
+        // tell our ConnectionPool there are no current connections anymore. In case
+        // database does not exist yet, an exception is thrown which we catch here.
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
-        $connection->close();
+        try {
+            $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+            $connection->close();
+        } catch (DBALException) {
+        }
         $connectionPool->resetConnections();
 
         // Drop database if exists. Directly using the Doctrine DriverManager to
@@ -648,13 +651,9 @@ class Testbase
         // @todo: This should by now work with using "our" ConnectionPool again, it does not, though.
         $connectionParameters = $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'];
         unset($connectionParameters['dbname']);
-        $configuration = (new Configuration())->setSchemaManagerFactory(GeneralUtility::makeInstance(DefaultSchemaManagerFactory::class));
         /** @var CoreSchemaManagerFactory $coreSchemaFactory */
-        $coreSchemaFactory = GeneralUtility::makeInstance(
-            CoreSchemaManagerFactory::class
-        );
-        $configuration->setSchemaManagerFactory($coreSchemaFactory);
-        $driverConnection = DriverManager::getConnection($connectionParameters, $configuration);
+        $coreSchemaFactory = GeneralUtility::makeInstance(CoreSchemaManagerFactory::class);
+        $driverConnection = DriverManager::getConnection($connectionParameters, (new Configuration())->setSchemaManagerFactory($coreSchemaFactory));
         $schemaManager = $driverConnection->createSchemaManager();
         $isSQLite = $driverConnection->getDatabasePlatform() instanceof SQLitePlatform;
 
