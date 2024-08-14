@@ -152,9 +152,12 @@ abstract class BaseTestCase extends TestCase
         $accessibleClassName = $this->getUniqueId('Tx_Phpunit_AccessibleProxy');
         $reflectionClass = new \ReflectionClass($className);
         eval(
-            ($reflectionClass->isAbstract() ? 'abstract ' : '') . 'class ' . $accessibleClassName .
-                ' extends ' . $className . ' implements ' . AccessibleObjectInterface::class . ' {' .
-                    ' use ' . AccessibleProxyTrait::class . ';' .
+            ($reflectionClass->isAbstract() ? 'abstract ' : '') .
+            ($reflectionClass->isReadOnly() ? 'readonly ' : '') .
+            'class ' . $accessibleClassName . ' ' .
+            'extends ' . $className . ' ' .
+            'implements ' . AccessibleObjectInterface::class . ' {' .
+                ' use ' . AccessibleProxyTrait::class . ';' .
             '}'
         );
         return $accessibleClassName;
