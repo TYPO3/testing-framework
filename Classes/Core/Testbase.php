@@ -626,10 +626,14 @@ class Testbase
     public function setUpTestDatabase(string $databaseName, string $originalDatabaseName): void
     {
         // First close existing connections from a possible previous test case and
-        // tell our ConnectionPool there are no current connections anymore.
+        // tell our ConnectionPool there are no current connections anymore. In case
+        // database does not exist yet, an exception is thrown which we catch here.
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
-        $connection->close();
+        try {
+            $connection = $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+            $connection->close();
+        } catch (DBALException $_) {
+        }
         $connectionPool->resetConnections();
 
         // Drop database if exists. Directly using the Doctrine DriverManager to
