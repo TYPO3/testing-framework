@@ -310,6 +310,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $frameworkExtension);
             $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
             $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
+            $localConfiguration = [];
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
 
             $originalDatabaseName = '';
@@ -332,15 +333,49 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $localConfiguration['DB']['Connections']['Default']['dbname'] = $dbName;
                 $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
                 if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
-                    $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
-                    $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
-                    $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
-                    $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
+                    if ((new Typo3Version())->getMajorVersion() < 13) {
+                        // This branch is removed in testing-framework ^9
+                        $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
+                        $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
+                        $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
+                    } else {
+                        // MySQL/MariaDB allows more specific settings, and default configuration specific to these
+                        // platforms are handled here. That includes using the more specific `utf8mb4` charset like
+                        // TYPO3 would determine and write during installation and also defining `defaultTableOptions`
+                        // based on selected charset.
+                        if (($localConfiguration['DB']['Connections']['Default']['charset'] ?? '') === '') {
+                            $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
+                        }
+                        if (($localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] ?? '') === '') {
+                            $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] = 'utf8mb4';
+                        }
+                        if (($localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['collation'] ?? '') === '') {
+                            $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['collation']
+                                = $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] . '_unicode_ci';
+                        }
+                    }
+                    $localConfiguration['DB']['Connections']['Default']['initCommands']
+                        = 'SET SESSION sql_mode = \'' . implode(',', [
+                            'STRICT_ALL_TABLES',
+                            'ERROR_FOR_DIVISION_BY_ZERO',
+                            'NO_AUTO_VALUE_ON_ZERO',
+                            'NO_ENGINE_SUBSTITUTION',
+                            'NO_ZERO_DATE',
+                            'NO_ZERO_IN_DATE',
+                            'ONLY_FULL_GROUP_BY',
+                        ]) . '\';';
+                }
+                // Postgres/SQLite requires to use `utf-8` as charset and does not support `utf8mb4`.
+                if (($localConfiguration['DB']['Connections']['Default']['charset'] ?? '') === '') {
+                    $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf-8';
                 }
             } else {
                 // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
                 $testbase->createDirectory(dirname($this->instancePath) . '/functional-sqlite-dbs');
                 $localConfiguration['DB']['Connections']['Default']['path'] = $dbPathSqlite;
+                if (($localConfiguration['DB']['charset'] ?? '') === '') {
+                    $localConfiguration['DB']['charset'] = 'utf-8';
+                }
             }
 
             // Set some hard coded base settings for the instance. Those could be overruled by
