@@ -25,6 +25,7 @@ class EntityConfiguration
     private bool $isNode = false;
     private ?string $tableName = null;
     private ?string $parentColumnName = null;
+    private ?string $parentRelationColumnName = null;
     private ?string $nodeColumnName = null;
     private array $columnNames = [];
     private array $languageColumnNames = [];
@@ -42,6 +43,9 @@ class EntityConfiguration
         }
         if (!empty($settings['parentColumnName'])) {
             $target->parentColumnName = $settings['parentColumnName'];
+        }
+        if (!empty($settings['parentRelationColumnName'])) {
+            $target->parentRelationColumnName = $settings['parentRelationColumnName'];
         }
         if (!empty($settings['nodeColumnName'])) {
             $target->nodeColumnName = $settings['nodeColumnName'];
@@ -84,6 +88,11 @@ class EntityConfiguration
     public function getParentColumnName(): ?string
     {
         return $this->parentColumnName;
+    }
+
+    public function getParentRelationColumnName(): ?string
+    {
+        return $this->parentRelationColumnName;
     }
 
     public function getNodeColumnName(): ?string
