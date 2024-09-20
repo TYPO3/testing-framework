@@ -26,6 +26,7 @@
   },
   "require": {
     "php": "^8.2",
+    "composer/class-map-generator": "^1.3.4",
     "guzzlehttp/psr7": "^2.5.0",
     "phpunit/phpunit": "^11.2.5",
     "psr/container": "^2.0",
