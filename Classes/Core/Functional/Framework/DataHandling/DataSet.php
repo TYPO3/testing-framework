@@ -63,7 +63,7 @@ class DataSet
             // BOM not found - rewind pointer to start of file.
             rewind($fileHandle);
         }
-        while (!feof($fileHandle) && ($values = fgetcsv($fileHandle, 0)) !== false) {
+        while (!feof($fileHandle) && ($values = fgetcsv($fileHandle, 0, ',', '"', '\\')) !== false) {
             $rawData[] = $values;
         }
         fclose($fileHandle);
