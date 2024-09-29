@@ -66,8 +66,8 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.4.0",
-    "phpstan/phpstan": "^1.8.0",
-    "phpstan/phpstan-phpunit": "^1.1.1",
+    "phpstan/phpstan": "^1.12.5",
+    "phpstan/phpstan-phpunit": "^1.4.0",
     "typo3/cms-workspaces": "10.*.*@dev || 11.*.*@dev"
   }
 }
