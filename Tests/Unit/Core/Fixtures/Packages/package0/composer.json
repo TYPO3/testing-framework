@@ -1,0 +1,17 @@
+{
+    "name": "typo3/testing-framework-package-0",
+    "description": "Package 0",
+    "type": "typo3-cms-extension",
+    "license": [
+        "GPL-2.0-or-later"
+    ],
+    "require": {
+        "php": "*",
+        "typo3/cms-core": "*"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "package0"
+        }
+    }
+}
