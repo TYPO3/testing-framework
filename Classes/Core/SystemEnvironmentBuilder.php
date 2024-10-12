@@ -40,13 +40,16 @@ use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder as CoreSystemEnvironmentBuilder
  */
 class SystemEnvironmentBuilder extends CoreSystemEnvironmentBuilder
 {
-    public static function run(int $entryPointLevel = 0, int $requestType = 0, bool $composerMode = false): void
+    private static ?bool $composerMode = null;
+
+    public static function run(int $entryPointLevel = 0, int $requestType = 0, ?bool $composerMode = null): void
     {
-        CoreSystemEnvironmentBuilder::run($entryPointLevel, $requestType);
+        self::$composerMode = $composerMode;
+        parent::run($entryPointLevel, $requestType);
         Environment::initialize(
             Environment::getContext(),
             Environment::isCli(),
-            $composerMode,
+            static::usesComposerClassLoading(),
             Environment::getProjectPath(),
             Environment::getPublicPath(),
             Environment::getVarPath(),
@@ -54,5 +57,17 @@ class SystemEnvironmentBuilder extends CoreSystemEnvironmentBuilder
             Environment::getCurrentScript(),
             Environment::isWindows() ? 'WINDOWS' : 'UNIX'
         );
+    }
+
+    /**
+     * Manage composer mode separated from TYPO3_COMPOSER_MODE define set by typo3/cms-composer-installers.
+     *
+     * Note that this will not with earlier TYPO3 versions than 13.4.
+     * @link https://review.typo3.org/c/Packages/TYPO3.CMS/+/86569
+     * @link https://github.com/TYPO3/testing-framework/issues/577
+     */
+    protected static function usesComposerClassLoading(): bool
+    {
+        return self::$composerMode ?? parent::usesComposerClassLoading();
     }
 }
