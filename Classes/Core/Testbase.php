@@ -745,7 +745,7 @@ class Testbase
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
         // @todo: Remove else branch when dropping support for v12
         if ($hasConsolidatedHttpEntryPoint) {
-            SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+            SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
         } else {
             SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
         }
