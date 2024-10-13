@@ -367,7 +367,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 }
                 // Postgres/SQLite requires to use `utf-8` as charset and does not support `utf8mb4`.
                 if (($localConfiguration['DB']['Connections']['Default']['charset'] ?? '') === '') {
-                    $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf-8';
+                    $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8';
                 }
             } else {
                 // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
