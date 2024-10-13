@@ -374,7 +374,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
                 $testbase->createDirectory(dirname($this->instancePath) . '/functional-sqlite-dbs');
                 $localConfiguration['DB']['Connections']['Default']['path'] = $dbPathSqlite;
                 if (($localConfiguration['DB']['charset'] ?? '') === '') {
-                    $localConfiguration['DB']['charset'] = 'utf-8';
+                    $localConfiguration['DB']['charset'] = 'utf8';
                 }
             }
 
