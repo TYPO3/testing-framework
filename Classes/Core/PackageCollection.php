@@ -250,15 +250,18 @@ class PackageCollection
         foreach ($dependentPackageConstraints as $constraint) {
             if ($constraint instanceof PackageConstraint) {
                 $dependentPackageKey = $constraint->getValue();
+                $extensionKey = $this->composerPackageManager->getPackageInfo($dependentPackageKey)?->getExtensionKey() ?? '';
                 if (!in_array($dependentPackageKey, $dependentPackageKeys, true) && !in_array($dependentPackageKey, $trace, true)) {
-                    $dependentPackageKeys[] = $dependentPackageKey;
+                    $dependentPackageKeys[] = $extensionKey ?: $dependentPackageKey;
                 }
-                if (!isset($this->packages[$dependentPackageKey])) {
+
+                if (!isset($this->packages[$dependentPackageKey]) && !isset($this->packages[$extensionKey])) {
                     if ($this->isComposerDependency($dependentPackageKey)) {
                         // The given package has a dependency to a Composer package that has no relation to TYPO3
                         // We can ignore those, when calculating the extension order
                         continue;
                     }
+
                     throw new Exception(
                         sprintf(
                             'Package "%s" depends on package "%s" which does not exist.',
@@ -268,7 +271,7 @@ class PackageCollection
                         1695119749
                     );
                 }
-                $this->getDependencyArrayForPackage($this->packages[$dependentPackageKey], $dependentPackageKeys, $trace);
+                $this->getDependencyArrayForPackage($this->packages[$dependentPackageKey] ?? $this->packages[$extensionKey], $dependentPackageKeys, $trace);
             }
         }
         return array_reverse($dependentPackageKeys);

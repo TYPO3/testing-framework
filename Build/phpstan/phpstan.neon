@@ -20,3 +20,5 @@ parameters:
     - ../../Classes/Core/Acceptance/*
     # Text fixtures extensions uses $_EXTKEY phpstan would be report as "might not defined"
     - ../../Tests/Unit/*/Fixtures/Extensions/*/ext_emconf.php
+    - ../../Tests/Unit/*/Fixtures/Packages/*/ext_emconf.php
+    - ../../Tests/Unit/Fixtures/Packages/*/ext_emconf.php

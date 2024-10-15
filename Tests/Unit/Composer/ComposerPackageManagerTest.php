@@ -295,4 +295,69 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertNotNull($packageInfo->getInfo());
         self::assertNotNull($packageInfo->getExtEmConf());
     }
+
+    public static function packagesWithoutExtEmConfFileDataProvider(): \Generator
+    {
+        yield 'package0 => package0' => [
+            'path' => __DIR__ . '/../Fixtures/Packages/package0',
+            'expectedExtensionKey' => 'package0',
+            'expectedPackageName' => 'typo3/testing-framework-package-0',
+        ];
+        yield 'package0 => package1' => [
+            'path' => __DIR__ . '/../Fixtures/Packages/package1',
+            'expectedExtensionKey' => 'package1',
+            'expectedPackageName' => 'typo3/testing-framework-package-1',
+        ];
+        yield 'package0 => package2' => [
+            'path' => __DIR__ . '/../Fixtures/Packages/package2',
+            'expectedExtensionKey' => 'package2',
+            'expectedPackageName' => 'typo3/testing-framework-package-2',
+        ];
+        yield 'package-identifier => some_test_extension' => [
+            'path' => __DIR__ . '/../Fixtures/Packages/package-identifier',
+            'expectedExtensionKey' => 'some_test_extension',
+            'expectedPackageName' => 'typo3/testing-framework-package-identifier',
+        ];
+    }
+
+    #[DataProvider('packagesWithoutExtEmConfFileDataProvider')]
+    #[Test]
+    public function getPackageInfoWithFallbackReturnsExtensionInfoWithCorrectExtensionKeyWhenNotHavingAnExtEmConfFile(
+        string $path,
+        string $expectedExtensionKey,
+        string $expectedPackageName,
+    ): void {
+        $packageInfo = (new ComposerPackageManager())->getPackageInfoWithFallback($path);
+        self::assertInstanceOf(PackageInfo::class, $packageInfo, 'PackageInfo retrieved for ' . $path);
+        self::assertNull($packageInfo->getExtEmConf(), 'Package provides ext_emconf.php');
+        self::assertNotNull($packageInfo->getInfo(), 'Package has no composer info (composer.json)');
+        self::assertIsArray($packageInfo->getInfo(), 'Package composer info is not an array');
+        self::assertNotEmpty($packageInfo->getInfo(), 'Package composer info is empty');
+        self::assertTrue($packageInfo->isExtension(), 'Package is not a extension');
+        self::assertFalse($packageInfo->isSystemExtension(), 'Package is a system extension');
+        self::assertTrue($packageInfo->isComposerPackage(), 'Package is not a composer package');
+        self::assertFalse($packageInfo->isMonoRepository(), 'Package is mono repository');
+        self::assertSame($expectedPackageName, $packageInfo->getName());
+        self::assertSame($expectedExtensionKey, $packageInfo->getExtensionKey());
+    }
+
+    #[Test]
+    public function getPackageInfoWithFallbackReturnsExtensionInfoWithCorrectExtensionKeyAndHavingAnExtEmConfFile(): void
+    {
+        $path = __DIR__ . '/../Fixtures/Packages/package-with-extemconf';
+        $expectedExtensionKey = 'extension_with_extemconf';
+        $expectedPackageName = 'typo3/testing-framework-package-with-extemconf';
+        $packageInfo = (new ComposerPackageManager())->getPackageInfoWithFallback($path);
+        self::assertInstanceOf(PackageInfo::class, $packageInfo, 'PackageInfo retrieved for ' . $path);
+        self::assertNotNull($packageInfo->getExtEmConf(), 'Package has ext_emconf.php file');
+        self::assertNotNull($packageInfo->getInfo(), 'Package has composer info');
+        self::assertIsArray($packageInfo->getInfo(), 'Package composer info is an array');
+        self::assertNotEmpty($packageInfo->getInfo(), 'Package composer info is not empty');
+        self::assertTrue($packageInfo->isExtension(), 'Package is a extension');
+        self::assertFalse($packageInfo->isSystemExtension(), 'Package is not a system extension');
+        self::assertTrue($packageInfo->isComposerPackage(), 'Package is a composer package');
+        self::assertFalse($packageInfo->isMonoRepository(), 'Package is not monorepository root');
+        self::assertSame($expectedPackageName, $packageInfo->getName());
+        self::assertSame($expectedExtensionKey, $packageInfo->getExtensionKey());
+    }
 }

@@ -1,0 +1,18 @@
+{
+    "name": "typo3/testing-framework-package-with-extemconf",
+    "description": "Package 0",
+    "type": "typo3-cms-extension",
+    "license": [
+        "GPL-2.0-or-later"
+    ],
+    "require": {
+        "php": "*",
+        "typo3/cms-core": "*",
+        "typo3/testing-framework-package-1": "*"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "extension_with_extemconf"
+        }
+    }
+}

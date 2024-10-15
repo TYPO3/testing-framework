@@ -61,6 +61,7 @@ final class ComposerPackageManager
 
     public function __construct()
     {
+        // @todo Remove this from the constructor.
         $this->build();
     }
 
@@ -545,10 +546,19 @@ final class ComposerPackageManager
         ?array $info = null,
         ?array $extEmConf = null
     ): string {
-        $isExtension = in_array($info['type'] ?? '', ['typo3-cms-framework', 'typo3-cms-extension'], true)
-            || ($extEmConf !== null);
-        if (!$isExtension) {
+        $isComposerExtensionType = ($info !== null && array_key_exists('type', $info) && is_string($info['type']) && in_array($info['type'], ['typo3-cms-framework', 'typo3-cms-extension'], true));
+        $hasExtEmConf = $extEmConf !== null;
+        if (!($isComposerExtensionType || $hasExtEmConf)) {
             return '';
+        }
+        $hasComposerExtensionKey = (
+            is_array($info)
+            && isset($info['extra']['typo3/cms']['extension-key'])
+            && is_string($info['extra']['typo3/cms']['extension-key'])
+            && $info['extra']['typo3/cms']['extension-key'] !== ''
+        );
+        if ($hasComposerExtensionKey) {
+            return $info['extra']['typo3/cms']['extension-key'];
         }
         $baseName = basename($packagePath);
         if (($info['type'] ?? '') === 'typo3-csm-framework'
