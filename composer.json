@@ -30,11 +30,11 @@
     "guzzlehttp/psr7": "^2.5.0",
     "phpunit/phpunit": "^11.2.5",
     "psr/container": "^2.0",
-    "typo3/cms-backend": "13.*.*@dev",
-    "typo3/cms-core": "13.*.*@dev",
-    "typo3/cms-extbase": "13.*.*@dev",
-    "typo3/cms-fluid": "13.*.*@dev",
-    "typo3/cms-frontend": "13.*.*@dev"
+    "typo3/cms-backend": "13.*.*@dev || 14.*.*@dev",
+    "typo3/cms-core": "13.*.*@dev || 14.*.*@dev",
+    "typo3/cms-extbase": "13.*.*@dev || 14.*.*@dev",
+    "typo3/cms-fluid": "13.*.*@dev || 14.*.*@dev",
+    "typo3/cms-frontend": "13.*.*@dev || 14.*.*@dev"
   },
   "config": {
     "vendor-dir": ".Build/vendor",
@@ -62,7 +62,7 @@
     "friendsofphp/php-cs-fixer": "^3.59.3",
     "phpstan/phpstan": "^1.11.5",
     "phpstan/phpstan-phpunit": "^1.4.0",
-    "typo3/cms-workspaces": "13.*.*@dev"
+    "typo3/cms-workspaces": "13.*.*@dev || 14.*.*@dev"
   },
   "replace": {
     "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "*"
