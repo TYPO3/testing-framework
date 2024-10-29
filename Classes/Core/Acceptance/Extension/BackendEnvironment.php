@@ -21,6 +21,7 @@ use Codeception\Event\SuiteEvent;
 use Codeception\Events;
 use Codeception\Extension;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Testbase;
@@ -261,8 +262,15 @@ abstract class BackendEnvironment extends Extension
             $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
             if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
                 $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
-                $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
-                $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
+                if ((new Typo3Version())->getMajorVersion() >= 12) {
+                    // @todo Use this as default when TYPO3 v11 support is dropped.
+                    $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] = 'utf8mb4';
+                    $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['collation'] = 'utf8mb4_unicode_ci';
+                } else {
+                    // @todo Remove this when TYPO3 v11 support is dropped.
+                    $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
+                    $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
+                }
             }
         } else {
             // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
