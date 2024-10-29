@@ -261,8 +261,8 @@ abstract class BackendEnvironment extends Extension
             $testbase->testDatabaseNameIsNotTooLong($originalDatabaseName, $localConfiguration);
             if ($dbDriver === 'mysqli' || $dbDriver === 'pdo_mysql') {
                 $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
-                $localConfiguration['DB']['Connections']['Default']['tableoptions']['charset'] = 'utf8mb4';
-                $localConfiguration['DB']['Connections']['Default']['tableoptions']['collate'] = 'utf8mb4_unicode_ci';
+                $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] = 'utf8mb4';
+                $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['collation'] = 'utf8mb4_unicode_ci';
             }
         } else {
             // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
