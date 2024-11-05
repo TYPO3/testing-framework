@@ -498,7 +498,7 @@ class Testbase
     }
 
     /**
-     * Create LocalConfiguration.php file of the test instance.
+     * Create settings.php file of the test instance.
      * For functional and acceptance tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
@@ -513,8 +513,9 @@ class Testbase
         $finalConfigurationArray = require $coreExtensionPath . '/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
+        $this->createDirectory($instancePath . '/typo3conf/system');
         $result = @file_put_contents(
-            $instancePath . '/typo3conf/LocalConfiguration.php',
+            $instancePath . '/typo3conf/system/settings.php',
             '<?php' . chr(10) .
             'return ' .
             ArrayUtility::arrayExport(
