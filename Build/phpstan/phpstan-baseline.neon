@@ -1,2 +1,37 @@
 parameters:
 	ignoreErrors:
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: ../../Classes/Composer/ComposerPackageManager.php
+
+		-
+			message: '#^Trait TYPO3\\TestingFramework\\Core\\AccessibleProxyTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: ../../Classes/Core/AccessibleProxyTrait.php
+
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Constraint/RequestSection/DoesNotHaveRecordConstraint.php
+
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../Classes/Core/Functional/Framework/Constraint/RequestSection/HasRecordConstraint.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: staticMethod.alreadyNarrowedType
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between int\|string\|true and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: ../../Classes/Core/Functional/FunctionalTestCase.php
