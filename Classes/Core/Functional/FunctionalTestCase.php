@@ -615,6 +615,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $hasHashField = ($dataSet->getHashIndex($tableName) !== null);
             $records = $this->getAllRecords($tableName, $hasUidField, $hasHashField);
             $assertions = $dataSet->getElements($tableName);
+            if (count($assertions) === 0) {
+                // Increase assertion counter to avoid "test did not perform any assertions" if testing for an empty table
+                self::assertThat(true, self::isTrue());
+            }
             foreach ($assertions as $assertion) {
                 $result = $this->assertInRecords($assertion, $records);
                 if ($result === false) {
