@@ -1,0 +1,42 @@
+{
+    "name": "typo3/testing-private-container",
+    "type": "typo3-cms-extension",
+    "description": "Providing testing framework extension for functional testing.",
+    "keywords": [
+        "typo3",
+        "testing",
+        "tests"
+    ],
+    "homepage": "https://typo3.org/",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "TYPO3 CMS Core Team",
+            "role": "Developer",
+            "homepage": "https://forge.typo3.org/projects/typo3cms-core"
+        },
+        {
+            "name": "The TYPO3 Community",
+            "role": "Contributor",
+            "homepage": "https://typo3.org/community/"
+        }
+    ],
+    "support": {
+        "general": "https://typo3.org/support/",
+        "issues": "https://github.com/TYPO3/testing-framework/issues"
+    },
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-core": "13.*.*@dev || 14.*.*@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "TYPO3\\PrivateContainer\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "private_container"
+        }
+    }
+}
