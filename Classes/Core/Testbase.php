@@ -453,7 +453,7 @@ class Testbase
                 $originalConfigurationArray['DB']['Connections']['Default']['password'] = $databasePasswordTrimmed;
             }
             if ($databasePort) {
-                $originalConfigurationArray['DB']['Connections']['Default']['port'] = $databasePort;
+                $originalConfigurationArray['DB']['Connections']['Default']['port'] = (int)$databasePort;
             }
             if ($databaseSocket) {
                 $originalConfigurationArray['DB']['Connections']['Default']['unix_socket'] = $databaseSocket;
