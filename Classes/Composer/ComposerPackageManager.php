@@ -18,8 +18,22 @@ namespace TYPO3\TestingFramework\Composer;
  */
 
 use Composer\InstalledVersions;
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /**
+ * `typo3/testing-framework` internal composer package manager, used to gather source
+ * information of extensions already loaded by the root composer installation with
+ * the additional ability to register test fixture packages and extensions during
+ * runtime to create {@see FunctionalTestCase} test instances and provide symlinks
+ * of extensions into the classic mode test instance or retrieve files from a composer
+ * package or extension unrelated where they are placed on the filesystem.
+ *
+ * - {@see Testbase::setUpInstanceCoreLinks()}
+ * - {@see Testbase::linkTestExtensionsToInstance()}
+ * - {@see Testbase::linkFrameworkExtensionsToInstance()}
+ * - {@see Testbase::setUpLocalConfiguration()}
+ * - {@see Testbase::setUpPackageStates()}
+ *
  * @internal This class is for testing-framework internal processing and not part of public testing API.
  */
 final class ComposerPackageManager
@@ -65,25 +79,29 @@ final class ComposerPackageManager
         $this->build();
     }
 
-    public function getPackageInfoWithFallback(string $name): ?PackageInfo
+    /**
+     * Get composer package information {@see PackageInfo} for `$nameOrExtensionKeyOrPath`.
+     */
+    public function getPackageInfoWithFallback(string $nameOrExtensionKeyOrPath): ?PackageInfo
     {
-        if ($packageInfo = $this->getPackageInfo($name)) {
+        if ($packageInfo = $this->getPackageInfo($nameOrExtensionKeyOrPath)) {
             return $packageInfo;
         }
-        if ($packageInfo = $this->getPackageFromPath($name)) {
+        if ($packageInfo = $this->getPackageFromPath($nameOrExtensionKeyOrPath)) {
             return $packageInfo;
         }
-        if ($packageInfo = $this->getPackageFromPathFallback($name)) {
+        if ($packageInfo = $this->getPackageFromPathFallback($nameOrExtensionKeyOrPath)) {
             return $packageInfo;
         }
-
         return null;
     }
 
+    /**
+     * Get {@see PackageInfo} for package name or extension key `$name`.
+     */
     public function getPackageInfo(string $name): ?PackageInfo
     {
-        $name = $this->resolvePackageName($name);
-        return self::$packages[$name] ?? null;
+        return self::$packages[$this->resolvePackageName($name)] ?? null;
     }
 
     /**
@@ -403,9 +421,23 @@ final class ComposerPackageManager
         return null;
     }
 
+    /**
+     * Returns resolved composer package name when $name is a known extension key
+     * for a known package, otherwise return $name unchanged.
+     *
+     * Used to determine the package name to look up as composer package within {@see self::$packages}
+     *
+     * Supports also relative classic mode notation:
+     *
+     * - typo3/sysext/backend
+     * - typo3conf/ext/my_ext_key
+     *
+     * {@see self::prepareResolvePackageName()} for details for normalisation.
+     */
     private function resolvePackageName(string $name): string
     {
-        return self::$extensionKeyToPackageNameMap[$this->normalizeExtensionKey(basename($name))] ?? $name;
+        $name = $this->prepareResolvePackageName($name);
+        return self::$extensionKeyToPackageNameMap[$name] ?? $name;
     }
 
     /**
@@ -639,5 +671,48 @@ final class ComposerPackageManager
             return '';
         }
         return explode('/', $path)[0] ?? '';
+    }
+
+    /**
+     * Extension can be specified with their composer name, extension key or with classic mode relative path
+     * prefixes (`typo3/sysext/<extensionkey>` or `typo3conf/ext/<extensionkey>`) for functional tests to
+     * configure which extension should be provided in the test instance.
+     *
+     * This method normalizes a handed over name by removing the specified extra information, so it can be
+     * used to resolve it either as direct package name or as extension name.
+     *
+     * Handed over value also removes known environment prefix paths, like the full path to the root (project rook),
+     * vendor folder or web folder using {@see self::removePrefixPaths()} which is safe, as this method is and most
+     * only be used for {@see self::resolvePackageName()} to find a composer package in {@see self::$packages}, after
+     * mapping extension-key to composer package name.
+     *
+     * Example for processed changes:
+     * -----------------------------_
+     *
+     * - typo3/sysext/backend => backend
+     * - typo3conf/ext/my_ext_key => my_ext_key
+     *
+     *  Example not processed values:
+     *  -----------------------------
+     *
+     * valid names
+     * - typo3/cms-core => typo3/cms-core
+     * - my-vendor/my-package-name => my-vendor/my-package-name
+     * - my-package-name-without-vendor => my-package-name-without-vendor
+     */
+    private function prepareResolvePackageName($name): string
+    {
+        $name = trim($this->removePrefixPaths($name), '/');
+        $relativePrefixPaths = [
+            'typo3/sysext/',
+            'typo3conf/ext/',
+        ];
+        foreach ($relativePrefixPaths as $relativePrefixPath) {
+            if (!str_starts_with($name, $relativePrefixPath)) {
+                continue;
+            }
+            $name = substr($name, mb_strlen($relativePrefixPath));
+        }
+        return $name;
     }
 }
