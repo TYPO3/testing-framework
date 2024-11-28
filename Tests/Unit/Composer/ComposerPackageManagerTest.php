@@ -201,8 +201,15 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithoutJsonCanBeResolvedByAbsolutePath(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/ext_without_composerjson_absolute');
 
+        // Extension without composer.json registers basefolder as extension key
+        self::assertArrayHasKey('ext_without_composerjson_absolute', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('unknown-vendor/ext-without-composerjson-absolute', $extensionMapPropertyReflection->getValue($subject)['ext_without_composerjson_absolute']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('ext_without_composerjson_absolute', $packageInfo->getExtensionKey());
         self::assertSame('unknown-vendor/ext-without-composerjson-absolute', $packageInfo->getName());
@@ -215,8 +222,15 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithoutJsonCanBeResolvedRelativeFromRoot(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback('Tests/Unit/Composer/Fixtures/Extensions/ext_without_composerjson_relativefromroot');
 
+        // Extension without composer.json registers basefolder as extension key
+        self::assertArrayHasKey('ext_without_composerjson_relativefromroot', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('unknown-vendor/ext-without-composerjson-relativefromroot', $extensionMapPropertyReflection->getValue($subject)['ext_without_composerjson_relativefromroot']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('ext_without_composerjson_relativefromroot', $packageInfo->getExtensionKey());
         self::assertSame('unknown-vendor/ext-without-composerjson-relativefromroot', $packageInfo->getName());
@@ -229,22 +243,40 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithoutJsonCanBeResolvedByLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback('typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_without_composerjson_fallbackroot');
 
+        // Extension without composer.json registers basefolder as extension key
+        self::assertArrayHasKey('ext_without_composerjson_fallbackroot', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('unknown-vendor/ext-without-composerjson-fallbackroot', $extensionMapPropertyReflection->getValue($subject)['ext_without_composerjson_fallbackroot']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('ext_without_composerjson_fallbackroot', $packageInfo->getExtensionKey());
         self::assertSame('unknown-vendor/ext-without-composerjson-fallbackroot', $packageInfo->getName());
         self::assertSame('typo3-cms-extension', $packageInfo->getType());
         self::assertNull($packageInfo->getInfo());
         self::assertNotNull($packageInfo->getExtEmConf());
+
     }
 
     #[Test]
     public function extensionWithJsonCanBeResolvedByAbsolutePath(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/ext_absolute');
 
+        // Extension with composer.json and extension key does not register basepath as extension key
+        self::assertArrayNotHasKey('ext_absolute', $extensionMapPropertyReflection->getValue($subject));
+
+        // Extension with composer.json and extension key register extension key as composer package alias
+        self::assertArrayHasKey('absolute_real', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('testing-framework/extension-absolute', $extensionMapPropertyReflection->getValue($subject)['absolute_real']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('absolute_real', $packageInfo->getExtensionKey());
         self::assertSame('testing-framework/extension-absolute', $packageInfo->getName());
@@ -257,8 +289,18 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithJsonCanBeResolvedRelativeFromRoot(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback('Tests/Unit/Composer/Fixtures/Extensions/ext_relativefromroot');
 
+        // Extension with composer.json and extension key does not register basepath as extension key
+        self::assertArrayNotHasKey('ext_relativefromroot', $extensionMapPropertyReflection->getValue($subject));
+
+        // Extension with composer.json and extension key register extension key as composer package alias
+        self::assertArrayHasKey('relativefromroot_real', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('testing-framework/extension-relativefromroot', $extensionMapPropertyReflection->getValue($subject)['relativefromroot_real']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('relativefromroot_real', $packageInfo->getExtensionKey());
         self::assertSame('testing-framework/extension-relativefromroot', $packageInfo->getName());
@@ -271,8 +313,18 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithJsonCanBeResolvedByLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $packageInfo = $subject->getPackageInfoWithFallback('typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_fallbackroot');
 
+        // Extension with composer.json and extension key does not register basepath as extension key
+        self::assertArrayNotHasKey('ext_fallbackroot', $extensionMapPropertyReflection->getValue($subject));
+
+        // Extension with composer.json and extension key register extension key as composer package alias
+        self::assertArrayHasKey('fallbackroot_real', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('testing-framework/extension-fallbackroot', $extensionMapPropertyReflection->getValue($subject)['fallbackroot_real']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('fallbackroot_real', $packageInfo->getExtensionKey());
         self::assertSame('testing-framework/extension-fallbackroot', $packageInfo->getName());
@@ -285,9 +337,19 @@ final class ComposerPackageManagerTest extends UnitTestCase
     public function extensionWithJsonCanBeResolvedByRelativeLegacyPath(): void
     {
         $subject = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($subject, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($subject));
         $projectFolderName = basename($subject->getRootPath());
         $packageInfo = $subject->getPackageInfoWithFallback('../' . $projectFolderName . '/typo3conf/ext/testing_framework/Tests/Unit/Composer/Fixtures/Extensions/ext_fallbackroot');
 
+        // Extension with composer.json and extension key does not register basepath as extension key
+        self::assertArrayNotHasKey('ext_fallbackroot', $extensionMapPropertyReflection->getValue($subject));
+
+        // Extension with composer.json and extension key register extension key as composer package alias
+        self::assertArrayHasKey('fallbackroot_real', $extensionMapPropertyReflection->getValue($subject));
+        self::assertSame('testing-framework/extension-fallbackroot', $extensionMapPropertyReflection->getValue($subject)['fallbackroot_real']);
+
+        // Verify package info
         self::assertInstanceOf(PackageInfo::class, $packageInfo);
         self::assertSame('fallbackroot_real', $packageInfo->getExtensionKey());
         self::assertSame('testing-framework/extension-fallbackroot', $packageInfo->getName());
@@ -357,5 +419,200 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertFalse($packageInfo->isMonoRepository(), 'Package is not mono repository root');
         self::assertSame($expectedPackageName, $packageInfo->getName());
         self::assertSame($expectedExtensionKey, $packageInfo->getExtensionKey());
+    }
+
+    public static function prepareResolvePackageNameReturnsExpectedValuesDataProvider(): \Generator
+    {
+        yield 'Composer package name returns unchanged (not checked for existence)' => [
+            'name' => 'typo3/cms-core',
+            'expected' => 'typo3/cms-core',
+        ];
+        yield 'Extension key returns unchanged (not checked for existence)' => [
+            'name' => 'core',
+            'expected' => 'core',
+        ];
+        yield 'Classic mode system path returns extension key (not checked for existence)' => [
+            'name' => 'typo3/sysext/core',
+            'expected' => 'core',
+        ];
+        yield 'Classic mode extension path returns extension key (not checked for existence)' => [
+            'name' => 'typo3conf/ext/some_ext',
+            'expected' => 'some_ext',
+        ];
+        yield 'Not existing full path to classic system extension path resolves to extension key (not checked for existence)' => [
+            'name' => 'ROOT:/typo3/sysext/core',
+            'expected' => 'core',
+        ];
+        yield 'Not existing full path to classic extension path resolves to extension key (not checked for existence)' => [
+            'name' => 'ROOT:/typo3conf/ext/some_ext',
+            'expected' => 'some_ext',
+        ];
+        yield 'Vendor path returns vendor with package subfolder' => [
+            'name' => 'VENDOR:/typo3/cms-core',
+            'expected' => 'typo3/cms-core',
+        ];
+    }
+
+    #[DataProvider('prepareResolvePackageNameReturnsExpectedValuesDataProvider')]
+    #[Test]
+    public function prepareResolvePackageNameReturnsExpectedValues(string $name, string $expected): void
+    {
+        $composerPackageManager = new ComposerPackageManager();
+        $replaceMap = [
+            'ROOT:/' => rtrim($composerPackageManager->getRootPath(), '/') . '/',
+            'VENDOR:/' => rtrim($composerPackageManager->getVendorPath(), '/') . '/',
+        ];
+        $name = str_replace(array_keys($replaceMap), array_values($replaceMap), $name);
+        foreach (array_keys($replaceMap) as $replaceKey) {
+            self::assertStringNotContainsString($replaceKey, $name, 'Key "%s" is replaced in name "%s"');
+        }
+        $prepareResolvePackageNameReflectionMethod = new \ReflectionMethod($composerPackageManager, 'prepareResolvePackageName');
+        $resolved = $prepareResolvePackageNameReflectionMethod->invoke($composerPackageManager, $name);
+        self::assertSame($expected, $resolved, sprintf('"%s" resolved to "%s"', $name, $expected));
+    }
+
+    public static function resolvePackageNameReturnsExpectedPackageNameDataProvider(): \Generator
+    {
+        yield 'Composer package name returns unchanged (not checked for existence)' => [
+            'name' => 'typo3/cms-core',
+            'expected' => 'typo3/cms-core',
+        ];
+        yield 'Extension key returns unchanged (not checked for existence)' => [
+            'name' => 'core',
+            'expected' => 'typo3/cms-core',
+        ];
+        yield 'Classic mode system path returns extension key (not checked for existence)' => [
+            'name' => 'typo3/sysext/core',
+            'expected' => 'typo3/cms-core',
+        ];
+        yield 'Not existing full path to classic system extension path resolves to extension key (not checked for existence)' => [
+            'name' => 'ROOT:/typo3/sysext/core',
+            'expected' => 'typo3/cms-core',
+        ];
+        yield 'Vendor path returns vendor with package subfolder' => [
+            'name' => 'VENDOR:/typo3/cms-core',
+            'expected' => 'typo3/cms-core',
+        ];
+        // Not loaded/known extension resolves only extension key and not to a composer package name.
+        yield 'Not existing full path to classic extension path resolves to extension key for unknown extension' => [
+            'name' => 'ROOT:/typo3conf/ext/some_ext',
+            'expected' => 'some_ext',
+        ];
+        // Not loaded/known extension resolves only extension key and not to a composer package name.
+        yield 'Classic mode extension path returns extension key for unknown extension' => [
+            'name' => 'typo3conf/ext/some_ext',
+            'expected' => 'some_ext',
+        ];
+    }
+
+    #[DataProvider('resolvePackageNameReturnsExpectedPackageNameDataProvider')]
+    #[Test]
+    public function resolvePackageNameReturnsExpectedPackageName(string $name, string $expected): void
+    {
+        $composerPackageManager = new ComposerPackageManager();
+        $replaceMap = [
+            'ROOT:/' => rtrim($composerPackageManager->getRootPath(), '/') . '/',
+            'VENDOR:/' => rtrim($composerPackageManager->getVendorPath(), '/') . '/',
+        ];
+        $name = str_replace(array_keys($replaceMap), array_values($replaceMap), $name);
+        foreach (array_keys($replaceMap) as $replaceKey) {
+            self::assertStringNotContainsString($replaceKey, $name, 'Key "%s" is replaced in name "%s"');
+        }
+        $resolvePackageNameReflectionMethod = new \ReflectionMethod($composerPackageManager, 'resolvePackageName');
+        $resolved = $resolvePackageNameReflectionMethod->invoke($composerPackageManager, $name);
+        self::assertSame($expected, $resolved, sprintf('"%s" resolved to "%s"', $name, $expected));
+    }
+
+    #[Test]
+    public function ensureEndingComposerPackageNameAndTypoExtensionPackageExtensionKeyResolvesCorrectPackage(): void
+    {
+        $composerManager = new ComposerPackageManager();
+        $extensionMapPropertyReflection = new \ReflectionProperty($composerManager, 'extensionKeyToPackageNameMap');
+        self::assertIsArray($extensionMapPropertyReflection->getValue($composerManager));
+
+        // verify initial composer package information
+        $initComposerPackage = $composerManager->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Packages/sharedextensionkey');
+        self::assertArrayNotHasKey('sharedextensionkey', $extensionMapPropertyReflection->getValue($composerManager));
+        self::assertInstanceOf(PackageInfo::class, $initComposerPackage);
+        self::assertSame('testing-framework/sharedextensionkey', $initComposerPackage->getName(), 'PackageInfo->name is "testing-framework/sharedextensionkey"');
+        self::assertFalse($initComposerPackage->isSystemExtension(), '"testing-framework/sharedextensionkey" is not a TYPO3 system extension');
+        self::assertFalse($initComposerPackage->isExtension(), '"testing-framework/sharedextensionkey" is not a TYPO3 extension');
+        self::assertTrue($initComposerPackage->isComposerPackage(), '"testing-framework/sharedextensionkey" is a composer package');
+        self::assertSame('', $initComposerPackage->getExtensionKey());
+
+        // verify initial extension package information
+        $initExtensionPackage = $composerManager->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/extension-key-shared-with-composer-package');
+        self::assertArrayHasKey('sharedextensionkey', $extensionMapPropertyReflection->getValue($composerManager));
+        self::assertSame('testing-framework/extension-key-shared-with-composer-package', $extensionMapPropertyReflection->getValue($composerManager)['sharedextensionkey']);
+        self::assertInstanceOf(PackageInfo::class, $initExtensionPackage);
+        self::assertSame('testing-framework/extension-key-shared-with-composer-package', $initExtensionPackage->getName(), 'PackageInfo->name is "testing-framework/extension-key-shared-with-composer-package"');
+        self::assertFalse($initExtensionPackage->isSystemExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 system extension');
+        self::assertTrue($initExtensionPackage->isExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 extension');
+        self::assertTrue($initExtensionPackage->isComposerPackage(), '"testing-framework/extension-key-shared-with-composer-package" is a composer package');
+        self::assertSame('sharedextensionkey', $initExtensionPackage->getExtensionKey());
+
+        // verify shared extension key retrieval returns the extension package
+        $extensionPackage = $composerManager->getPackageInfo('sharedextensionkey');
+        self::assertInstanceOf(PackageInfo::class, $extensionPackage);
+        self::assertSame('testing-framework/extension-key-shared-with-composer-package', $extensionPackage->getName(), 'PackageInfo->name is "testing-framework/extension-key-shared-with-composer-package"');
+        self::assertFalse($extensionPackage->isSystemExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 system extension');
+        self::assertTrue($extensionPackage->isExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 extension');
+        self::assertTrue($extensionPackage->isComposerPackage(), '"testing-framework/extension-key-shared-with-composer-package" is a composer package');
+        self::assertSame('sharedextensionkey', $extensionPackage->getExtensionKey());
+
+        // verify shared extension key with classic mode prefix retrieval returns the extension package
+        $classicModeExtensionPackage = $composerManager->getPackageInfo('typo3conf/ext/sharedextensionkey');
+        self::assertInstanceOf(PackageInfo::class, $classicModeExtensionPackage);
+        self::assertSame('testing-framework/extension-key-shared-with-composer-package', $classicModeExtensionPackage->getName(), 'PackageInfo->name is "testing-framework/extension-key-shared-with-composer-package"');
+        self::assertFalse($classicModeExtensionPackage->isSystemExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 system extension');
+        self::assertTrue($classicModeExtensionPackage->isExtension(), '"testing-framework/extension-key-shared-with-composer-package" is not a TYPO3 extension');
+        self::assertTrue($classicModeExtensionPackage->isComposerPackage(), '"testing-framework/extension-key-shared-with-composer-package" is a composer package');
+        self::assertSame('sharedextensionkey', $classicModeExtensionPackage->getExtensionKey());
+    }
+
+    /**
+     * @todo Remove this when fluid/standalone fluid is no longer available by default due to core dependencies.
+     * {@see ensureEndingComposerPackageNameAndTypoExtensionPackageExtensionKeyResolvesCorrectPackage}
+     */
+    #[Test]
+    public function ensureStandaloneFluidDoesNotBreakCoreFluidExtension(): void
+    {
+        $composerManager = new ComposerPackageManager();
+
+        // Verify standalone fluid composer package
+        $standaloneFluid = $composerManager->getPackageInfo('typo3fluid/fluid');
+        self::assertInstanceOf(PackageInfo::class, $standaloneFluid);
+        self::assertSame('typo3fluid/fluid', $standaloneFluid->getName(), 'PackageInfo->name is not "typo3fluid/fluid"');
+        self::assertFalse($standaloneFluid->isSystemExtension(), '"typo3fluid/fluid" is not a TYPO3 system extension');
+        self::assertFalse($standaloneFluid->isExtension(), '"typo3fluid/fluid" is not a TYPO3 extension');
+        self::assertTrue($standaloneFluid->isComposerPackage(), '"typo3fluid/fluid" is a composer package');
+        self::assertSame('', $standaloneFluid->getExtensionKey());
+
+        // Verify TYPO3 system extension fluid.
+        $coreFluid = $composerManager->getPackageInfo('typo3/cms-fluid');
+        self::assertInstanceOf(PackageInfo::class, $coreFluid);
+        self::assertSame('typo3/cms-fluid', $coreFluid->getName(), 'PackageInfo->name is not "typo3/cms-fluid"');
+        self::assertTrue($coreFluid->isSystemExtension(), '"typo3/cms-fluid" is a TYPO3 system extension');
+        self::assertFalse($coreFluid->isExtension(), '"typo3/cms-fluid" is not a TYPO3 extension');
+        self::assertTrue($coreFluid->isComposerPackage(), '"typo3/cms-fluid" is a composer package');
+        self::assertSame('fluid', $coreFluid->getExtensionKey());
+
+        // Verify TYPO3 system extension fluid resolved using extension key.
+        $extensionKeyRetrievesCoreFluid = $composerManager->getPackageInfo('fluid');
+        self::assertInstanceOf(PackageInfo::class, $extensionKeyRetrievesCoreFluid);
+        self::assertSame('typo3/cms-fluid', $extensionKeyRetrievesCoreFluid->getName(), 'PackageInfo->name is not "typo3/cms-fluid"');
+        self::assertTrue($extensionKeyRetrievesCoreFluid->isSystemExtension(), '"typo3/cms-fluid" is a TYPO3 system extension');
+        self::assertFalse($extensionKeyRetrievesCoreFluid->isExtension(), '"typo3/cms-fluid" is not a TYPO3 extension');
+        self::assertTrue($extensionKeyRetrievesCoreFluid->isComposerPackage(), '"typo3/cms-fluid" is a composer package');
+        self::assertSame('fluid', $extensionKeyRetrievesCoreFluid->getExtensionKey());
+
+        // Verify TYPO3 system extension fluid resolved using relative classic mode path.
+        $extensionRelativeSystemExtensionPath = $composerManager->getPackageInfo('typo3/sysext/fluid');
+        self::assertInstanceOf(PackageInfo::class, $extensionRelativeSystemExtensionPath);
+        self::assertSame('typo3/cms-fluid', $extensionRelativeSystemExtensionPath->getName(), 'PackageInfo->name is not "typo3/cms-fluid"');
+        self::assertTrue($extensionRelativeSystemExtensionPath->isSystemExtension(), '"typo3/cms-fluid" is a TYPO3 system extension');
+        self::assertFalse($extensionRelativeSystemExtensionPath->isExtension(), '"typo3/cms-fluid" is not a TYPO3 extension');
+        self::assertTrue($extensionRelativeSystemExtensionPath->isComposerPackage(), '"typo3/cms-fluid" is a composer package');
+        self::assertSame('fluid', $extensionRelativeSystemExtensionPath->getExtensionKey());
     }
 }

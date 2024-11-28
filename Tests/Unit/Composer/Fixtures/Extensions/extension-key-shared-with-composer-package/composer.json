@@ -1,0 +1,18 @@
+{
+    "name": "testing-framework/extension-key-shared-with-composer-package",
+    "description": "TYPO3 extension shareing extension-key with last part of composer package ",
+    "type": "typo3-cms-extension",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Stefan Bürk",
+            "email": "stefan@buerk.tech"
+        }
+    ],
+    "require": {},
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "sharedextensionkey"
+        }
+    }
+}
