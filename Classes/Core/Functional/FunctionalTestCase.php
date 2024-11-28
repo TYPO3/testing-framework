@@ -111,6 +111,23 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *
      * A default list of core extensions is always loaded.
      *
+     * System extension can be provided by their extension key or composer package name,
+     * and also as classic mode relative path
+     *
+     * ```
+     * protected array $coreExensionToLoad = [
+     *   // As composer package name
+     *   'typo3/cms-core',
+     *   // As extension-key
+     *   'core',
+     *   // As relative classic mode system installation path
+     *   'typo3/sysext/core',
+     * ];
+     * ```
+     *
+     * Note that system extensions must be available, which means either added as require or
+     * require-dev to the root composer.json or required and installed by a required package.
+     *
      * @see FunctionalTestCaseUtility $defaultActivatedCoreExtensions
      *
      * @var non-empty-string[]
@@ -121,16 +138,32 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * Array of test/fixture extensions paths that should be loaded for a test.
      *
      * This property will stay empty in this abstract, so it is possible
-     * to just overwrite it in extending classes. Extensions noted here will
-     * be loaded for every test of a test case, and it is not possible to change
-     * the list of loaded extensions between single tests of a test case.
+     * to just overwrite it in extending classes.
+     *
+     * IMPORTANT:   Extension list is concrete and used to create the test instance on first
+     *              test execution and is **NOT** changeable between single test permutations.
      *
      * Given path is expected to be relative to your document root, example:
      *
-     * array(
-     *   'typo3conf/ext/some_extension/Tests/Functional/Fixtures/Extensions/test_extension',
+     * ```
+     * protected array $testExtensionToLoad = [
+     *
+     *   // Virtual relative classic mode installation path
      *   'typo3conf/ext/base_extension',
-     * );
+     *
+     *   // Virtual relative classic mode installation path subfolder test fixture
+     *   'typo3conf/ext/some_extension/Tests/Functional/Fixtures/Extensions/test_extension',
+     *
+     *   // Relative to current test case (recommended for test fixture extension)
+     *   __DIR__ . '/../Fixtures/Extensions/another_test_extension',
+     *
+     *   // composer package name when available as `require` or `require-dev` in root composer.json
+     *   'vendor/some-extension',
+     *
+     *   // extension key when available as package loaded as `require` or `require-dev` in root composer.json
+     *   'my_extension_key',
+     * ];
+     * ```
      *
      * Extensions in this array are linked to the test instance, loaded
      * and their ext_tables.sql will be applied.
@@ -147,18 +180,22 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * be linked for every test of a test case, and it is not possible to change
      * the list of folders between single tests of a test case.
      *
-     * array(
+     * ```
+     * protected array $pathsToLinkInTestInstance = [
      *   'link-source' => 'link-destination'
-     * );
+     * ];
+     * ```
      *
      * Given paths are expected to be relative to the test instance root.
      * The array keys are the source paths and the array values are the destination
      * paths, example:
      *
-     * [
+     * ```
+     * protected array $pathsToLinkInTestInstance = [
      *   'typo3/sysext/impext/Tests/Functional/Fixtures/Folders/fileadmin/user_upload' =>
      *   'fileadmin/user_upload',
-     * ]
+     * ];
+     * ```
      *
      * To be able to link from my_own_ext the extension path needs also to be registered in
      * property $testExtensionsToLoad
@@ -172,12 +209,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * paths are really duplicated and provided in the instance - instead of
      * using symbolic links. Examples:
      *
-     * [
+     * ```
+     * protected array $pathsToProvideInTestInstance = [
      *   // Copy an entire directory recursive to fileadmin
      *   'typo3/sysext/lowlevel/Tests/Functional/Fixtures/testImages/' => 'fileadmin/',
      *   // Copy a single file into some deep destination directory
      *   'typo3/sysext/lowlevel/Tests/Functional/Fixtures/testImage/someImage.jpg' => 'fileadmin/_processed_/0/a/someImage.jpg',
-     * ]
+     * ];
+     * ```
      *
      * @var array<string, non-empty-string>
      */
@@ -208,9 +247,11 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      * To create additional folders add the paths to this array. Given paths are expected to be
      * relative to the test instance root and have to begin with a slash. Example:
      *
-     * [
+     * ```
+     * protected array $additionalFoldersToCreate = [
      *   'fileadmin/user_upload'
-     * ]
+     * ];
+     * ```
      *
      * @var non-empty-string[]
      */
