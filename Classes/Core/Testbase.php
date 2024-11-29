@@ -747,7 +747,7 @@ class Testbase
         if ($hasConsolidatedHttpEntryPoint) {
             SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
         } else {
-            SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI);
+            SystemEnvironmentBuilder::run(1, SystemEnvironmentBuilder::REQUESTTYPE_BE | SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
         }
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
