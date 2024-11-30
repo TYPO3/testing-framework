@@ -127,12 +127,13 @@ abstract class UnitTestCase extends BaseTestCase
             $singletonInstances = GeneralUtility::getSingletonInstances();
             // Reset singletons anyway to not let all further tests fail
             GeneralUtility::resetSingletonInstances([]);
-            self::assertEmpty(
-                $singletonInstances,
-                'tearDown() integrity check found left over singleton instances in GeneralUtility::makeInstance()'
-                . ' instance list. The test should probably set \'$this->resetSingletonInstances = true;\' to'
-                . ' reset this framework state change. Found singletons: ' . implode(', ', array_keys($singletonInstances))
-            );
+            if (!empty($singletonInstances)) {
+                self::fail(
+                    'tearDown() integrity check found left over singleton instances in GeneralUtility::makeInstance()'
+                    . ' instance list. The test should probably set \'$this->resetSingletonInstances = true;\' to'
+                    . ' reset this framework state change. Found singletons: ' . implode(', ', array_keys($singletonInstances))
+                );
+            }
         }
 
         // Delete registered test files and directories
@@ -175,18 +176,19 @@ abstract class UnitTestCase extends BaseTestCase
         if (!empty($notCleanInstances)) {
             // Reset instance list (including singletons & container) to not let all further tests fail
             GeneralUtility::purgeInstances();
+            self::fail(
+                'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance list.'
+                . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
+                . ' Found instances of these classes: ' . implode(', ', array_keys($notCleanInstances))
+            );
         }
-        // Let the test fail if there were instances left and give some message on why it fails
-        self::assertEquals(
-            [],
-            $notCleanInstances,
-            'tearDown() integrity check found left over instances in GeneralUtility::makeInstance() instance list.'
-            . ' Always consume instances added via GeneralUtility::addInstance() in your test by the test subject.'
-        );
 
-        self::assertTrue($this->setUpMethodCallChainValid, 'tearDown() integrity check detected that setUp has a '
-            . 'broken parent call chain. Please check that setUp() methods properly calls parent::setUp(), starting from "'
-            . static::class . '"');
+        if ($this->setUpMethodCallChainValid === false) {
+            self::fail(
+                'tearDown() integrity check detected that setUp() has a broken parent call chain.'
+                . ' Please check that setUp() methods properly calls parent::setUp(), starting from "' . static::class . '"'
+            );
+        }
 
         parent::tearDown();
     }
