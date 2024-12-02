@@ -228,14 +228,26 @@ class Testbase
         // of the testing framework.
         $installPhpExists = file_exists($instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php');
         $entryPointsToSet = [
-            $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php' => $instancePath . '/index.php',
+            [
+                'source' => $instancePath . '/typo3/sysext/core/Resources/Private/Php/index.php',
+                'target' => $instancePath . '/index.php',
+                'pattern' => '/\\\\TYPO3\\\\CMS\\\\Core\\\\Core\\\\SystemEnvironmentBuilder::run\(\);/',
+                'replacement' => '\TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(0, 0, false);',
+            ],
         ];
         if ($installPhpExists && in_array('install', $coreExtensions, true)) {
-            $entryPointsToSet[$instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php'] = $instancePath . '/typo3/install.php';
+            $entryPointsToSet[] = [
+                'source' => $instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php',
+                'target' => $instancePath . '/typo3/install.php',
+                'pattern' => '/\\\\TYPO3\\\\CMS\\\\Core\\\\Core\\\\SystemEnvironmentBuilder::run\(1\);/',
+                'replacement' => '\TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(1, 0, false);',
+            ];
         }
         $autoloadFile = dirname(__DIR__, 4) . '/autoload.php';
 
-        foreach ($entryPointsToSet as $source => $target) {
+        foreach ($entryPointsToSet as $entryPointToSet) {
+            $source = $entryPointToSet['source'];
+            $target = $entryPointToSet['target'];
             if (($entryPointContent = file_get_contents($source)) === false) {
                 throw new \UnexpectedValueException(sprintf('Source file (%s) was not found.', $source), 1636244753);
             }
@@ -244,11 +256,9 @@ class Testbase
                 $this->findShortestPathCode($target, $autoloadFile),
                 $entryPointContent
             );
-            $entryPointContent = (string)preg_replace(
-                '/\\\\TYPO3\\\\CMS\\\\Core\\\\Core\\\\SystemEnvironmentBuilder::run\(/',
-                '\TYPO3\TestingFramework\Core\SystemEnvironmentBuilder::run(',
-                $entryPointContent
-            );
+            $pattern = $entryPointToSet['pattern'];
+            $replacement = $entryPointToSet['replacement'];
+            $entryPointContent = (string)preg_replace($pattern, $replacement, $entryPointContent);
             if ($entryPointContent === '') {
                 throw new \UnexpectedValueException(
                     sprintf('Error while customizing the source file (%s).', $source),
