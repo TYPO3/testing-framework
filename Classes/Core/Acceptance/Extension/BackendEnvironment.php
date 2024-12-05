@@ -21,7 +21,9 @@ use Codeception\Event\SuiteEvent;
 use Codeception\Events;
 use Codeception\Extension;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -147,6 +149,19 @@ abstract class BackendEnvironment extends Extension
          * Example: [ __DIR__ . '/../../Fixtures/BackendEnvironment.csv' ]
          */
         'csvDatabaseFixtures' => [],
+
+        /**
+         * Copy files within created test instance.
+         *
+         * @var array<string, string[]>
+         */
+        'copyInstanceFiles' => [],
+
+        /**
+         * Should target paths for self::$config['copyInstanceFiles'] be created.
+         * Will throw an exception if folder does not exists and set to `false`.
+         */
+        'copyInstanceFilesCreateTargetPath' => true,
     ];
 
     /**
@@ -169,6 +184,11 @@ abstract class BackendEnvironment extends Extension
         Events::SUITE_BEFORE => 'bootstrapTypo3Environment',
         Events::TEST_BEFORE => 'cleanupTypo3Environment',
     ];
+
+    /**
+     * @var string|null Test instance path when created.
+     */
+    protected ?string $instancePath = null;
 
     /**
      * Initialize config array, called before events.
@@ -230,7 +250,7 @@ abstract class BackendEnvironment extends Extension
         $testbase->createDirectory(ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance');
         $testbase->createDirectory(ORIGINAL_ROOT . 'typo3temp/var/transient');
 
-        $instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
+        $instancePath = $this->instancePath = ORIGINAL_ROOT . 'typo3temp/var/tests/acceptance';
         putenv('TYPO3_PATH_ROOT=' . $instancePath);
         putenv('TYPO3_PATH_APP=' . $instancePath);
         $testbase->setTypo3TestingContext();
@@ -303,6 +323,13 @@ abstract class BackendEnvironment extends Extension
         // @todo: See which other possible state should be dropped here again (singletons, ...?)
         restore_error_handler();
 
+        $this->applyDefaultCopyInstanceFilesConfiguration();
+        $copyInstanceFilesCreateTargetPaths = (bool)($this->config['copyInstanceFilesCreateTargetPath'] ?? true);
+        $copyInstanceFiles = $this->config['copyInstanceFiles'] ?? [];
+        if (is_array($copyInstanceFiles) && $copyInstanceFiles !== []) {
+            $testbase->copyInstanceFiles($instancePath, $copyInstanceFiles, $copyInstanceFilesCreateTargetPaths);
+        }
+
         // Unset a closure or phpunit kicks in with a 'serialization of \Closure is not allowed'
         // Alternative solution:
         // unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['cliKeys']['extbase']);
@@ -327,5 +354,95 @@ abstract class BackendEnvironment extends Extension
         GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('be_users')
             ->update('be_users', ['uc' => null], ['uid' => 1]);
+    }
+
+    private function applyDefaultCopyInstanceFilesConfiguration(): void
+    {
+        if ($this->hasExtension('typo3/cms-backend')) {
+            ArrayUtility::mergeRecursiveWithOverrule(
+                $this->config,
+                [
+                    'copyInstanceFiles' => [
+                        // Create favicon.ico to suppress potential javascript errors in console
+                        // which are caused by calling a non html in the browser, e.g. seo sitemap xml
+                        'typo3/sysext/backend/Resources/Public/Icons/favicon.ico' => [
+                            'favicon.ico',
+                        ],
+                    ],
+                ]
+            );
+        }
+        if ($this->hasExtension('typo3/cms-install')) {
+            ArrayUtility::mergeRecursiveWithOverrule(
+                $this->config,
+                [
+                    'copyInstanceFiles' => [
+                        // Provide some files into the test instance normally added by installer
+                        'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/root-htaccess' => [
+                            '.htaccess',
+                        ],
+                        'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/resources-root-htaccess' => [
+                            'fileadmin/.htaccess',
+                        ],
+                        'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/fileadmin-temp-htaccess' => [
+                            'fileadmin/_temp_/.htaccess',
+                        ],
+                        'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/fileadmin-temp-index.html' => [
+                            'fileadmin/_temp_/index.html',
+                        ],
+                        'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/typo3temp-var-htaccess' => [
+                            'typo3temp/var/.htaccess',
+                        ],
+                    ],
+                ]
+            );
+        }
+    }
+
+    /**
+     * Verify if extension is available in the system and within the acceptance test instance.
+     */
+    protected function hasExtension(string $extensionKeyOrComposerPackageName): bool
+    {
+        $instanceExtensions = $this->getInstanceExtensionKeys(
+            $this->config['coreExtensionsToLoad'],
+            $this->config['testExtensionsToLoad'],
+        );
+        $packageInfo = (new ComposerPackageManager())->getPackageInfo($extensionKeyOrComposerPackageName);
+        if ($packageInfo === null) {
+            return false;
+        }
+        return $packageInfo->getExtensionKey() !== '' && in_array($packageInfo->getExtensionKey(), $instanceExtensions, true);
+    }
+
+    /**
+     * Gather list of extension keys available within created test instance
+     * based on `coreExtensionsToLoad` and `testExtensionToLoad` config.
+     */
+    private function getInstanceExtensionKeys(
+        array $coreExtensionsToLoad,
+        array $testExtensionsToLoad,
+    ): array {
+        $composerPackageManager = new ComposerPackageManager();
+        if ($coreExtensionsToLoad === []) {
+            // Fallback to all system extensions needed for TYPO3 acceptanceInstall tests.
+            $coreExtensionsToLoad = $composerPackageManager->getSystemExtensionExtensionKeys();
+        }
+        $result = [];
+        foreach ($coreExtensionsToLoad as $extensionKeyOrComposerPackageName) {
+            $packageInfo = $composerPackageManager->getPackageInfo($extensionKeyOrComposerPackageName);
+            if ($packageInfo === null || $packageInfo->getExtensionKey() === '') {
+                continue;
+            }
+            $result[] = $packageInfo->getExtensionKey();
+        }
+        foreach ($testExtensionsToLoad as $extensionKeyOrComposerPackageName) {
+            $packageInfo = $composerPackageManager->getPackageInfo($extensionKeyOrComposerPackageName);
+            if ($packageInfo === null || $packageInfo->getExtensionKey() === '') {
+                continue;
+            }
+            $result[] = $packageInfo->getExtensionKey();
+        }
+        return $result;
     }
 }
