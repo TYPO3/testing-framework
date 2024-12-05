@@ -207,7 +207,7 @@ class Testbase
 
         $linksToSet = [];
         $coreExtensions = array_unique(array_merge($defaultCoreExtensionsToLoad, $coreExtensionsToLoad));
-        // @todo Fallback to all system extensions needed for TYPO3 acceptanceInstall tests.
+        // Fallback to all system extensions needed for TYPO3 acceptanceInstall tests.
         if ($coreExtensions === []) {
             $coreExtensions = $this->composerPackageManager->getSystemExtensionExtensionKeys();
         }
@@ -301,6 +301,46 @@ class Testbase
                 );
             }
             file_put_contents($target, $entryPointContent);
+        }
+    }
+
+    public function provideInstance(array $additionalHtaccessFiles = []): void
+    {
+        $copyFiles = [
+            // Create favicon.ico to suppress potential javascript errors in console
+            // which are caused by calling a non html in the browser, e.g. seo sitemap xml
+            'typo3/sysext/backend/Resources/Public/Icons/favicon.ico' => [
+                'favicon.ico',
+            ],
+            // Provide some files into the test instance normally added by installer
+            'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/root-htaccess' => [
+                '.htaccess',
+            ],
+            'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/resources-root-htaccess' => [
+                'fileadmin/.htaccess',
+            ],
+            'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/fileadmin-temp-htaccess' => [
+                'fileadmin/_temp_/.htaccess',
+            ],
+            'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/fileadmin-temp-index.html' => [
+                'fileadmin/_temp_/index.html',
+            ],
+            'typo3/sysext/install/Resources/Private/FolderStructureTemplateFiles/typo3temp-var-htaccess' => [
+                'typo3temp/var/.htaccess',
+            ],
+        ];
+        foreach ($copyFiles as $sourceFile => $targetFiles) {
+            foreach ($targetFiles as $targetFile) {
+                $this->createDirectory(dirname(ltrim($targetFile, '/')));
+                $sourceFile = ltrim($sourceFile, '/');
+                $targetFile = ltrim($targetFile, '/');
+                if (!@copy($sourceFile, $targetFile)) {
+                    throw new \RuntimeException(
+                        sprintf('Could not copy "%s" to "%s".', $sourceFile, $targetFile),
+                        1733391799,
+                    );
+                }
+            }
         }
     }
 
@@ -1062,5 +1102,111 @@ class Testbase
     private static function isSQLite(Connection|DoctrineConnection $connection): bool
     {
         return $connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform;
+    }
+
+    /**
+     * Copy files within the test instance path `$instancePath`.
+     *
+     * @param string $instancePath The test instance path.
+     * @param array<string, string[]> $files
+     * @throws Exception
+     */
+    public function copyInstanceFiles(string $instancePath, array $files, bool $createTargetFolder = true): void
+    {
+        if ($files === []) {
+            return;
+        }
+        foreach ($files as $sourceFile => $targetFiles) {
+            foreach ($targetFiles as $targetFile) {
+                $this->copyInstanceFile($instancePath, $sourceFile, $targetFile, $createTargetFolder);
+            }
+        }
+    }
+
+    /**
+     * Copy one file within the test instance with the option to create the target path.
+     *
+     * @param string $instancePath The test instance path.
+     * @param string $sourceFile Relative source file path within test instance.
+     * @param string $targetFile Target file path within test instance.
+     * @param bool $createTargetFolder True to create target folder it does not exists, otherwise exception is thrown.
+     * @throws Exception
+     */
+    public function copyInstanceFile(string $instancePath, string $sourceFile, string $targetFile, bool $createTargetFolder = true): void
+    {
+        if (str_starts_with($sourceFile, '/')) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Source "%s" must be relative from test instance path and must not start with "/".',
+                    $sourceFile,
+                ),
+                1733392183,
+            );
+        }
+        if (str_starts_with($targetFile, '/')) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Target "%s" must be relative from test instance path and must not start with "/".',
+                    $targetFile,
+                ),
+                1733392258,
+            );
+        }
+        if (trim($sourceFile, '/') === '') {
+            throw new \RuntimeException(
+                sprintf(
+                    'Source "%s" must not be empty or "/".',
+                    $sourceFile,
+                ),
+                1733392321,
+            );
+        }
+        if (trim($targetFile, '/') === '') {
+            throw new \RuntimeException(
+                sprintf(
+                    'Target "%s" must not be empty or "/".',
+                    $targetFile,
+                ),
+                1733392321,
+            );
+        }
+        $instancePath = rtrim($instancePath, '/');
+        $sourceFileFull = $instancePath . '/' . $sourceFile;
+        $targetFileFull = $instancePath . '/' . $targetFile;
+        $targetPath = rtrim(dirname($targetFile), '/');
+        $targetPathFull = $instancePath . '/' . $targetPath;
+        if (!is_dir($targetPathFull)) {
+            if (!$createTargetFolder) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Target instance path "%s" does not exists and should not be created, but is required.',
+                        $targetPath,
+                    ),
+                    1733392917,
+                );
+            }
+            $this->createDirectory($targetPathFull);
+        }
+        if (!file_exists($sourceFileFull)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Source file "%s" does not exists within test instance "%s" and could not be copied to "%s".',
+                    $sourceFile,
+                    $instancePath,
+                    $targetFile,
+                ),
+                1733393186,
+            );
+        }
+        if (!@copy($sourceFileFull, $targetFileFull)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Could not copy "%s" to "%s".',
+                    $sourceFile,
+                    $targetFile,
+                ),
+                1733391799,
+            );
+        }
     }
 }
