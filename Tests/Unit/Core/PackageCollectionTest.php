@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace Typo3\TestingFramework\Tests\Unit\Core;
 
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
@@ -31,9 +32,7 @@ use TYPO3\TestingFramework\Core\PackageCollection;
 
 final class PackageCollectionTest extends TestCase
 {
-    /**
-     * @test
-     */
+    #[Test]
     public function sortsComposerPackages(): void
     {
         $packageStates = require __DIR__ . '/../Fixtures/Packages/PackageStates.php';

@@ -101,7 +101,6 @@ abstract class BaseTestCase extends TestCase
      * @param string $mockClassName the class name to use for the mock class
      * @param bool $callOriginalConstructor whether to call the constructor
      * @param bool $callOriginalClone whether to call the __clone method
-     * @param bool $callAutoload whether to call any autoload function
      *
      * @return MockObject&AccessibleObjectInterface&T a mock of `$originalClassName` with access methods added
      */
@@ -112,7 +111,6 @@ abstract class BaseTestCase extends TestCase
         string $mockClassName = '',
         bool $callOriginalConstructor = true,
         bool $callOriginalClone = true,
-        bool $callAutoload = true
     ) {
         $mockBuilder = $this->getMockBuilder($this->buildAccessibleProxy($originalClassName))
             ->setConstructorArgs($arguments)
@@ -130,10 +128,6 @@ abstract class BaseTestCase extends TestCase
 
         if (!$callOriginalClone) {
             $mockBuilder->disableOriginalClone();
-        }
-
-        if (!$callAutoload) {
-            $mockBuilder->disableAutoload();
         }
 
         return $mockBuilder->getMock();
