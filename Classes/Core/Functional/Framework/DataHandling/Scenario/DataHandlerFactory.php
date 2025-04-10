@@ -186,6 +186,14 @@ class DataHandlerFactory
         if (isset($itemSettings['actions'])) {
             $this->setInCommandMap($tableName, $newId, $nodeId, $itemSettings['actions'], (int)$workspaceId);
         }
+        foreach ($itemSettings['versionVariants'] ?? [] as $versionVariantSettings) {
+            $this->processVersionVariantItem(
+                $entityConfiguration,
+                $versionVariantSettings,
+                $newId,
+                $nodeId
+            );
+        }
         foreach ($itemSettings['languageVariants'] ?? [] as $variantItemSettings) {
             $this->processLanguageVariantItem(
                 $entityConfiguration,
