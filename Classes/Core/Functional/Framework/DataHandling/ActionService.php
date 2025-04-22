@@ -430,7 +430,7 @@ class ActionService
                 $versionedUid = $this->getVersionedId($tableName, $liveUid);
                 if (empty($versionedUid)) {
                     if ($throwException) {
-                        throw new Exception('Versioned UID could not be determined', 1476049592);
+                        throw new Exception('Versioned UID of ' . $tableName . ':' . $liveUid . ' could not be determined', 1476049592);
                     }
                     continue;
                 }
