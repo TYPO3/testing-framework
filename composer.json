@@ -66,5 +66,10 @@
   },
   "replace": {
     "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "*"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "9.x-dev"
+    }
   }
 }
