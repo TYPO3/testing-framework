@@ -56,7 +56,9 @@ class FrameworkState
         // Can be dropped when GeneralUtility::getIndpEnv() is abandoned
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
+        if (PHP_VERSION_ID < 80500) {
+            $generalUtilityIndpEnvCache->setAccessible(true);
+        }
         $state['generalUtilityIndpEnvCache'] = $generalUtilityIndpEnvCache->getValue();
 
         $state['generalUtilitySingletonInstances'] = GeneralUtility::getSingletonInstances();
@@ -67,19 +69,25 @@ class FrameworkState
             // Infamous RootlineUtility carries various static state ...
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-            $rootlineUtilityLocalCache->setAccessible(true);
+            if (PHP_VERSION_ID < 80500) {
+                $rootlineUtilityLocalCache->setAccessible(true);
+            }
             $state['rootlineUtilityLocalCache'] = $rootlineUtilityLocalCache->getValue();
 
             try {
                 $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-                $rootlineUtilityRootlineFields->setAccessible(true);
+                if (PHP_VERSION_ID < 80500) {
+                    $rootlineUtilityRootlineFields->setAccessible(true);
+                }
                 $state['rootlineUtilityRootlineFields'] = $rootlineUtilityRootlineFields->getValue();
             } catch (\ReflectionException $e) {
                 // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
             }
 
             $rootlineUtilityPageRecordCache = $rootlineUtilityReflection->getProperty('pageRecordCache');
-            $rootlineUtilityPageRecordCache->setAccessible(true);
+            if (PHP_VERSION_ID < 80500) {
+                $rootlineUtilityPageRecordCache->setAccessible(true);
+            }
             $state['rootlineUtilityPageRecordCache'] = $rootlineUtilityPageRecordCache->getValue();
         }
 
@@ -95,7 +103,9 @@ class FrameworkState
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
+        if (PHP_VERSION_ID < 80500) {
+            $generalUtilityIndpEnvCache->setAccessible(true);
+        }
         $generalUtilityIndpEnvCache->setValue(null, []);
 
         GeneralUtility::resetSingletonInstances([]);
@@ -110,7 +120,9 @@ class FrameworkState
             try {
                 $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
                 $rootlineFieldsDefault = $rootlineFieldsDefault['rootlineFields'];
-                $rootlineUtilityRootlineFields->setAccessible(true);
+                if (PHP_VERSION_ID < 80500) {
+                    $rootlineUtilityRootlineFields->setAccessible(true);
+                }
                 $state['rootlineUtilityRootlineFields'] = $rootlineFieldsDefault;
             } catch (\ReflectionException $e) {
                 // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
@@ -137,7 +149,9 @@ class FrameworkState
 
         $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setAccessible(true);
+        if (PHP_VERSION_ID < 80500) {
+            $generalUtilityIndpEnvCache->setAccessible(true);
+        }
         $generalUtilityIndpEnvCache->setValue(null, $state['generalUtilityIndpEnvCache']);
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
@@ -147,12 +161,16 @@ class FrameworkState
         if (method_exists(RootlineUtility::class, 'purgeCaches')) {
             $rootlineUtilityReflection = new \ReflectionClass(RootlineUtility::class);
             $rootlineUtilityLocalCache = $rootlineUtilityReflection->getProperty('localCache');
-            $rootlineUtilityLocalCache->setAccessible(true);
+            if (PHP_VERSION_ID < 80500) {
+                $rootlineUtilityLocalCache->setAccessible(true);
+            }
             $rootlineUtilityLocalCache->setValue(null, $state['rootlineUtilityLocalCache']);
 
             try {
                 $rootlineUtilityRootlineFields = $rootlineUtilityReflection->getProperty('rootlineFields');
-                $rootlineUtilityRootlineFields->setAccessible(true);
+                if (PHP_VERSION_ID < 80500) {
+                    $rootlineUtilityRootlineFields->setAccessible(true);
+                }
                 $rootlineUtilityRootlineFields->setValue(null, $state['rootlineUtilityRootlineFields']);
             } catch (\ReflectionException $e) {
                 // @todo: Remove full block when rootlineFields has been removed from core RootlineUtility
