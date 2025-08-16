@@ -191,7 +191,9 @@ abstract class UnitTestCase extends BaseTestCase
         $reflectionClass = new \ReflectionClass(LocalizationUtility::class);
         try {
             $property = $reflectionClass->getProperty('configurationManager');
-            $property->setAccessible(true);
+            if (PHP_VERSION_ID < 80500) {
+                $property->setAccessible(true);
+            }
             self::assertNull($property->getValue());
         } catch (\ReflectionException $e) {
             // Do not assert if property does not exist - it has been removed in v12.
