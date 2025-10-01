@@ -869,7 +869,7 @@ class Testbase
 
         $schemaManager = $connection->createSchemaManager();
         foreach ($schemaManager->listTables() as $table) {
-            $connection->truncate($table->getName());
+            $connection->truncate($table->getName(), true);
             self::resetTableSequences($connection, $table->getName());
         }
     }
