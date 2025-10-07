@@ -59,7 +59,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
  * instances, falling back to use composer.json information in case no "ext_emconf.php" are given limiting it only to
  * TYPO3 compatible extensions (typo3-cms-framework and typo3-cms-extension composer package types).
  *
- * @phpstan-type PackageKey non-empty-string
+ * @phpstan-type PackageKey non-empty-string|int
  * @phpstan-type PackageName non-empty-string
  * @phpstan-type PackageConstraints array{dependencies: list<PackageKey>, suggestions: list<PackageKey>}
  * @phpstan-type StateConfiguration array{packagePath?: non-empty-string}
