@@ -142,12 +142,14 @@ final class Collector implements SingletonInterface
 
     private function getCurrentWatcherValue(ServerRequestInterface $request): ?string
     {
-        $watcherValue = null;
-        $tsfe = $request->getAttribute('frontend.controller');
-        if (isset($tsfe->register['watcher'])) {
-            $watcherValue = $tsfe->register['watcher'];
+        $registerStack = $request->getAttribute('frontend.register.stack');
+        if ($registerStack !== null) {
+            return $registerStack->peek()->get('watcher');
+        } else {
+            // @deprecated: TYPO3 <v14 b/w compat. Remove 'else' when v13 compat is removed.
+            $tsfe = $request->getAttribute('frontend.controller');
+            return $tsfe->register['watcher'] ?? null;
         }
-        return $watcherValue;
     }
 
     private function getRenderer(): Renderer
