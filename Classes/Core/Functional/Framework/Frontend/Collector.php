@@ -144,12 +144,11 @@ final class Collector implements SingletonInterface
     {
         $registerStack = $request->getAttribute('frontend.register.stack');
         if ($registerStack !== null) {
-            return $registerStack->peek()->get('watcher');
-        } else {
-            // @deprecated: TYPO3 <v14 b/w compat. Remove 'else' when v13 compat is removed.
-            $tsfe = $request->getAttribute('frontend.controller');
-            return $tsfe->register['watcher'] ?? null;
+            return $registerStack->current()->get('watcher');
         }
+        // @deprecated: TYPO3 <v14 b/w compat. Remove $tsfe fallback and if clause above when v13 compat is removed.
+        $tsfe = $request->getAttribute('frontend.controller');
+        return $tsfe->register['watcher'] ?? null;
     }
 
     private function getRenderer(): Renderer
