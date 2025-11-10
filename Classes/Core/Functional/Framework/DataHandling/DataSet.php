@@ -79,7 +79,7 @@ final class DataSet
                 // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                 $types = [];
                 foreach ($element as $columnName => $columnValue) {
-                    $columnType = $tableDetails->getColumn($columnName)->getType();
+                    $types[$columnName] = $columnType = $tableDetails->getColumn($columnName)->getType();
                     // JSON-Field data is converted (json-encode'd) within $connection->insert(), and since json field
                     // data can only be provided json encoded in the csv dataset files, we need to decode them here.
                     if ($element[$columnName] !== null
@@ -87,7 +87,6 @@ final class DataSet
                     ) {
                         $element[$columnName] = $columnType->convertToPHPValue($columnValue, $platform);
                     }
-                    $types[] = $columnType->getBindingType();
                 }
                 // Insert the row
                 $connection->insert($tableName, $element, $types);
