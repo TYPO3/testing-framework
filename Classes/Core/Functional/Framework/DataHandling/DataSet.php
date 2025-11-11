@@ -19,6 +19,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 
 use Doctrine\DBAL\Types\JsonType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Testbase;
 
@@ -79,7 +80,8 @@ final class DataSet
                 // types correctly (like Connection::PARAM_LOB) allows doctrine to create valid SQL
                 $types = [];
                 foreach ($element as $columnName => $columnValue) {
-                    $types[$columnName] = $columnType = $tableDetails->getColumn($columnName)->getType();
+                    $columnType = $tableDetails->getColumn($columnName)->getType();
+                    $types[$columnName] = (new Typo3Version())->getMajorVersion() > 12 ? $columnType : $columnType->getBindingType();
                     // JSON-Field data is converted (json-encode'd) within $connection->insert(), and since json field
                     // data can only be provided json encoded in the csv dataset files, we need to decode them here.
                     if ($element[$columnName] !== null
