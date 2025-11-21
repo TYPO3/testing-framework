@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
 
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Attribute\AsAllowedCallable;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\SingletonInterface;
@@ -41,6 +42,7 @@ final class Collector implements SingletonInterface
         $this->cObj = $cObj;
     }
 
+    #[AsAllowedCallable]
     public function addRecordData($content, array $configuration, ServerRequestInterface $request): void
     {
         $recordIdentifier = $this->cObj->currentRecord;
@@ -60,6 +62,7 @@ final class Collector implements SingletonInterface
         }
     }
 
+    #[AsAllowedCallable]
     public function addFileData($content, array $configuration, ServerRequestInterface $request): void
     {
         $currentFile = $this->cObj->getCurrentFile();
@@ -81,6 +84,7 @@ final class Collector implements SingletonInterface
         $this->addToStructure($levelIdentifier, $recordIdentifier, $recordData);
     }
 
+    #[AsAllowedCallable]
     public function attachSection(string $content, ?array $configuration = null): void
     {
         $section = [
