@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\Frontend;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Attribute\AsAllowedCallable;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -29,6 +30,7 @@ final class Renderer implements SingletonInterface
     private array $sections = [];
     private ContentObjectRenderer $cObj;
 
+    #[AsAllowedCallable]
     public function parseValues(string $content, ?array $configuration = null): void
     {
         if (empty($content)) {
@@ -65,6 +67,7 @@ final class Renderer implements SingletonInterface
      *   as = CustomData
      * }
      */
+    #[AsAllowedCallable]
     public function renderValues(string $content, ?array $configuration = null): void
     {
         if (empty($configuration['values.'])) {
@@ -83,6 +86,7 @@ final class Renderer implements SingletonInterface
         }
     }
 
+    #[AsAllowedCallable]
     public function renderSections(): string
     {
         return json_encode($this->sections);
