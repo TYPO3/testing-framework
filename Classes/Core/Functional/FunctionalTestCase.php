@@ -34,7 +34,6 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
@@ -1000,7 +999,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         FrameworkState::reset();
 
         // Needed for GeneralUtility::getIndpEnv('SCRIPT_NAME') to return correct value
-        // instead of 'vendor/phpunit/phpunit/phpunit', used eg. in TypoScriptFrontendController absRefPrefix='auto'
+        // instead of 'vendor/phpunit/phpunit/phpunit', used eg. with absRefPrefix='auto'
         // See second data provider of UriPrefixRenderingTest
         // @todo: Make TSFE not use getIndpEnv() anymore
         $_SERVER['SCRIPT_NAME'] = '/index.php';
