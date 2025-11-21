@@ -33,7 +33,7 @@ class DataHandlerWriter
     public static function withBackendUser(BackendUserAuthentication $backendUser): self
     {
         $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
-        if (isset($backendUser->uc['copyLevels'])) {
+        if (isset($backendUser->uc['copyLevels']) && property_exists($dataHandler, 'copyTree')) {
             $dataHandler->copyTree = $backendUser->uc['copyLevels'];
         }
         return new static($dataHandler, $backendUser);

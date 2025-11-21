@@ -559,7 +559,7 @@ class ActionService
     {
         $this->dataHandler = GeneralUtility::makeInstance(DataHandler::class);
         $backendUser = $this->getBackendUser();
-        if (isset($backendUser->uc['copyLevels'])) {
+        if (isset($backendUser->uc['copyLevels']) && property_exists($this->dataHandler, 'copyTree')) {
             $this->dataHandler->copyTree = $backendUser->uc['copyLevels'];
         }
         return $this->dataHandler;
