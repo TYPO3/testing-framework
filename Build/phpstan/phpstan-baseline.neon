@@ -25,12 +25,6 @@ parameters:
 			path: ../../Classes/Core/Functional/Framework/Constraint/RequestSection/HasRecordConstraint.php
 
 		-
-			message: '#^Call to function property_exists\(\) with TYPO3\\CMS\\Core\\DataHandling\\DataHandler and ''copyTree'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../Classes/Core/Functional/Framework/DataHandling/Scenario/DataHandlerWriter.php
-
-		-
 			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
 			identifier: staticMethod.alreadyNarrowedType
 			count: 1
