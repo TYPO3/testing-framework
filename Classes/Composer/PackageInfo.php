@@ -110,9 +110,14 @@ final readonly class PackageInfo
     {
         $keys = array_keys($this->info['replace'] ?? []);
         if ($this->isMonoRepository()) {
-            // Monorepo root composer.json replaces core system extension. We do not want that happen, so
-            // ignore only replaced core extensions.
-            $keys = array_filter($keys, static fn($value) => !str_starts_with($value, 'typo3/cms-'));
+            // TYPO3 monorepo root package (composer.json) replaces `typo3/sysext/*` packages
+            // ending up with the root package composer information being used in composer
+            // `InstalledVersions` for the original package names. We need the correct package
+            // information and is the reason why we remove these replace package names to allow
+            // adding `typo3/sysext/*` packages in `ComposerPackageManager->processMonoRepository()`.
+            // Dropping is only made for extension package names starting with `typo3/cms-` or
+            // `typo3/theme-`.
+            $keys = array_filter($keys, static fn($value) => !(str_starts_with($value, 'typo3/cms-') || str_starts_with($value, 'typo3/theme-')));
         }
         return $keys;
     }
