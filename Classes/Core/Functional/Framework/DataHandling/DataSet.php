@@ -84,14 +84,14 @@ final readonly class DataSet
                     }
                 }
                 // Insert the row
-                $connection->insert($tableName, $element, $types);
+                $connection->insert($tableName, $element, $types, true);
             }
             Testbase::resetTableSequences($connection, $tableName);
         }
     }
 
     /**
-     * Main entry method: Get at absosulete (!) path to a .csv file, read it and return an instance of self
+     * Main entry method: Get at absolute (!) path to a .csv file, read it and return an instance of self
      */
     public static function read(string $fileName, bool $applyDefaultValues = false, bool $checkForDuplicates = false): self
     {
