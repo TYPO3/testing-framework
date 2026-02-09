@@ -54,7 +54,9 @@ abstract class BaseTestCase extends TestCase
         // Register a dummy error handler to retrieve *previous* one and unregister dummy again,
         // then verify previous is the phpunit error handler. This will mark the one test that
         // fails to unset/restore it's custom error handler as "risky".
-        $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {return false;});
+        $previousErrorHandler = set_error_handler(function (int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool {
+            return false;
+        });
         restore_error_handler();
         $phpUnitUseErrorHandler = $this->shouldErrorHandlerBeUsed();
         if (($phpUnitUseErrorHandler && !$previousErrorHandler instanceof ErrorHandler)
