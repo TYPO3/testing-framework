@@ -283,6 +283,16 @@ abstract class BackendEnvironment extends Extension
                 $localConfiguration['DB']['Connections']['Default']['charset'] = 'utf8mb4';
                 $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['charset'] = 'utf8mb4';
                 $localConfiguration['DB']['Connections']['Default']['defaultTableOptions']['collation'] = 'utf8mb4_unicode_ci';
+                // Ensure to run the DB connection in strict mode
+                $localConfiguration['DB']['Connections']['Default']['initCommands'] = 'SET SESSION sql_mode = \'' . implode(',', [
+                    'STRICT_ALL_TABLES',
+                    'ERROR_FOR_DIVISION_BY_ZERO',
+                    'NO_AUTO_VALUE_ON_ZERO',
+                    'NO_ENGINE_SUBSTITUTION',
+                    'NO_ZERO_DATE',
+                    'NO_ZERO_IN_DATE',
+                    'ONLY_FULL_GROUP_BY',
+                ]) . '\';';
             }
         } else {
             // sqlite dbs of all tests are stored in a dir parallel to instance roots. Allows defining this path as tmpfs.
@@ -301,8 +311,6 @@ abstract class BackendEnvironment extends Extension
         $localConfiguration['SYS']['errorHandlerErrors'] = E_ALL;
         $localConfiguration['SYS']['trustedHostsPattern'] = '.*';
         $localConfiguration['SYS']['encryptionKey'] = 'iAmInvalid';
-        // @todo: This sql_mode should be enabled as soon as styleguide and dataHandler can cope with it
-        //$localConfiguration['SYS']['setDBinit'] = 'SET SESSION sql_mode = \'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY\';';
         $localConfiguration['GFX']['processor'] = 'GraphicsMagick';
         $testbase->setUpLocalConfiguration($instancePath, $localConfiguration, $this->config['configurationToUseInTestInstance']);
         $frameworkExtensionPaths = [];
