@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class PrivateContainerWeakRefPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $privateServices = [];
         $definitions = $container->getDefinitions();

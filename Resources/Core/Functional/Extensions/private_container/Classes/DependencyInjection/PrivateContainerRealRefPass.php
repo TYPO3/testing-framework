@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class PrivateContainerRealRefPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         if (!$container->hasDefinition('typo3.testing-framework.private-container')) {
             return;
