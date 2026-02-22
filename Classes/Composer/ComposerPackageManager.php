@@ -101,7 +101,7 @@ final class ComposerPackageManager
      */
     public function getPackageInfo(string $name): ?PackageInfo
     {
-        return self::$packages[$this->resolvePackageName($name)] ?? null;
+        return self::$packages[$name] ?? self::$packages[$this->resolvePackageName($name)] ?? null;
     }
 
     /**
