@@ -655,7 +655,6 @@ final class ComposerPackageManager
             rtrim($this->rootPackage()->getVendorDir(), '/') . '/',
             rtrim($this->rootPackage()->getWebDir(), '/') . '/',
             rtrim($this->getRootPath(), '/') . '/',
-            basename($this->getRootPath()) . '/',
         ];
         foreach ($removePaths as $removePath) {
             if (str_starts_with($path, $removePath)) {
