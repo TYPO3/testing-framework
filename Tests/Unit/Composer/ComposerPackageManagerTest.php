@@ -197,6 +197,27 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertTrue($packageInfo->isSystemExtension());
     }
 
+    /**
+     * A composer package name whose vendor segment matches one of the path
+     * prefixes removed for classic mode notation must not be rewritten before
+     * looking it up. The fixture extension used here is named
+     * `testing-framework/extension-absolute`, and `testing-framework` is the
+     * project root folder name of a default checkout.
+     */
+    #[Test]
+    public function knownPackageNameIsNotModifiedBeforeLookup(): void
+    {
+        $subject = new ComposerPackageManager();
+        // Register the fixture extension, it is not required by the root composer.json.
+        $subject->getPackageInfoWithFallback(__DIR__ . '/Fixtures/Extensions/ext_absolute');
+
+        $packageInfo = $subject->getPackageInfo('testing-framework/extension-absolute');
+
+        self::assertInstanceOf(PackageInfo::class, $packageInfo);
+        self::assertSame('testing-framework/extension-absolute', $packageInfo->getName());
+        self::assertSame('absolute_real', $packageInfo->getExtensionKey());
+    }
+
     #[Test]
     public function extensionWithoutJsonCanBeResolvedByAbsolutePath(): void
     {
