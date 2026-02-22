@@ -471,6 +471,24 @@ final class ComposerPackageManagerTest extends UnitTestCase
         self::assertSame($expected, $resolved, sprintf('"%s" resolved to "%s"', $name, $expected));
     }
 
+    /**
+     * The project root folder name must not be removed as path prefix. It is a
+     * relative single segment prefix, and it therefore also matches the vendor
+     * segment of a composer package name, for example `typo3/cms-core` for a
+     * project checked out into a folder named `typo3`.
+     */
+    #[Test]
+    public function prepareResolvePackageNameKeepsProjectRootFolderNamePrefix(): void
+    {
+        $composerPackageManager = new ComposerPackageManager();
+        $name = basename($composerPackageManager->getRootPath()) . '/some-package';
+
+        $prepareResolvePackageNameReflectionMethod = new \ReflectionMethod($composerPackageManager, 'prepareResolvePackageName');
+        $resolved = $prepareResolvePackageNameReflectionMethod->invoke($composerPackageManager, $name);
+
+        self::assertSame($name, $resolved, sprintf('"%s" resolved to "%s"', $name, $resolved));
+    }
+
     public static function resolvePackageNameReturnsExpectedPackageNameDataProvider(): \Generator
     {
         yield 'Composer package name returns unchanged (not checked for existence)' => [
