@@ -17,6 +17,17 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Types\BooleanType;
+use Doctrine\DBAL\Types\DateTimeImmutableType;
+use Doctrine\DBAL\Types\DateTimeType;
+use Doctrine\DBAL\Types\DateType;
+use Doctrine\DBAL\Types\EnumType;
+use Doctrine\DBAL\Types\JsonType;
+use Doctrine\DBAL\Types\StringType;
+use Doctrine\DBAL\Types\TextType;
+use Doctrine\DBAL\Types\TimeImmutableType;
+use Doctrine\DBAL\Types\TimeType;
+use Doctrine\DBAL\Types\Type;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -29,6 +40,10 @@ use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Schema\Types\DateTimeType as Typo3DateTimeType;
+use TYPO3\CMS\Core\Database\Schema\Types\DateType as Typo3DateType;
+use TYPO3\CMS\Core\Database\Schema\Types\SetType as Typo3SetType;
+use TYPO3\CMS\Core\Database\Schema\Types\TimeType as Typo3TimeType;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
@@ -715,8 +730,133 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         }
 
         if (!empty($failMessages)) {
+            if ((bool)((int)getenv('TYPO3_TESTING_EXPORT_DATASETS_ON_FAILED_ASSERTION'))) {
+                $exportTables = [];
+                foreach ($dataSet->getTableNames() as $tableName) {
+                    $exportTables[$tableName] = $dataSet->getFields($tableName) ?? [];
+                }
+                $exportPath = preg_replace('/\.csv$/', '_actual.csv', $fileName);
+                $this->exportCSVDataSet($exportPath, $exportTables);
+                $failMessages[] = 'Actual database state exported to: ' . $exportPath;
+            }
             self::fail(implode(LF, $failMessages));
         }
+    }
+
+    /**
+     * Export current database state of given tables to a CSV file.
+     *
+     * The output format matches the CSV fixture format used by importCSVDataSet()
+     * and assertCSVDataSet(), so exported files can be used directly as test fixtures.
+     *
+     * @param string $path Absolute path for the output CSV file
+     * @param array $tables Tables to export. Supports two styles:
+     *        - Simple list: ['pages', 'tt_content'] exports all columns
+     *        - With field spec: ['pages' => ['uid', 'pid', 'title']] exports only listed columns
+     *        - Mixed: both styles in one array
+     */
+    protected function exportCSVDataSet(string $path, array $tables): void
+    {
+        $targetDirectory = dirname($path);
+        if (!is_dir($targetDirectory)) {
+            throw new \RuntimeException(
+                'Target directory "' . $targetDirectory . '" does not exist.',
+                1732006381
+            );
+        }
+
+        // Normalize $tables into ['tableName' => ['field1', ...] | []] structure
+        $normalizedTables = [];
+        foreach ($tables as $key => $value) {
+            if (is_int($key)) {
+                // Simple list style: ['pages', 'tt_content']
+                $normalizedTables[$value] = [];
+            } else {
+                // With field spec: ['pages' => ['uid', 'pid', 'title']]
+                $normalizedTables[$key] = $value;
+            }
+        }
+
+        $output = '';
+        $firstTable = true;
+        foreach ($normalizedTables as $tableName => $fields) {
+            $connection = $this->getConnectionPool()->getConnectionForTable($tableName);
+            $tableColumns = [];
+            foreach ($connection->createSchemaManager()->listTableColumns($tableName) as $column) {
+                $tableColumns[$column->getName()] = $column;
+            }
+            $queryBuilder = $connection->createQueryBuilder();
+            $queryBuilder->getRestrictions()->removeAll();
+            $statement = $queryBuilder->select('*')->from($tableName)->executeQuery();
+            $records = $statement->fetchAllAssociative();
+
+            // Determine fields to export
+            if ($fields === []) {
+                if ($records !== []) {
+                    $fields = array_keys($records[0]);
+                } else {
+                    // Empty table with no field spec: use schema introspection
+                    $fields = array_keys($tableColumns);
+                }
+            }
+
+            // Sort records by uid if available, otherwise by hash
+            if (in_array('uid', $fields, true)) {
+                usort($records, static fn(array $a, array $b) => $a['uid'] <=> $b['uid']);
+            } elseif (in_array('hash', $fields, true)) {
+                usort($records, static fn(array $a, array $b) => $a['hash'] <=> $b['hash']);
+            }
+
+            if (!$firstTable) {
+                $output .= LF;
+            }
+            $firstTable = false;
+
+            // Table name line with trailing commas
+            $output .= '"' . $tableName . '",' . LF;
+            // Field names line with leading comma
+            $output .= ',' . implode(',', $fields) . LF;
+            // Data rows
+            foreach ($records as $record) {
+                $values = [];
+                foreach ($fields as $field) {
+                    $values[] = $this->formatCsvValue($record[$field] ?? null, ($tableColumns[$field] ?? null)?->getType());
+                }
+                $output .= ',' . implode(',', $values) . LF;
+            }
+        }
+
+        file_put_contents($path, $output);
+    }
+
+    /**
+     * Format a single value for CSV export.
+     *
+     * Handles NULL values, quoting of special characters, and plain string casting.
+     */
+    protected function formatCsvValue(mixed $value, ?Type $columnDoctrineType = null): string
+    {
+        return match (true) {
+            // Simply escape NULL value
+            $value === null => '\\NULL',
+            // TYPO3 custom types
+            $columnDoctrineType instanceof Typo3DateTimeType,
+            $columnDoctrineType instanceof Typo3DateType,
+            $columnDoctrineType instanceof Typo3TimeType,
+            $columnDoctrineType instanceof Typo3SetType,
+            // Native Doctrine DBAL types
+            $columnDoctrineType instanceof EnumType,
+            $columnDoctrineType instanceof StringType,
+            $columnDoctrineType instanceof TextType,
+            $columnDoctrineType instanceof JsonType,
+            $columnDoctrineType instanceof DateTimeType,
+            $columnDoctrineType instanceof DateTimeImmutableType,
+            $columnDoctrineType instanceof DateType,
+            $columnDoctrineType instanceof TimeType,
+            $columnDoctrineType instanceof TimeImmutableType => '"' . str_replace('"', '""', (string)$value) . '"',
+            $columnDoctrineType instanceof BooleanType => (string)(int)($value),
+            default => (string)$value,
+        };
     }
 
     /**
