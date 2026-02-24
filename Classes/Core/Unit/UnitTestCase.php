@@ -136,6 +136,18 @@ abstract class UnitTestCase extends BaseTestCase
             }
         }
 
+        // Unit tests may set GeneralUtility::setContainer() with a container instance containing mocked services,
+        // returning test specific results. Following tests may not expect that specific outcome and thus fail when
+        // executed in another order (for example using randomized unit tests). Not having a suitable API to reset
+        // container instance to null we are using reflection API to reset that property in each teardown to ensure
+        // clean state for following tests.
+        $containerPropertyReflection = new \ReflectionProperty(GeneralUtility::class, 'container');
+        if ($containerPropertyReflection->getValue(null) !== null) {
+            // Reset container instances set with `GeneralUtility::setContainer()`.
+            $containerPropertyReflection->setValue(null, null);
+            // @todo Should we fail the test recommending to transform the test to an functional test ?
+        }
+
         // Delete registered test files and directories
         foreach ($this->testFilesToDelete as $absoluteFileName) {
             $absoluteFileName = GeneralUtility::fixWindowsFilePath(PathUtility::getCanonicalPath($absoluteFileName));
