@@ -40,7 +40,7 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
         /** @var InternalRequestContext $internalRequestContext */
         $internalRequestContext = $request->getAttribute('typo3.testing.context');
         $backendUserId = $internalRequestContext->getBackendUserId();
-        $workspaceId = $internalRequestContext->getWorkspaceId();
+        $workspaceId = $internalRequestContext->getWorkspaceId() ?? 0;
 
         if ((int)$backendUserId === 0) {
             // Skip if $backendUserId is invalid, typically null or 0
@@ -55,10 +55,10 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
             // Init backend user if found in database
             $backendUser = GeneralUtility::makeInstance(FrontendBackendUserAuthentication::class);
             $backendUser->user = $row;
-            if ($workspaceId !== null) {
-                // Force backend user into given workspace, can be 0, too.
-                $backendUser->setTemporaryWorkspace($workspaceId);
-            }
+            $backendUser->uc = isset($row['uc']) ? unserialize($row['uc']) : [];
+            $backendUser->initializeUserSessionManager();
+            $backendUser->fetchGroupData();
+            $backendUser->setTemporaryWorkspace($workspaceId);
             $GLOBALS['BE_USER'] = $backendUser;
             $this->setBackendUserAspect(GeneralUtility::makeInstance(Context::class), $backendUser);
         }
