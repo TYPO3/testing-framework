@@ -4,6 +4,15 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
 
 jobs:
 
@@ -15,10 +24,10 @@ jobs:
         php: [ '8.2', '8.3', '8.4', '8.5' ]
     steps:
 
-      - name: Checkout ${{ github.event_name == 'workflow_dispatch' && github.head_ref || '' }}
+      - name: Checkout ${{ inputs.ref || '' }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.head_ref || '' }}
+          ref: ${{ inputs.ref || '' }}
 
       - name: Composer install
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerUpdate
