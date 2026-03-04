@@ -9,3 +9,5 @@ jobs:
     nightly-main:
         name: "dispatch-nightly-main"
         uses: ./.github/workflows/ci.yml
+        with:
+            ref: 'main'
