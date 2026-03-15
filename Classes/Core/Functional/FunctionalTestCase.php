@@ -284,8 +284,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             self::markTestSkipped('Functional tests must be called through phpunit on CLI');
         }
 
-        $this->identifier = self::getInstanceIdentifier();
-        $this->instancePath = self::getInstancePath();
+        $this->identifier = static::getInstanceIdentifier();
+        $this->instancePath = static::getInstancePath();
         putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
         putenv('TYPO3_PATH_APP=' . $this->instancePath);
 
@@ -1098,8 +1098,9 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
-     * Uses a 7 char long hash of class name as identifier.
+     * Create a 7 char long hash of class name as identifier.
      *
+     * @internal
      * @return non-empty-string
      */
     protected static function getInstanceIdentifier(): string
@@ -1108,11 +1109,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
+     * @internal Extensions functional tests should usually not fiddle with this. This may break anytime.
+     *           Checking instance paths within tests is a use case extensions should face seldomly. There
+     *           are usually ways to avoid it.
      * @return non-empty-string
      */
     protected static function getInstancePath(): string
     {
-        $identifier = self::getInstanceIdentifier();
+        $identifier = static::getInstanceIdentifier();
         return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
     }
 }
