@@ -2,6 +2,7 @@
     "name": "typo3/testing-private-container",
     "type": "typo3-cms-extension",
     "description": "Providing testing framework extension for functional testing.",
+    "version": "1.0.0",
     "keywords": [
         "typo3",
         "testing",
@@ -36,7 +37,10 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "private_container"
+            "extension-key": "private_container",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     }
 }

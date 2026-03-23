@@ -2,6 +2,7 @@
     "name": "typo3/testing-json-response",
     "type": "typo3-cms-extension",
     "description": "Providing testing framework extension for functional testing.",
+    "version": "1.0.0",
     "keywords": [
         "typo3",
         "testing",
@@ -36,7 +37,10 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "json_response"
+            "extension-key": "json_response",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     }
 }
