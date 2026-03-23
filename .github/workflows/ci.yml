@@ -9,14 +9,14 @@ jobs:
 
   testsuite:
     name: all tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         php: [ '8.2', '8.3', '8.4', '8.5' ]
     steps:
 
       - name: Checkout ${{ github.event_name == 'workflow_dispatch' && github.head_ref || '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.head_ref || '' }}
 
