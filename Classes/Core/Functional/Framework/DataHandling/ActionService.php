@@ -72,6 +72,7 @@ class ActionService
         $currentUid = null;
         $previousTableName = null;
         $previousUid = null;
+        $hasPrevious = false;
         foreach ($tableRecordData as $tableName => $recordData) {
             $recordData = $this->resolvePreviousUid($recordData, $currentUid);
             if (!isset($recordData['pid'])) {
@@ -80,7 +81,7 @@ class ActionService
             $currentUid = $this->getUniqueIdForNewRecords();
             $newTableIds[$tableName][] = $currentUid;
             $dataMap[$tableName][$currentUid] = $recordData;
-            if ($previousTableName !== null && $previousUid !== null) {
+            if ($hasPrevious) {
                 $dataMap[$previousTableName][$previousUid] = $this->resolveNextUid(
                     $dataMap[$previousTableName][$previousUid],
                     $currentUid
@@ -88,6 +89,7 @@ class ActionService
             }
             $previousTableName = $tableName;
             $previousUid = $currentUid;
+            $hasPrevious = true;
         }
         $this->createDataHandler();
         $this->dataHandler->start($dataMap, []);
