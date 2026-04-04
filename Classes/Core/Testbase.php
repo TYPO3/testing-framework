@@ -27,11 +27,13 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
+use TYPO3\CMS\Core\Package\Cache\PackageStatesPackageCache;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -598,6 +600,8 @@ class Testbase
         array $testExtensionPaths,
         array $frameworkExtensionPaths
     ): void {
+        @mkdir($instancePath . '/typo3conf', 0775, true);
+        $packagesStateFile = $instancePath . '/typo3conf/PackageStates.php';
         $packageStates = [
             'packages' => [],
             'version' => 5,
@@ -643,10 +647,12 @@ class Testbase
             ];
         }
 
+        $coreCache = Bootstrap::createCache('core');
+        $packageCache = new PackageStatesPackageCache($packagesStateFile, $coreCache);
         $dependencyOrderingService = new DependencyOrderingService();
         $packageManager = new PackageManager(
             $dependencyOrderingService,
-            $instancePath . '/typo3conf/PackageStates.php',
+            $packagesStateFile,
             $instancePath
         );
         // PackageManager is required to create a Package instance...
@@ -662,7 +668,7 @@ class Testbase
         );
 
         $result = file_put_contents(
-            $instancePath . '/typo3conf/PackageStates.php',
+            $packagesStateFile,
             '<?php' . chr(10) .
             'return ' .
             ArrayUtility::arrayExport(

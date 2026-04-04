@@ -18,6 +18,7 @@ namespace TYPO3\TestingFramework\Composer;
  */
 
 use Composer\InstalledVersions;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 /**
@@ -166,9 +167,17 @@ final class ComposerPackageManager
         $packageRealPath = $this->realPath($packagePath);
         $info = $this->getPackageComposerJson($packagePath);
         $packageType = $info['type'] ?? '';
-        $extEmConf = $this->getExtEmConf($packagePath);
+        $extEmConf = null;
+        if ((new Typo3Version())->getMajorVersion() >= 14) {
+            if (isset($info['extra']['typo3/cms']['Package']['providesPackages'])) {
+                $extEmConf = null;
+            } else {
+                $extEmConf = $this->getExtEmConf($packagePath);
+            }
+        } else {
+            $extEmConf = $this->getExtEmConf($packagePath);
+        }
         $extensionKey = $this->determineExtensionKey($packagePath, $info, $extEmConf);
-
         $packageInfo = new PackageInfo(
             $packageName,
             $packageType,
@@ -253,6 +262,12 @@ final class ComposerPackageManager
         }
         $info = $this->getPackageComposerJson($path);
         $extEmConf = $this->getExtEmConf($path);
+        // Remove ext_emconf for TYPO3 v14
+        if ((new Typo3Version())->getMajorVersion() >= 14
+            && isset($info['extra']['typo3/cms']['Package']['providesPackages'])
+        ) {
+            $extEmConf = null;
+        }
         $extensionKey = $this->determineExtensionKey($path, $info, $extEmConf);
         $packageName = $info['name'] ?? $this->normalizePackageName($extensionKey);
         $packageType = $info['type'] ?? ($extEmConf !== null ? 'typo3-cms-extension' : '');
@@ -262,13 +277,20 @@ final class ComposerPackageManager
         if ($packageInfo = $this->getPackageInfo($extensionKey)) {
             return $packageInfo;
         }
+        $version = $info['version'] ?? $extEmConf['version'] ?? null;
+        // System extensions in TYPO3 mono-repository are exactly the same version as the root package. Use it.
+        $version ??= ($this->rootPackage()->isMonoRepository()) ? $this->rootPackage()->getVersion() : null;
+        // If root package is a typo3 extension use the root package version assuming that we handle a fixture ext
+        $version ??= ($this->rootPackage()->isExtension()) ? $this->rootPackage()->getVersion() : null;
+        // Use root package version, falling back to COMPOSER_ROOT_VERSION and hard coded `1.0.0` as last fallback
+        $version ??= $this->rootPackage()->getVersion() ?: getenv('COMPOSER_ROOT_VERSION') ?: '1.0.0';
         $packageInfo = new PackageInfo(
             $packageName,
             $packageType,
             $path,
             $this->realPath($path),
             // System extensions in mono-repository are exactly the same version as the root package. Use it.
-            $this->rootPackage()->getVersion(),
+            $version,
             $extensionKey,
             $info,
             $extEmConf,
@@ -297,7 +319,14 @@ final class ComposerPackageManager
             $packageName = $info['name'] ?? '';
             $packageType = $info['type'] ?? '';
             $extEmConf = $this->getExtEmConf($packageRealPath);
+            // Remove ext_emconf for TYPO3 v14
+            if ((new Typo3Version())->getMajorVersion() >= 14
+                && isset($info['extra']['typo3/cms']['Package']['providesPackages'])
+            ) {
+                $extEmConf = null;
+            }
             $extensionKey = $this->determineExtensionKey($packageRealPath, $info, $extEmConf);
+            $version = null;
             $packageInfo = new PackageInfo(
                 $packageName,
                 $packageType,
@@ -332,7 +361,14 @@ final class ComposerPackageManager
                 $packagePath = $this->getPackageInstallPath($packageName);
                 $packageRealPath = $this->realPath($packagePath);
                 $info = $this->getPackageComposerJson($packagePath);
-                $extEmConf = $this->getExtEmConf($packagePath);
+                $extEmConf = null;
+                if ((new Typo3Version())->getMajorVersion() >= 14) {
+                    if (!isset($info['extra']['typo3/cms']['Package']['providesPackages'])) {
+                        $extEmConf = $this->getExtEmConf($packagePath);
+                    }
+                } else {
+                    $extEmConf = $this->getExtEmConf($packagePath);
+                }
                 $packageType = $info['type'] ?? '';
                 $extensionKey = $this->determineExtensionKey($packagePath, $info, $extEmConf);
                 $this->addPackageInfo(new PackageInfo(
@@ -340,7 +376,7 @@ final class ComposerPackageManager
                     $packageType,
                     $packagePath,
                     $packageRealPath,
-                    (string)($version['pretty_version'] ?? $this->prettifyVersion($extEmConf['version'] ?? '')),
+                    (string)($version['pretty_version'] ?? $this->prettifyVersion($extEmConf['version'] ?? '1.0.0')),
                     $extensionKey,
                     $info,
                     $extEmConf

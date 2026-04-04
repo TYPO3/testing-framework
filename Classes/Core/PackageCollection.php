@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Core;
 
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Package\MetaData;
 use TYPO3\CMS\Core\Package\MetaData\PackageConstraint;
 use TYPO3\CMS\Core\Package\Package;
@@ -89,7 +90,26 @@ class PackageCollection
             $packagePath = PathUtility::sanitizeTrailingSeparator(
                 rtrim($basePath, '/') . '/' . $packageStateConfiguration['packagePath']
             );
-            $packages[] = $package = new Package($packageManager, $packageKey, $packagePath);
+            $info = $composerPackageManager->getPackageInfo($packageKey);
+            if ((new Typo3Version())->getMajorVersion() >= 14) {
+                $packages[] = $package = new Package(
+                    $packageManager,
+                    $packageKey,
+                    $packagePath,
+                    // Load package as it is in classic mode
+                    false,
+                    // Emulate to have a version in `composer.json` to mitigate depreation, but throw
+                    // it in case it's not there and `ext_emconf.php` will be loaded.
+                    $info?->getVersion() ?: null,
+                );
+            } else {
+                // @todo Remove when TYPO3 v13 support is dropped.
+                $packages[] = $package = new Package(
+                    $packageManager,
+                    $packageKey,
+                    $packagePath,
+                );
+            }
             $packageManager->registerPackage($package);
         }
 
