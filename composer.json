@@ -30,11 +30,11 @@
     "guzzlehttp/psr7": "^2.5.0",
     "phpunit/phpunit": "^11.2.5 || ^12.1.2 || ^13.0.2",
     "psr/container": "^2.0",
-    "typo3/cms-backend": "13.*.*@dev || 14.*.*@dev",
-    "typo3/cms-core": "13.*.*@dev || 14.*.*@dev",
-    "typo3/cms-extbase": "13.*.*@dev || 14.*.*@dev",
-    "typo3/cms-fluid": "13.*.*@dev || 14.*.*@dev",
-    "typo3/cms-frontend": "13.*.*@dev || 14.*.*@dev"
+    "typo3/cms-backend": "13.*.*@dev || 14.*.*@dev || 15.*.*@dev",
+    "typo3/cms-core": "13.*.*@dev || 14.*.*@dev || 15.*.*@dev",
+    "typo3/cms-extbase": "13.*.*@dev || 14.*.*@dev || 15.*.*@dev",
+    "typo3/cms-fluid": "13.*.*@dev || 14.*.*@dev || 15.*.*@dev",
+    "typo3/cms-frontend": "13.*.*@dev || 14.*.*@dev || 15.*.*@dev"
   },
   "config": {
     "vendor-dir": ".Build/vendor",
