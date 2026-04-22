@@ -1,0 +1,24 @@
+---
+name: "nightly-9"
+on:
+    schedule:
+        - cron: '42 5 * * *'
+    workflow_dispatch:
+
+jobs:
+    nightly-main:
+        name: "dispatch-nightly-9"
+        runs-on: ubuntu-24.04
+        permissions:
+            actions: write
+        steps:
+            - name: Checkout '9'
+              uses: actions/checkout@v6
+              with:
+                  ref: '9'
+
+            - name: Execute 'ci.yml' on '9'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  gh workflow run ci.yml --ref 9
