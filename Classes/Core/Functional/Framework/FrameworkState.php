@@ -53,10 +53,12 @@ class FrameworkState
         $state['globals-tca'] = $GLOBALS['TCA'];
         $state['request'] = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
-        // Can be dropped when GeneralUtility::getIndpEnv() is abandoned
-        $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
-        $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $state['generalUtilityIndpEnvCache'] = $generalUtilityIndpEnvCache->getValue();
+        // @todo: Remove when v14 compat is dropped, the property no longer exists in v15.
+        if (property_exists(GeneralUtility::class, 'indpEnvCache')) {
+            $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
+            $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
+            $state['generalUtilityIndpEnvCache'] = $generalUtilityIndpEnvCache->getValue();
+        }
 
         $state['generalUtilitySingletonInstances'] = GeneralUtility::getSingletonInstances();
 
@@ -71,9 +73,12 @@ class FrameworkState
         unset($GLOBALS['BE_USER']);
         unset($GLOBALS['TYPO3_REQUEST']);
 
-        $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
-        $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setValue(null, []);
+        // @todo: Remove when v14 compat is dropped, the property no longer exists in v15.
+        if (property_exists(GeneralUtility::class, 'indpEnvCache')) {
+            $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
+            $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
+            $generalUtilityIndpEnvCache->setValue(null, []);
+        }
 
         GeneralUtility::resetSingletonInstances([]);
     }
@@ -96,9 +101,12 @@ class FrameworkState
         $GLOBALS['TCA'] = $state['globals-tca'];
         $GLOBALS['TYPO3_REQUEST'] = $state['request'];
 
-        $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
-        $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
-        $generalUtilityIndpEnvCache->setValue(null, $state['generalUtilityIndpEnvCache']);
+        // @todo: Remove when v14 compat is dropped, the property no longer exists in v15.
+        if (array_key_exists('generalUtilityIndpEnvCache', $state)) {
+            $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
+            $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
+            $generalUtilityIndpEnvCache->setValue(null, $state['generalUtilityIndpEnvCache']);
+        }
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
     }
