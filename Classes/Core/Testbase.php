@@ -880,7 +880,9 @@ class Testbase
      */
     public function loadExtensionTables(): void
     {
-        Bootstrap::loadExtTables();
+        if (method_exists(Bootstrap::class, 'loadExtTables')) {
+            Bootstrap::loadExtTables();
+        }
     }
 
     /**

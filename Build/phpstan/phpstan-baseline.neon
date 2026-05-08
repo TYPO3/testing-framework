@@ -35,3 +35,9 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: ../../Classes/Core/Functional/FunctionalTestCase.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''TYPO3\\\\CMS\\\\Core\\\\Core\\\\Bootstrap'' and ''loadExtTables'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../Classes/Core/Testbase.php
