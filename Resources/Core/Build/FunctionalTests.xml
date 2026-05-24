@@ -42,5 +42,13 @@
     <php>
         <ini name="display_errors" value="1"/>
         <env name="TYPO3_CONTEXT" value="Testing"/>
+        <!--
+            Comment following line out to export actual database dataset for failed assertions
+            in functional tests OR set it as environment variable. Do not use provide it here
+            if you need to control this from the outside.
+
+            Default: 0 (false)
+        -->
+        <!-- <env name="TYPO3_TESTING_EXPORT_DATASETS_ON_FAILED_ASSERTION" value="1"/> -->
     </php>
 </phpunit>
