@@ -25,7 +25,7 @@ use TYPO3\TestingFramework\Core\Testbase;
 /**
  * Internal worker class managing .csv fixture file contents.
  *
- * This is used in functional and acceptance tests to load .csv fixture files
+ * This is used in functional tests to load .csv fixture files
  * into database and to assert current database state with .csv fixture files.
  *
  * A .csv file can include table rows from multiple tables.
@@ -45,7 +45,7 @@ use TYPO3\TestingFramework\Core\Testbase;
  * ,1,1,512,0,0,0,0,0,0,0,0,"Regular Element #2"
  *
  * @internal Directly using this class is discouraged, it may change any time.
- *           Use API methods like importCSVDataSet() (in functional & acceptance tests)
+ *           Use API methods like importCSVDataSet() (in functional tests)
  *           and assertCSVDataSet() (in functional tests) instead.
  */
 final readonly class DataSet
@@ -61,7 +61,7 @@ final readonly class DataSet
      * Read a file and import it.
      *
      * @param string $path Absolute path to the CSV file containing the data set to load
-     * @internal API is exposed using importCSVDataSet() in FunctionalTestCase and BackendEnvironment acceptance test base class.
+     * @internal API is exposed using importCSVDataSet() in FunctionalTestCase test base class.
      */
     public static function import(string $path): void
     {

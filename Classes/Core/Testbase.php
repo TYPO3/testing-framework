@@ -40,13 +40,12 @@ use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 use TYPO3\TestingFramework\Composer\PackageInfo;
 
 /**
- * This is a helper class used by unit, functional and acceptance test
- * environment builders.
+ * This is a helper class used by unit and functional test environment builders.
  * It contains methods to create test environments.
  *
  * This class is for internal use only and may change wihtout further notice.
  *
- * Use the classes `UnitTestCase`, `FunctionalTestCase` or `AcceptanceCoreEnvironment`
+ * Use the classes `UnitTestCase`, `FunctionalTestCase`
  * to indirectly benefit from this class in own extensions.
  */
 class Testbase
@@ -81,7 +80,7 @@ class Testbase
 
     /**
      * Defines the constant ORIGINAL_ROOT for the path to the original TYPO3 document root.
-     * For functional / acceptance tests only
+     * For functional tests only
      * If ORIGINAL_ROOT already is defined, this method is a no-op.
      */
     public function defineOriginalRootPath(): void
@@ -182,7 +181,7 @@ class Testbase
 
     /**
      * Link TYPO3 CMS core from "parent" instance.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param string[] $defaultCoreExtensionsToLoad Default core extensions to load (extension-key or package name)
@@ -200,6 +199,7 @@ class Testbase
         $linksToSet = [];
         $coreExtensions = array_unique(array_merge($defaultCoreExtensionsToLoad, $coreExtensionsToLoad));
         // Fallback to all system extensions needed for TYPO3 acceptanceInstall tests.
+        // @todo: Still needed?
         if ($coreExtensions === []) {
             $coreExtensions = $this->composerPackageManager->getSystemExtensionExtensionKeys();
         }
@@ -226,6 +226,7 @@ class Testbase
         // We can't just link the entry scripts here, because acceptance tests will make use of them
         // and we need Composer Mode to be turned off, thus they need to be rewritten to use the SystemEnvironmentBuilder
         // of the testing framework.
+        // @todo: What is still needed here?
         $installPhpExists = file_exists($instancePath . '/typo3/sysext/install/Resources/Private/Php/install.php');
         $entryPointsToSet = [
             [
@@ -311,7 +312,7 @@ class Testbase
 
     /**
      * Link test extensions to the typo3conf/ext folder of the instance.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
@@ -358,7 +359,7 @@ class Testbase
 
     /**
      * Link framework extensions to the typo3conf/ext folder of the instance.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param non-empty-string[] $extensionPaths Contains paths to extensions relative to document root
@@ -389,7 +390,7 @@ class Testbase
     /**
      * Link paths inside the test instance, e.g. from a fixture fileadmin subfolder to the
      * test instance fileadmin folder.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param array<string, non-empty-string> $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
@@ -422,7 +423,7 @@ class Testbase
      * be used in case the references paths shall be modified inside the
      * testing instance which might not be possible with symbolic links.
      *
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath
      * @param array<string, non-empty-string> $pathsToProvideInTestInstance
@@ -459,7 +460,7 @@ class Testbase
     }
 
     /**
-     * Database settings for functional and acceptance tests can be either set by
+     * Database settings for functional tests can be either set by
      * environment variables (recommended). The method fetches these.
      *
      * A unique name will be added to the database name later.
@@ -467,6 +468,7 @@ class Testbase
      * @param array $config Incoming config arguments, used especially in acceptance test setups
      * @throws Exception
      * @return array [DB][host], [DB][username], ...
+     * @todo Is the $config argument still needed with codeception based tests being gone?
      */
     public function getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration(array $config = []): array
     {
@@ -549,7 +551,7 @@ class Testbase
 
     /**
      * Create settings.php file of the test instance.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param array $configuration Base configuration array
@@ -582,7 +584,7 @@ class Testbase
      * Compile typo3conf/PackageStates.php or var/build/PackageArtifact.php
      * containing default packages like core, a test specific list of additional core extensions,
      * and a list of test extensions.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      * @param non-empty-string[] $defaultCoreExtensionsToLoad Default list of core extensions to load
@@ -737,7 +739,7 @@ class Testbase
 
     /**
      * Bootstrap basic TYPO3. This bootstraps TYPO3 far enough to initialize database afterwards.
-     * For functional and acceptance tests.
+     * For functional tests.
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      */
@@ -876,7 +878,7 @@ class Testbase
 
     /**
      * Load ext_tables.php files.
-     * For functional and acceptance tests.
+     * For functional tests.
      */
     public function loadExtensionTables(): void
     {
@@ -887,7 +889,7 @@ class Testbase
 
     /**
      * Create tables and import static rows.
-     * For functional and acceptance tests.
+     * For functional tests.
      */
     public function createDatabaseStructure(ContainerInterface $container): void
     {
@@ -993,7 +995,7 @@ class Testbase
 
     /**
      * Returns the absolute path the TYPO3 document root with trailing slash.
-     * This is the "original" document root, not the "instance" root for functional / acceptance tests.
+     * This is the "original" document root, not the "instance" root for functional tests.
      *
      * @return string the TYPO3 document root using Unix path separators
      */

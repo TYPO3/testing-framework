@@ -1,6 +1,6 @@
 {
   "name": "typo3/testing-framework",
-  "description": "The TYPO3 testing framework provides base classes for unit, functional and acceptance testing.",
+  "description": "The TYPO3 testing framework provides base classes for unit and functional testing.",
   "keywords": [
     "typo3",
     "testing",
