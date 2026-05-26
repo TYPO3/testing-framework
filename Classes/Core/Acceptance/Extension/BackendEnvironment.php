@@ -32,6 +32,10 @@ use TYPO3\TestingFramework\Core\Testbase;
  * typo3temp. Own acceptance test suites should extend from this class
  * and change the properties. This can be used to not copy the whole
  * bootstrapTypo3Environment() method but reuse it instead.
+ *
+ * @deprecated: TYPO3 core v14 and v15 switched from codeception to playwright.
+ *              The testing-framework codeception related scaffolding files and
+ *              helpers will be removed with testing-framework v10.
  */
 abstract class BackendEnvironment extends Extension
 {
