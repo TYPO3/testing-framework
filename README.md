@@ -21,7 +21,9 @@ Usage examples within core and for extensions can be found in
 
 ## Tags and branches
 
-* Branch main is used by core v13 and v14, tagged as 9.x.x. Extensions can use this to
+* Branch main is used by core v15, tagged as 10.x.x. Extensions can use this to
+  run tests with core v14 and v15. Supports PHP ^8.2.
+* Branch 9 is used by core v13 and v14, tagged as 9.x.x. Extensions can use this to
   run tests with core v13 and v14. Supports PHP ^8.2.
 * Branch 8 is used by core v12 and tagged as 8.x.x. Extensions can use this to
   run tests with core v12 and prepare for v13 compatibility. Supports PHP ^8.1.
