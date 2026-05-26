@@ -21,6 +21,10 @@ use Facebook\WebDriver\Remote\RemoteWebElement;
 
 /**
  * Helper class to interact with the page tree
+ *
+ * @deprecated: TYPO3 core v14 and v15 switched from codeception to playwright.
+ *              The testing-framework codeception related scaffolding files and
+ *              helpers will be removed with testing-framework v10.
  */
 abstract class AbstractPageTree
 {
