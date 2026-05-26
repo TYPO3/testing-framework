@@ -78,12 +78,6 @@ To provide a change to the testing framework, you have to
 
          ./Build/Scripts/runTests.sh -s functional
 
-   *  TYPO3 Core acceptance tests (slow ~ 30-60 minutes):
-
-      .. code-block:: bash
-
-         ./Build/Scripts/runTests.sh -s acceptance
-
    and confirming that the test runs have the same result as without the
    changes,
 

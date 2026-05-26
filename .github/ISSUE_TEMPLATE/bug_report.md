@@ -54,6 +54,3 @@ Add more context to the problem here.
 - PHP version:
 - Web server used + version:
 - Operating system:
-- Selenium server version: <!-- Only relevant if this report is about acceptance tests -->
-- Browser driver (chromedriver/geckodriver...) version: <!-- Only relevant if this report is about acceptance tests -->
-- Browser used + version: <!-- Only relevant if this report is about acceptance tests -->

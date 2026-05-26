@@ -256,16 +256,6 @@ echo "##########################################################################
 echo "Result of ${TEST_SUITE}" >&2
 echo "Container runtime: ${CONTAINER_BIN}" >&2
 echo "PHP: ${PHP_VERSION}" >&2
-if [[ ${TEST_SUITE} =~ ^(functional|functionalDeprecated|acceptance|acceptanceInstall)$ ]]; then
-    case "${DBMS}" in
-        mariadb|mysql|postgres)
-            echo "DBMS: ${DBMS}  version ${DBMS_VERSION}  driver ${DATABASE_DRIVER}" >&2
-            ;;
-        sqlite)
-            echo "DBMS: ${DBMS}" >&2
-            ;;
-    esac
-fi
 if [[ -n ${EXTRA_TEST_OPTIONS} ]]; then
     echo " Note: Using -e is deprecated. Simply add the options at the end of the command."
     echo " Instead of: Build/Scripts/runTests.sh -s ${TEST_SUITE} -e '${EXTRA_TEST_OPTIONS}' $@"
