@@ -392,7 +392,7 @@ final class ComposerPackageManager
             return null;
         }
         try {
-            return json_decode((string)file_get_contents($composerFile), true, JSON_THROW_ON_ERROR);
+            return json_decode((string)file_get_contents($composerFile), true, 512, JSON_THROW_ON_ERROR);
         } catch (\Throwable) {
             // skipped
         }
