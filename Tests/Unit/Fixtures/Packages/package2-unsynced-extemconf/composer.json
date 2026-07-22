@@ -12,7 +12,11 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "extension2_unsynced_extemconf"
+            "extension-key": "extension2_unsynced_extemconf",
+            "version": "1.0.0",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     }
 }

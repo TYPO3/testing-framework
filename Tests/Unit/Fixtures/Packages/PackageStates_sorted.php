@@ -23,14 +23,14 @@ return [
         'package1' => [
             'packagePath' => 'Tests/Unit/Fixtures/Packages/package1/',
         ],
-        'extension_unsynced_extemconf' => [
-            'packagePath' => 'Tests/Unit/Fixtures/Packages/package-unsynced-extemconf/',
+        'extension2_unsynced_extemconf' => [
+            'packagePath' => 'Tests/Unit/Fixtures/Packages/package2-unsynced-extemconf/',
         ],
         'extension_with_extemconf' => [
             'packagePath' => 'Tests/Unit/Fixtures/Packages/package-with-extemconf/',
         ],
-        'extension2_unsynced_extemconf' => [
-            'packagePath' => 'Tests/Unit/Fixtures/Packages/package2-unsynced-extemconf/',
+        'extension_unsynced_extemconf' => [
+            'packagePath' => 'Tests/Unit/Fixtures/Packages/package-unsynced-extemconf/',
         ],
         'package2' => [
             'packagePath' => 'Tests/Unit/Fixtures/Packages/package2/',
