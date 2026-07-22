@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace Typo3\TestingFramework\Tests\Unit\Core;
 
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use TYPO3\CMS\Core\Package\PackageManager;
@@ -34,7 +33,6 @@ use TYPO3\TestingFramework\Core\PackageCollection;
 final class PackageCollectionTest extends TestCase
 {
     #[Test]
-    #[IgnoreDeprecations]
     public function sortsComposerPackages(): void
     {
         $packageStates = require __DIR__ . '/../Fixtures/Packages/PackageStates.php';
@@ -69,9 +67,9 @@ final class PackageCollectionTest extends TestCase
 
         self::assertSame(5, array_search('package0', array_keys($result)), 'Package 0 is not stored at loading order 5.');
         self::assertSame(6, array_search('package1', array_keys($result)), 'Package 1 is not stored at loading order 6.');
-        self::assertSame(7, array_search('extension_unsynced_extemconf', array_keys($result)), 'extension_unsynced_extemconf is not stored at loading order 7.');
+        self::assertSame(7, array_search('extension2_unsynced_extemconf', array_keys($result)), 'extension2_unsynced_extemconf is not stored at loading order 7.');
         self::assertSame(8, array_search('extension_with_extemconf', array_keys($result)), 'extension_with_extemconf is not stored at loading order 8.');
-        self::assertSame(9, array_search('extension2_unsynced_extemconf', array_keys($result)), 'extension2_unsynced_extemconf is not stored at loading order 9.');
+        self::assertSame(9, array_search('extension_unsynced_extemconf', array_keys($result)), 'extension_unsynced_extemconf is not stored at loading order 9.');
         self::assertSame(10, array_search('package2', array_keys($result)), 'Package 2 is not stored at loading order 10.');
         self::assertSame($expectedPackageStates['packages'], $result, 'Sorted packages does not match expected order');
     }

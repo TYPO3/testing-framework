@@ -11,7 +11,11 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "package0"
+            "extension-key": "package0",
+            "version": "1.0.0",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     }
 }
