@@ -27,6 +27,7 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Psr\Container\ContainerInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Core\ClassLoadingInformation;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Schema\SchemaManager\CoreSchemaManagerFactory;
@@ -762,10 +763,26 @@ class Testbase
     }
 
     /**
-     * Dump class loading information
+     * Dump class loading information.
+     *
+     * This is only relevant for non Composer mode ("classic mode") setups, where the
+     * Composer class loader does not know about extensions: the generated files add
+     * the class map, the PSR-4 prefixes and the class alias map of all active
+     * extensions - including their `Tests/` directories - to the class loader.
+     *
+     * Functional test instances are classic mode instances by definition, so they do
+     * need the dump. Unit tests on the other hand run in the scope of the outer
+     * Composer installation, where the Composer class loader is authoritative and
+     * `PackageManager::scanAvailablePackages()` bails out early: the dump would only
+     * write empty files - into the project root ("<project>/packages/autoload-tests/"
+     * since TYPO3 v14.3.1). Skip it, mirroring the `Environment::isComposerMode()`
+     * guards TYPO3 Core uses on all of its own call sites.
      */
     public function dumpClassLoadingInformation(): void
     {
+        if (Environment::isComposerMode()) {
+            return;
+        }
         if (!ClassLoadingInformation::isClassLoadingInformationAvailable()) {
             ClassLoadingInformation::dumpClassLoadingInformation();
             ClassLoadingInformation::registerClassLoadingInformation();
