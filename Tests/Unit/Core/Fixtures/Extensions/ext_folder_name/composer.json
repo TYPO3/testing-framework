@@ -1,0 +1,20 @@
+{
+    "name": "typo3/testing-framework-diverging-extension-key",
+    "description": "Test extension with a folder name differing from its extension key",
+    "type": "typo3-cms-extension",
+    "license": [
+        "GPL-2.0-or-later"
+    ],
+    "require": {
+        "php": "*"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "diverging_extension_key",
+            "version": "1.0.0",
+            "Package": {
+                "providesPackages": {}
+            }
+        }
+    }
+}
