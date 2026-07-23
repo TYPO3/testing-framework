@@ -754,10 +754,15 @@ class Testbase
 
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
         SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
+        $outputBufferingLevel = ob_get_level();
         $container = Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
-        // phpunit does not whine about changed output bufferings in tests.
-        ob_end_clean();
+        // phpunit does not whine about changed output bufferings in tests. TYPO3 v14
+        // opens an implicit output buffer in Bootstrap::init(), TYPO3 v15 does not.
+        // Only drop buffers opened by the bootstrap, never phpunit's own one.
+        while (ob_get_level() > $outputBufferingLevel) {
+            ob_end_clean();
+        }
 
         $this->dumpClassLoadingInformation();
 

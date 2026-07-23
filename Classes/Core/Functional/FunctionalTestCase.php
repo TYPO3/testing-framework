@@ -1005,6 +1005,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $request->getUri()->getHost() ?: 'localhost';
 
+        $outputBufferingLevel = ob_get_level();
         $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
 
         /** @var InternalRequest $serverRequest */
@@ -1050,8 +1051,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $frontendApplication = $container->get(Application::class);
             $response = $frontendApplication->handle($serverRequest);
         } finally {
-            // Somewhere an ob_start() is called in frontend that is not cleaned. Work around that for now.
-            ob_end_clean();
+            // TYPO3 v14 opens an implicit output buffer in Bootstrap::init(), TYPO3 v15
+            // does not. Frontend or extension code may leave further buffers open. Drop
+            // everything opened by the sub request, but never phpunit's own buffer.
+            while (ob_get_level() > $outputBufferingLevel) {
+                ob_end_clean();
+            }
             FrameworkState::pop();
         }
         return $response;
