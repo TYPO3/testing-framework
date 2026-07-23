@@ -628,7 +628,7 @@ class Testbase
 
         // Activate test extensions that have been symlinked before
         foreach ($testExtensionPaths as $extensionPath) {
-            if ($packageInfo = $this->composerPackageManager->getPackageInfo($extensionPath)) {
+            if ($packageInfo = $this->composerPackageManager->getPackageInfoWithFallback($extensionPath)) {
                 $extensionName = $packageInfo->getExtensionKey();
             } else {
                 $extensionName = basename($extensionPath);
