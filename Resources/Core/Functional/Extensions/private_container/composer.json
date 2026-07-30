@@ -28,7 +28,7 @@
     },
     "require": {
         "php": "^8.2",
-        "typo3/cms-core": "13.*.*@dev || 14.*.*@dev"
+        "typo3/cms-core": "14.*.*@dev || 15.*.*@dev"
     },
     "autoload": {
         "psr-4": {

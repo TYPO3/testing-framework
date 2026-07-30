@@ -8,28 +8,27 @@ tests within the TYPO3 extension ecosystem.
 
 ## Installation
 
-This framework works on top of a composer based installation.
+This framework works on top of a Composer based installation:
 
+```bash
+composer require --dev "typo3/testing-framework":"^10.0"
 ```
-$ composer require --dev typo3/testing-framework
-```
+
+## Version matrix
+
+Which version to use depends on the TYPO3 and PHP versions to be supported.
+
+| Branch | testing-framework | TYPO3            | PHP                               | PHPUnit         |
+|--------|-------------------|------------------|-----------------------------------|-----------------|
+| main   | 10.x.x            | v14, v15 (main)  | 8.2, 8.3, 8.4, 8.5                | ^11, ^12, ^13   |
+| 9      | 9.x.x             | v13, v14         | 8.2, 8.3, 8.4, 8.5                | ^11, ^12, ^13   |
+| 8      | 8.x.x             | v12, v13         | 8.1, 8.2, 8.3, (8.4)              | ^10, ^11        |
+| 7      | 7.x.x             | v11, v12         | 7.4, 8.0, 8.1, 8.2, 8.3, (8.4)    | ^9, ^10         |
+| 6      | 6.x.x             | v10, v11         | 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3 | ^8, ^9          |
+
+Testing framework <= 7.x is no longer maintained.
 
 ## Documentation
 
 Usage examples within core and for extensions can be found in
-[TYPO3 explained](https://docs.typo3.org/typo3cms/CoreApiReference/Testing/Index.html).
-
-## Tags and branches
-
-* Branch main is used by core v15, tagged as 10.x.x. Extensions can use this to
-  run tests with core v14 and v15. Supports PHP ^8.2.
-* Branch 9 is used by core v13 and v14, tagged as 9.x.x. Extensions can use this to
-  run tests with core v13 and v14. Supports PHP ^8.2.
-* Branch 8 is used by core v12 and tagged as 8.x.x. Extensions can use this to
-  run tests with core v12 and prepare for v13 compatibility. Supports PHP ^8.1.
-* Branch 7 is used by core v11 and tagged as 7.x.x. Extensions can use this to
-  run tests with core v11 and prepare for v12 compatibility. Supports PHP 7.4 to 8.2.
-* Branch 6 is used by core v10 and tagged as 6.x.x. Extensions can use this to
-  run tests with core v10 and v11. Supports PHP 7.2 to 8.2
-* Branch 4 is for core v9 and tagged as 4.x.y
-* Branch 1 is for core v8 and tagged as 1.x.y
+[TYPO3 Explained](https://docs.typo3.org/permalink/t3coreapi:testing).
