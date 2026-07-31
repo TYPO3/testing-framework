@@ -78,6 +78,39 @@ use TYPO3\TestingFramework\Core\Testbase;
 abstract class FunctionalTestCase extends BaseTestCase implements ContainerInterface
 {
     /**
+     * Cache groups dropped when one test case class hands an instance over to the next.
+     *
+     * Test cases configured identically share an instance, and the package dependent
+     * cache identifier is derived from the project path, so they also address the same
+     * cache entries. Any entry a test case writes is therefore visible to every later
+     * test case sharing that instance.
+     *
+     * The whole "core" group is dropped rather than individual entries. Individual
+     * entries were tried first and are demonstrably fragile: TcaSchema alone was
+     * sufficient for two extensions but missed BackendModules, which a test writes
+     * deliberately and never cleans up. Any test may legitimately write a package
+     * dependent cache entry, so the safe default is to drop the group and let it be
+     * rebuilt. Measured cost is within noise.
+     *
+     * "di" is deliberately not listed: the compiled dependency injection container
+     * depends only on the active package set, and keeping it is what makes sharing an
+     * instance worthwhile at all.
+     *
+     * @var non-empty-string[]
+     */
+    private const TEST_CASE_SCOPED_CACHE_GROUPS = [
+        'core',
+    ];
+
+    /**
+     * Instance configuration written during provisioning, and the pristine copy kept
+     * beside it so it can be restored when one test case class hands the instance to
+     * the next.
+     */
+    private const SETTINGS_FILE = '/typo3conf/system/settings.php';
+    private const SETTINGS_FILE_PRISTINE = '/typo3conf/system/settings.pristine.php';
+
+    /**
      * Unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
      *
@@ -264,14 +297,42 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     private ContainerInterface $container;
 
     /**
-     * These two internal variable track if the given test is the first test of
-     * that test case. This variable is set to current calling test case class.
-     * Consecutive tests then optimize and do not create a full
-     * database structure again but instead just truncate all tables which
-     * is much quicker.
+     * Instance identifiers provisioned in this PHP process.
+     *
+     * Instances are keyed on the test case *configuration*, not on the test case
+     * class, so several test case classes can share one instance. Provisioning
+     * therefore has to be tracked per identifier: the first test that needs a
+     * given instance creates it and its database schema, every following test -
+     * in the same class or in another one sharing the configuration - only
+     * truncates the tables, which is much quicker.
+     *
+     * @var array<non-empty-string, true>
      */
-    private static string $currentTestCaseClass = '';
+    private static array $provisionedInstances = [];
+
+    /**
+     * True when this test had to provision the instance, i.e. when it is the
+     * first test in this process using this instance configuration.
+     */
     private bool $isFirstTest = true;
+
+    /**
+     * True when this is the first test of *this test case class* in this process.
+     *
+     * Since instances are keyed on configuration rather than on the test case
+     * class, this is not the same question as $isFirstTest: several test case
+     * classes share one instance, so only the first of them provisions it while
+     * each of them still has a first test. Anything scoped to a test case class
+     * rather than to an instance - database snapshots, most notably - has to key
+     * off this.
+     */
+    private bool $isFirstTestOfTestCase = true;
+
+    /**
+     * Last test case class seen in this process, used by the cache isolation
+     * experiment to detect a test case class boundary.
+     */
+    private static string $lastTestCaseClass = '';
 
     /**
      * Set up creates a test instance and database.
@@ -284,25 +345,59 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             self::markTestSkipped('Functional tests must be called through phpunit on CLI');
         }
 
-        $this->identifier = static::getInstanceIdentifier();
-        $this->instancePath = static::getInstancePath();
+        $this->identifier = $this->getInstanceIdentifier();
+        $this->instancePath = $this->getInstancePath();
         putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
         putenv('TYPO3_PATH_APP=' . $this->instancePath);
 
         $testbase = new Testbase();
         $testbase->setTypo3TestingContext();
 
-        // See if we're the first test of this test case.
-        $currentTestCaseClass = static::class;
-        if (self::$currentTestCaseClass !== $currentTestCaseClass) {
-            self::$currentTestCaseClass = $currentTestCaseClass;
-        } else {
+        // See if this instance has already been provisioned in this process. Note
+        // this is keyed on the instance identifier, not on the test case class:
+        // test cases sharing a configuration share the instance.
+        if (isset(self::$provisionedInstances[$this->identifier])) {
             $this->isFirstTest = false;
+        } else {
+            self::$provisionedInstances[$this->identifier] = true;
+        }
+
+        // Independently of the above: is this the first test of this test case class?
+        $this->isFirstTestOfTestCase = self::$lastTestCaseClass !== static::class;
+
+        // Database snapshots are scoped to a test case class, not to an instance:
+        // the snapshot is created by the first test of a test case and restored by
+        // its remaining tests. Re-initialise per test case class and give the
+        // snapshot file a per test case name, so that two test case classes sharing
+        // an instance cannot overwrite or restore each other's snapshot.
+        if ($this->isFirstTestOfTestCase) {
+            DatabaseSnapshot::initialize(
+                dirname($this->getInstancePath()) . '/functional-sqlite-dbs/',
+                $this->identifier,
+                $this->identifier . '-' . substr(sha1(static::class), 0, 7)
+            );
         }
 
         // sqlite db path preparation
         $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
         $dbPathSqliteEmpty = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.empty.sqlite';
+
+        // Test case classes configured identically share one instance, and therefore
+        // also share that instance's cache directory: the package dependent cache
+        // identifier is derived from the project path, which is the same for all of
+        // them. Cache entries that depend on more than the active package set must
+        // therefore be dropped when moving from one test case class to the next.
+        //
+        // In practice that is the TCA schema: test cases legitimately modify $GLOBALS['TCA']
+        // and rebuild the schema from it, and the result must not survive into the next
+        // test case class. The compiled dependency injection container deliberately does
+        // *not* qualify - it depends only on the active package set, and keeping it is
+        // what makes sharing an instance worthwhile in the first place.
+        if (!$this->isFirstTest && $this->isFirstTestOfTestCase) {
+            $this->resetTestCaseScopedInstanceState();
+        }
+
+        self::$lastTestCaseClass = static::class;
 
         if (!$this->isFirstTest) {
             // Reusing an existing instance. This typically happens for the second, third, ... test
@@ -312,7 +407,6 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $this->initializeTestDatabaseAndTruncateTables($testbase, $this->initializeDatabase, $dbPathSqlite, $dbPathSqliteEmpty);
             $testbase->loadExtensionTables();
         } else {
-            DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
             $testbase->removeOldInstanceIfExists($this->instancePath);
             // Basic instance directory structure
             $testbase->createDirectory($this->instancePath . '/fileadmin');
@@ -419,6 +513,12 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
+            // Keep a pristine copy: test cases sharing this instance may write to the
+            // configuration, and the next one must not inherit that.
+            copy(
+                $this->instancePath . self::SETTINGS_FILE,
+                $this->instancePath . self::SETTINGS_FILE_PRISTINE
+            );
             $testbase->setUpPackageStates(
                 $this->instancePath,
                 $defaultCoreExtensionsToLoad,
@@ -1089,7 +1189,9 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $connection = $this->getConnectionPool()->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
-        if ($this->isFirstTest) {
+        // Scoped to the test case class, not to the instance: several test case
+        // classes may share one instance, and each of them needs its own snapshot.
+        if ($this->isFirstTestOfTestCase) {
             if ($createCallback) {
                 $createCallback();
             }
@@ -1103,14 +1205,112 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     }
 
     /**
-     * Create a 7 char long hash of class name as identifier.
+     * Drops the state that belongs to a test case class rather than to the instance,
+     * when one test case class hands a shared instance over to the next.
+     */
+    private function resetTestCaseScopedInstanceState(): void
+    {
+        $cacheRoot = $this->instancePath . '/typo3temp/var/cache';
+        foreach (self::TEST_CASE_SCOPED_CACHE_GROUPS as $group) {
+            foreach (['code', 'data'] as $kind) {
+                $dir = $cacheRoot . '/' . $kind . '/' . $group;
+                if (is_dir($dir)) {
+                    GeneralUtility::rmdir($dir, true);
+                }
+            }
+        }
+        // Tests may write to the instance configuration - the "configuration:set"
+        // command does, for instance - and that must not be visible to the next
+        // test case class sharing the instance. Restore the file provisioning wrote.
+        $settings = $this->instancePath . self::SETTINGS_FILE;
+        $pristine = $this->instancePath . self::SETTINGS_FILE_PRISTINE;
+        if (is_file($pristine)) {
+            copy($pristine, $settings);
+        }
+    }
+
+    /**
+     * Identifier of the test instance, derived from the *configuration* of this
+     * test case rather than from its class name.
+     *
+     * Test cases that declare the same instance configuration therefore share
+     * one instance: it is provisioned once, its dependency injection container
+     * is compiled once and its database schema is created once, instead of once
+     * per test case class.
+     *
+     * This must not be static. Test cases may assign the configuration
+     * properties in their own setUp() before calling parent::setUp(), and those
+     * assignments have to be part of the identifier - a static method could not
+     * see them and would hand the test an instance built for a different
+     * extension set.
      *
      * @internal
      * @return non-empty-string
      */
-    protected static function getInstanceIdentifier(): string
+    protected function getInstanceIdentifier(): string
     {
-        return substr(sha1(static::class), 0, 7);
+        return substr(sha1(serialize($this->getInstanceConfiguration())), 0, 10);
+    }
+
+    /**
+     * Everything that shapes the content of a test instance, normalised so that
+     * two test cases configured equivalently produce the same identifier.
+     *
+     * Anything influencing instance content but missing here would let two
+     * genuinely different instances share an identifier, so keep this in sync
+     * with what setUp() passes to Testbase.
+     *
+     * @internal
+     * @return array<string, mixed>
+     */
+    protected function getInstanceConfiguration(): array
+    {
+        return [
+            'coreExtensionsToLoad' => self::normalizeInstanceConfigurationValue($this->coreExtensionsToLoad),
+            'testExtensionsToLoad' => self::normalizeInstanceConfigurationValue($this->testExtensionsToLoad),
+            'pathsToLinkInTestInstance' => self::normalizeInstanceConfigurationValue($this->pathsToLinkInTestInstance),
+            'pathsToProvideInTestInstance' => self::normalizeInstanceConfigurationValue($this->pathsToProvideInTestInstance),
+            'configurationToUseInTestInstance' => self::normalizeInstanceConfigurationValue($this->configurationToUseInTestInstance),
+            'additionalFoldersToCreate' => self::normalizeInstanceConfigurationValue($this->additionalFoldersToCreate),
+            'initializeDatabase' => $this->initializeDatabase,
+            'databaseLifecycle' => $this->getDatabaseLifecycleIdentifier(),
+        ];
+    }
+
+    /**
+     * Test cases may override how the test database is set up and reset - the core
+     * schema test cases do, to start from a database with no tables at all. Such a
+     * test case relies on being the one that provisions the instance, because its
+     * override is only called on a first test. It must therefore not share an
+     * instance with a test case that provisions the database differently.
+     *
+     * Test cases overriding the same way still share with each other.
+     */
+    private function getDatabaseLifecycleIdentifier(): string
+    {
+        $declaring = [];
+        foreach (['initializeTestDatabase', 'initializeTestDatabaseAndTruncateTables'] as $method) {
+            $declaring[] = (new \ReflectionMethod(static::class, $method))->getDeclaringClass()->getName();
+        }
+        return implode('|', $declaring);
+    }
+
+    /**
+     * Sorts lists by value and maps by key, recursively, so that declaration
+     * order does not influence the instance identifier.
+     */
+    private static function normalizeInstanceConfigurationValue(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+        $value = array_map(self::normalizeInstanceConfigurationValue(...), $value);
+        if (array_is_list($value)) {
+            sort($value);
+            return $value;
+        }
+        ksort($value);
+        return $value;
     }
 
     /**
@@ -1119,9 +1319,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      *           are usually ways to avoid it.
      * @return non-empty-string
      */
-    protected static function getInstancePath(): string
+    protected function getInstancePath(): string
     {
-        $identifier = static::getInstanceIdentifier();
-        return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
+        return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $this->getInstanceIdentifier();
     }
 }

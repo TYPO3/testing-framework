@@ -38,9 +38,18 @@ class DatabaseSnapshot
     private static DatabaseSnapshot $instance;
     private array $inMemoryImport = [];
 
-    public static function initialize(string $sqliteDir, string $identifier): void
+    /**
+     * @param string $identifier Identifies the *instance* database file, which several
+     *                           test case classes may share.
+     * @param string|null $snapshotIdentifier Identifies the snapshot taken of it. Defaults
+     *                           to $identifier for backwards compatibility, but callers
+     *                           sharing one instance between test case classes must pass a
+     *                           per test case value, otherwise one test case class restores
+     *                           the snapshot another one created.
+     */
+    public static function initialize(string $sqliteDir, string $identifier, ?string $snapshotIdentifier = null): void
     {
-        self::$instance = new self($sqliteDir, $identifier);
+        self::$instance = new self($sqliteDir, $identifier, $snapshotIdentifier ?? $identifier);
     }
 
     public static function instance(): self
@@ -50,11 +59,12 @@ class DatabaseSnapshot
 
     private function __construct(
         private readonly string $sqliteDir,
-        private readonly string $identifier
+        private readonly string $identifier,
+        private readonly string $snapshotIdentifier
     ) {}
 
     /**
-     * Create a new snapshot. This is called for the *first* test in a test case.
+     * Create a new snapshot. This is called for the *first* test of a test case class.
      */
     public function create(DatabaseAccessor $accessor, Connection $connection): void
     {
@@ -63,7 +73,7 @@ class DatabaseSnapshot
             $connection->close();
             copy(
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite',
-                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite'
+                $this->sqliteDir . 'test_' . $this->snapshotIdentifier . '.snapshot.sqlite'
             );
             $this->inMemoryImport = [true];
         } else {
@@ -80,14 +90,14 @@ class DatabaseSnapshot
     }
 
     /**
-     * Restore a snapshot. This is called for subsequent tests in a test case.
+     * Restore a snapshot. This is called for subsequent tests of a test case class.
      */
     public function restore(DatabaseAccessor $accessor, Connection $connection): void
     {
         if ($connection->getDatabasePlatform() instanceof SQLitePlatform) {
             $connection->close();
             copy(
-                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite',
+                $this->sqliteDir . 'test_' . $this->snapshotIdentifier . '.snapshot.sqlite',
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite'
             );
         } else {
