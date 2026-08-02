@@ -54,9 +54,34 @@ class SystemEnvironmentBuilder extends CoreSystemEnvironmentBuilder
             Environment::getPublicPath(),
             Environment::getVarPath(),
             Environment::getConfigPath(),
-            Environment::getCurrentScript(),
+            static::determineCurrentScript(),
             Environment::isWindows() ? 'WINDOWS' : 'UNIX'
         );
+    }
+
+    /**
+     * Entry script the instance should be treated as running.
+     *
+     * On CLI in composer mode, TYPO3 deliberately reports the console binary
+     * (typo3/sysext/core/bin/typo3) as the current script, because in a real composer
+     * installation that binary sits outside the document root and relative path
+     * calculations would otherwise break.
+     *
+     * Functional tests are CLI processes that simulate *web* requests, and the entry
+     * script is what the site URL is derived from: NormalizedParams subtracts the entry
+     * script's directory, relative to the public path, from the request URL. Leaving the
+     * console binary in place therefore subtracts "typo3/sysext/core/bin/" from every
+     * request and the site path collapses to an empty string - every generated link
+     * silently loses its leading slash. Point at the front end entry script instead,
+     * which is what a web request would have and what classic mode already gets.
+     */
+    protected static function determineCurrentScript(): string
+    {
+        if (!Environment::isCli() || !static::usesComposerClassLoading()) {
+            return Environment::getCurrentScript();
+        }
+
+        return Environment::getPublicPath() . '/index.php';
     }
 
     /**
