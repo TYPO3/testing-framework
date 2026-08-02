@@ -1249,7 +1249,42 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected function getInstanceIdentifier(): string
     {
-        return substr(sha1(serialize($this->getInstanceConfiguration())), 0, 10);
+        return substr(sha1(serialize($this->getInstanceConfiguration())), 0, 10) . self::getWorkerToken();
+    }
+
+    /**
+     * Token identifying the worker this test runs in, or an empty string.
+     *
+     * The test instance directory and the test database are named after the instance
+     * identifier alone, so two test runs sharing a working copy address the same
+     * instance directory and the same database - and a run that provisions an instance
+     * deletes it while the other run is still using it. Setting TYPO3_TESTING_WORKER to
+     * a different value per run keeps them apart, which is what makes it possible to run
+     * several suites, or several workers of one suite, against one working copy.
+     *
+     * Unset by default, in which case naming is unchanged.
+     *
+     * The token is part of database names, so it is deliberately restricted: it must be
+     * short and alphanumeric, and an invalid value is rejected rather than sanitised, so
+     * that two workers cannot be silently folded onto the same instance.
+     */
+    private static function getWorkerToken(): string
+    {
+        $token = (string)getenv('TYPO3_TESTING_WORKER');
+        if ($token === '') {
+            return '';
+        }
+        if (preg_match('/^[a-zA-Z0-9]{1,8}$/', $token) !== 1) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Environment variable TYPO3_TESTING_WORKER must be 1 to 8 alphanumeric'
+                    . ' characters, "%s" given. It becomes part of test database names.',
+                    $token
+                ),
+                1754006400
+            );
+        }
+        return 'w' . $token;
     }
 
     /**
