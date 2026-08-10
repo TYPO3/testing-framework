@@ -919,6 +919,12 @@ class Testbase
         $sqlReader = GeneralUtility::makeInstance(SqlReader::class);
         $sqlCode = $sqlReader->getTablesDefinitionString();
         $createTableStatements = $sqlReader->getCreateTableStatementArray($sqlCode);
+        // @todo: Remove the install() fallback when v14 compat is dropped, the
+        //        method no longer exists in v15.
+        if (method_exists($schemaMigrationService, 'applySafe')) {
+            $schemaMigrationService->applySafe($createTableStatements);
+            return;
+        }
         $schemaMigrationService->install($createTableStatements);
     }
 
