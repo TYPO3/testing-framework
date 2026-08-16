@@ -809,6 +809,8 @@ class Testbase
         $platform = $connection->getDatabasePlatform();
         if ($platform instanceof DoctrineMariaDBPlatform || $platform instanceof DoctrineMySQLPlatform) {
             $this->truncateAllTablesForMysql();
+        } elseif ($platform instanceof DoctrinePostgreSQLPlatform) {
+            $this->truncateAllTablesForPostgres();
         } else {
             $this->truncateAllTablesForOtherDatabases();
         }
@@ -873,6 +875,24 @@ class Testbase
                 $connection->truncate($tableName);
             }
         }
+    }
+
+    /**
+     * Truncates all PostgreSQL tables and restarts their sequences in one statement.
+     */
+    private function truncateAllTablesForPostgres(): void
+    {
+        /** @var Connection $connection */
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
+        $tableNames = $connection->createSchemaManager()->listTableNames();
+        if ($tableNames === []) {
+            return;
+        }
+        $quotedTableNames = array_map($connection->quoteIdentifier(...), $tableNames);
+        $connection->executeStatement(
+            'TRUNCATE TABLE ' . implode(', ', $quotedTableNames) . ' RESTART IDENTITY CASCADE'
+        );
     }
 
     /**
