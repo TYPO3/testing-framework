@@ -876,10 +876,20 @@ class Testbase
         while ($tableData = $result->fetchAssociative()) {
             $hasChangedAutoIncrement = ((int)$tableData['auto_increment']) > 1;
             $hasAtLeastOneRow = (bool)$tableData['has_rows'];
-            $isChanged = $hasChangedAutoIncrement || $hasAtLeastOneRow;
-            if ($isChanged) {
-                $tableName = $tableData['table_name'];
+            $tableName = $tableData['table_name'];
+            if ($hasChangedAutoIncrement) {
                 $connection->truncate($tableName);
+            } elseif ($hasAtLeastOneRow) {
+                // MySQL may not expose the current counter for populated auto-increment tables.
+                // Check the column metadata before using DELETE, which does not reset the counter.
+                $autoIncrementColumn = $connection->executeQuery(
+                    'SHOW COLUMNS FROM ' . $connection->quoteIdentifier($tableName) . ' WHERE Extra = \'auto_increment\''
+                )->fetchOne();
+                if ($autoIncrementColumn === false) {
+                    $connection->executeStatement('DELETE FROM ' . $connection->quoteIdentifier($tableName));
+                } else {
+                    $connection->truncate($tableName);
+                }
             }
         }
     }
