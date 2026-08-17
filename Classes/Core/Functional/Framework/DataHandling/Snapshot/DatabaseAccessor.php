@@ -98,13 +98,7 @@ readonly class DatabaseAccessor
             );
         }
         $columnNames = array_keys($columns);
-        foreach ($items as $item) {
-            $this->connection->insert(
-                $tableName,
-                array_combine($columnNames, $item),
-                $columns
-            );
-        }
+        $this->connection->bulkInsert($tableName, $items, $columnNames, $columns);
         // reset table sequences after inserting snapshot data. Dataset contains primary key column data which
         // leads to out-of-sync sequence values for some dbms platforms, thus resetting sequence values
         // is needed.
@@ -118,9 +112,8 @@ readonly class DatabaseAccessor
                 // Doctrine DBAL v4 converted the `*ParameterType` to an enum, and therefore returning this enum instead
                 // of the string value like before. As this is a non-baked enum, it cannot be serialized or json_encoded,
                 // and breaking the snapshot export badly. Due to the requirement to support Doctrine DBAL v3 and v4 it
-                // is necessary to detect the enum end return the doctrine type name instead. The `Connection->insert()`
-                // adjustment is adjusted to transform the provided types during import to the correct ParameterType
-                // again.
+                // is necessary to detect the enum and return the doctrine type name instead. Connection transforms
+                // the provided types during import to the correct ParameterType again.
                 // @see https://github.com/doctrine/dbal/blob/4.0.x/UPGRADE.md#bc-break-converted-enum-like-classes-to-enums
                 // @todo Simplify this after Doctine DBAL v3 support can be dropped.
                 $type = $table->getColumn($columnName)->getType();
