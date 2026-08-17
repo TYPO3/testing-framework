@@ -929,14 +929,27 @@ class Testbase
     }
 
     /**
-     * Perform post processing of database tables after an insert has been performed.
-     * Doing this once per insert is rather slow, but due to the soft reference behavior
-     * this needs to be done after every row to ensure consistent results.
+     * Synchronize an auto-increment sequence after inserting records with explicit IDs.
      */
-    public static function resetTableSequences(Connection $connection, string $tableName): void
-    {
+    public static function resetTableSequences(
+        Connection $connection,
+        string $tableName,
+        ?string $autoIncrementColumnName = null
+    ): void {
         $platform = $connection->getDatabasePlatform();
         if ($platform instanceof DoctrinePostgreSQLPlatform) {
+            if ($autoIncrementColumnName !== null) {
+                $connection->executeStatement(
+                    sprintf(
+                        'SELECT SETVAL(PG_GET_SERIAL_SEQUENCE(%s, %s), COALESCE(MAX(%s), 0)+1, FALSE) FROM %s',
+                        $connection->quote($connection->quoteIdentifier($tableName)),
+                        $connection->quote($autoIncrementColumnName),
+                        $connection->quoteIdentifier($autoIncrementColumnName),
+                        $connection->quoteIdentifier($tableName)
+                    )
+                );
+                return;
+            }
             $queryBuilder = $connection->createQueryBuilder();
             $queryBuilder->getRestrictions()->removeAll();
             $row = $queryBuilder->select('PGT.schemaname', 'S.relname', 'C.attname', 'T.relname AS tablename')
