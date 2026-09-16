@@ -18,6 +18,7 @@ namespace TYPO3\TestingFramework\Tests\Unit\Core\Functional\Framework\DataHandli
  */
 use PHPUnit\Framework\Attributes\Test;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
+use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Exception\DuplicateDataSetColumnException;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class DataSetTest extends UnitTestCase
@@ -50,5 +51,15 @@ class DataSetTest extends UnitTestCase
         $jsonValue = $dataSet->getElements($tableName)[1]['mfa'];
         $decoded = json_decode($jsonValue, true, 512, JSON_THROW_ON_ERROR);
         self::assertSame(['name' => 'value', 'name2' => ['name3' => 'subvalue', 'empty-array' => []]], $decoded);
+    }
+
+    #[Test]
+    public function readThrowsExceptionForDuplicateColumnName(): void
+    {
+        $csvFile = __DIR__ . '/../../../Fixtures/DuplicateColumn/DuplicateColumnName.csv';
+        $this->expectException(DuplicateDataSetColumnException::class);
+        $this->expectExceptionCode(1789564420);
+        $this->expectExceptionMessage('DataSet "' . $csvFile . '" lists column "title" more than once in the header row of table "tx_test".');
+        DataSet::read($csvFile);
     }
 }
