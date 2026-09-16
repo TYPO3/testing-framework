@@ -20,6 +20,7 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework\DataHandling;
 use Doctrine\DBAL\Types\JsonType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Exception\DuplicateDataSetColumnException;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -226,6 +227,18 @@ final readonly class DataSet
                     foreach ($values as $value) {
                         if ((string)$value === '') {
                             continue;
+                        }
+                        if (in_array($value, $data[$tableName]['fields'], true)) {
+                            throw new DuplicateDataSetColumnException(
+                                sprintf(
+                                    'DataSet "%s" lists column "%s" more than once in the header row of table "%s".'
+                                    . ' Remove the duplicate column, only one value per column can be imported or asserted.',
+                                    $fileName,
+                                    $value,
+                                    $tableName
+                                ),
+                                1789564420
+                            );
                         }
                         $data[$tableName]['fields'][] = $value;
                         $fieldCount = count($data[$tableName]['fields']);
