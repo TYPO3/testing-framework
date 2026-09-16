@@ -402,8 +402,14 @@ class Testbase
         foreach ($pathsToLinkInTestInstance as $sourcePathToLinkInTestInstance => $destinationPathToLinkInTestInstance) {
             $sourcePath = $instancePath . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
             if (!file_exists($sourcePath)) {
+                // See providePathsInTestInstance(): sources are given relative to the
+                // document root, which only carries the extension tree in classic mode.
+                $sourcePath = rtrim(ORIGINAL_ROOT, '/') . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
+            }
+            if (!file_exists($sourcePath)) {
                 throw new Exception(
-                    'Path ' . $sourcePath . ' not found',
+                    'Path ' . $sourcePathToLinkInTestInstance . ' not found, neither in the test instance'
+                    . ' nor below ' . ORIGINAL_ROOT,
                     1476109221
                 );
             }
@@ -435,8 +441,15 @@ class Testbase
         foreach ($pathsToProvideInTestInstance as $sourceIdentifier => $designationIdentifier) {
             $sourcePath = $instancePath . '/' . ltrim($sourceIdentifier, '/');
             if (!file_exists($sourcePath)) {
+                // Sources are given relative to the instance, which works in classic mode
+                // because the extensions are linked into it. A composer mode instance has
+                // no such tree, so fall back to the same path below the original root.
+                $sourcePath = rtrim(ORIGINAL_ROOT, '/') . '/' . ltrim($sourceIdentifier, '/');
+            }
+            if (!file_exists($sourcePath)) {
                 throw new Exception(
-                    'Path ' . $sourcePath . ' not found',
+                    'Path ' . $sourceIdentifier . ' not found, neither in the test instance nor below '
+                    . ORIGINAL_ROOT,
                     1511956084
                 );
             }
@@ -559,16 +572,25 @@ class Testbase
      * @param array $overruleConfiguration Overrule factory and base configuration
      * @throws Exception
      */
-    public function setUpLocalConfiguration(string $instancePath, array $configuration, array $overruleConfiguration): void
-    {
+    /**
+     * @param non-empty-string $relativeConfigurationPath Where TYPO3 expects its settings file,
+     *        relative to the instance root. Classic mode instances keep it below typo3conf,
+     *        composer mode instances below config.
+     */
+    public function setUpLocalConfiguration(
+        string $instancePath,
+        array $configuration,
+        array $overruleConfiguration,
+        string $relativeConfigurationPath = 'typo3conf/system'
+    ): void {
         // Base of final LocalConfiguration is core factory configuration
         $coreExtensionPath = $this->composerPackageManager->getPackageInfo('typo3/cms-core')?->getRealPath() ?? '';
         $finalConfigurationArray = require $coreExtensionPath . '/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
-        $this->createDirectory($instancePath . '/typo3conf/system');
+        $this->createDirectory($instancePath . '/' . trim($relativeConfigurationPath, '/'));
         $result = @file_put_contents(
-            $instancePath . '/typo3conf/system/settings.php',
+            $instancePath . '/' . trim($relativeConfigurationPath, '/') . '/settings.php',
             '<?php' . chr(10) .
             'return ' .
             ArrayUtility::arrayExport(
@@ -744,7 +766,7 @@ class Testbase
      *
      * @param non-empty-string $instancePath Absolute path to test instance
      */
-    public function setUpBasicTypo3Bootstrap(string $instancePath): ContainerInterface
+    public function setUpBasicTypo3Bootstrap(string $instancePath, bool $composerMode = false): ContainerInterface
     {
         $_SERVER['PWD'] = $instancePath;
         $_SERVER['argv'][0] = 'index.php';
@@ -752,10 +774,17 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
+        // The root autoloader is used in both modes. It already maps every system
+        // extension and every fixture extension, so composer mode instances - which
+        // borrow the shared installation's vendor directory only for package paths -
+        // do not need a second autoloader, and never load a second copy of any
+        // third party package.
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
-        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
+        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, $composerMode);
         $outputBufferingLevel = ob_get_level();
-        $container = Bootstrap::init($classLoader);
+        $container = $composerMode
+            ? TestingBootstrapRunner::init($classLoader)
+            : Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests. TYPO3 v14
         // opens an implicit output buffer in Bootstrap::init(), TYPO3 v15 does not.
