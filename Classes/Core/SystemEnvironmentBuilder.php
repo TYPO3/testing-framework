@@ -54,7 +54,7 @@ class SystemEnvironmentBuilder extends CoreSystemEnvironmentBuilder
             Environment::getPublicPath(),
             Environment::getVarPath(),
             Environment::getConfigPath(),
-            static::determineCurrentScript(),
+            self::determineCurrentScript(),
             Environment::isWindows() ? 'WINDOWS' : 'UNIX'
         );
     }
@@ -75,7 +75,7 @@ class SystemEnvironmentBuilder extends CoreSystemEnvironmentBuilder
      * silently loses its leading slash. Point at the front end entry script instead,
      * which is what a web request would have and what classic mode already gets.
      */
-    protected static function determineCurrentScript(): string
+    private static function determineCurrentScript(): string
     {
         if (!Environment::isCli() || !static::usesComposerClassLoading()) {
             return Environment::getCurrentScript();

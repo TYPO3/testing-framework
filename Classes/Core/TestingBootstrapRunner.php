@@ -19,17 +19,24 @@ namespace TYPO3\TestingFramework\Core;
 
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Package\Cache\ComposerPackageArtifact;
 use TYPO3\CMS\Core\Package\Cache\PackageCacheInterface;
+use TYPO3\TestingFramework\Core\Functional\Framework\ComposerMode\ComposerModeInstance;
 
 /**
- * Bootstrap that lets the testing framework decide where package information comes from.
+ * Bootstrap of composer mode test instances.
  *
- * In composer mode TYPO3 resolves its package artifact from the vendor directory, which
+ * In composer mode TYPO3 reads its package artifact from the vendor directory, which
  * every test instance shares by symlink. Test cases need different active package sets,
- * so the artifact cannot simply be read from that fixed location.
+ * so each instance boots from its own artifact instead, see
+ * ComposerModeInstance::writePackageArtifact().
  *
  * Bootstrap::init() resolves createPackageCache() through late static binding, so
  * overriding that single method is enough. Nothing else is overridden.
+ *
+ * Only ever loaded in composer mode, which needs TYPO3 v14.3 or later: Bootstrap is a
+ * readonly class since v14.3, and a readonly class can only extend a readonly class.
  *
  * @internal
  */
@@ -37,6 +44,10 @@ readonly class TestingBootstrapRunner extends Bootstrap
 {
     public static function createPackageCache(FrontendInterface $coreCache): PackageCacheInterface
     {
-        return TestingBootstrapPackageCache::$packageCache ?? parent::createPackageCache($coreCache);
+        if (!Environment::isComposerMode()) {
+            return parent::createPackageCache($coreCache);
+        }
+
+        return new ComposerPackageArtifact(ComposerModeInstance::getPackageArtifactDirectory(Environment::getProjectPath()));
     }
 }
