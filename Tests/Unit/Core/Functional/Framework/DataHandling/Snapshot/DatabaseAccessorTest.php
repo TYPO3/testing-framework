@@ -51,7 +51,7 @@ final class DatabaseAccessorTest extends UnitTestCase
         $result = self::createStub(Result::class);
         $result->method('fetchAllAssociative')->willReturn([['payload' => $value]]);
         $queryBuilder = self::createStub(QueryBuilder::class);
-        $queryBuilder->method('getRestrictions')->willReturn(new DefaultRestrictionContainer());
+        $queryBuilder->method('getRestrictions')->willReturn(self::createStub(DefaultRestrictionContainer::class));
         $queryBuilder->method('select')->willReturnSelf();
         $queryBuilder->method('from')->willReturnSelf();
         $queryBuilder->method('executeQuery')->willReturn($result);
