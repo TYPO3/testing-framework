@@ -118,6 +118,10 @@ readonly class DatabaseAccessor
                 // @todo Simplify this after Doctine DBAL v3 support can be dropped.
                 $type = $table->getColumn($columnName)->getType();
                 $bindingType = $type->getBindingType();
+                // Snapshot strings already contain database values, including encoded JSON.
+                if ($bindingType === ParameterType::STRING) {
+                    return Types::STRING;
+                }
                 return (enum_exists(ParameterType::class))
                     ? Type::lookupName($type)
                     : $type->getBindingType();
