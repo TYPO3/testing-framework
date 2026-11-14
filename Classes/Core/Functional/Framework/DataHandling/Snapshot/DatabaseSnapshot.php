@@ -40,7 +40,17 @@ class DatabaseSnapshot
 
     public static function initialize(string $sqliteDir, string $identifier): void
     {
-        self::$instance = new self($sqliteDir, $identifier);
+        self::$instance = new self($sqliteDir, $identifier, $identifier);
+    }
+
+    /**
+     * For test case classes sharing an instance: the database file is named after the
+     * instance, the snapshot after the test case class, so classes sharing the instance
+     * do not restore each other's snapshot.
+     */
+    public static function initializeWithSnapshotIdentifier(string $sqliteDir, string $identifier, string $snapshotIdentifier): void
+    {
+        self::$instance = new self($sqliteDir, $identifier, $snapshotIdentifier);
     }
 
     public static function instance(): self
@@ -50,7 +60,8 @@ class DatabaseSnapshot
 
     private function __construct(
         private readonly string $sqliteDir,
-        private readonly string $identifier
+        private readonly string $identifier,
+        private readonly string $snapshotIdentifier
     ) {}
 
     /**
@@ -63,7 +74,7 @@ class DatabaseSnapshot
             $connection->close();
             copy(
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite',
-                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite'
+                $this->sqliteDir . 'test_' . $this->snapshotIdentifier . '.snapshot.sqlite'
             );
             $this->inMemoryImport = [true];
         } else {
@@ -87,7 +98,7 @@ class DatabaseSnapshot
         if ($connection->getDatabasePlatform() instanceof SQLitePlatform) {
             $connection->close();
             copy(
-                $this->sqliteDir . 'test_' . $this->identifier . '.snapshot.sqlite',
+                $this->sqliteDir . 'test_' . $this->snapshotIdentifier . '.snapshot.sqlite',
                 $this->sqliteDir . 'test_' . $this->identifier . '.sqlite'
             );
         } else {
