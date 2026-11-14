@@ -895,7 +895,7 @@ class Testbase
     }
 
     /**
-     * Truncates all PostgreSQL tables and restarts their sequences in one statement.
+     * Truncates PostgreSQL tables containing rows or changed sequences.
      */
     private function truncateAllTablesForPostgres(): void
     {
@@ -906,10 +906,56 @@ class Testbase
         if ($tableNames === []) {
             return;
         }
-        $quotedTableNames = array_map($connection->quoteIdentifier(...), $tableNames);
-        $connection->executeStatement(
-            'TRUNCATE TABLE ' . implode(', ', $quotedTableNames) . ' RESTART IDENTITY CASCADE'
-        );
+
+        // Preserve TRUNCATE trigger and CASCADE behavior, including for empty tables.
+        $requiresFullReset = $connection->executeQuery(
+            "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE (tgtype & 32) <> 0 AND tgenabled <> 'D')
+                 OR EXISTS(SELECT 1 FROM pg_constraint WHERE contype = 'f')"
+        )->fetchOne();
+        if ($requiresFullReset) {
+            $connection->executeStatement(
+                'TRUNCATE TABLE ' . implode(', ', array_map($connection->quoteIdentifier(...), $tableNames)) . ' RESTART IDENTITY CASCADE'
+            );
+            return;
+        }
+
+        $sequenceRows = $connection->executeQuery(
+            "SELECT CASE WHEN N.nspname = current_schema() THEN quote_ident(T.relname)
+                         ELSE N.nspname || '.' || quote_ident(T.relname) END AS tablename,
+                    S.oid::regclass::text AS sequencename, Q.seqstart
+             FROM pg_class S
+             JOIN pg_depend D ON D.objid = S.oid AND D.classid = 'pg_class'::regclass
+             JOIN pg_class T ON T.oid = D.refobjid AND D.refclassid = 'pg_class'::regclass
+             JOIN pg_namespace N ON N.oid = T.relnamespace
+             JOIN pg_sequence Q ON Q.seqrelid = S.oid
+             WHERE S.relkind = 'S' AND D.refobjsubid > 0 AND D.deptype IN ('a', 'i')"
+        )->fetchAllAssociative();
+        $sequenceChecks = [];
+        foreach ($sequenceRows as $sequence) {
+            $sequenceChecks[$sequence['tablename']][] = sprintf(
+                'EXISTS(SELECT 1 FROM %s WHERE is_called OR last_value <> %s)',
+                $sequence['sequencename'],
+                $connection->quote((string)$sequence['seqstart'])
+            );
+        }
+        $queries = [];
+        foreach ($tableNames as $tableName) {
+            $checks = array_merge(
+                ['EXISTS(SELECT 1 FROM ' . $connection->quoteIdentifier($tableName) . ')'],
+                $sequenceChecks[$tableName] ?? []
+            );
+            $queries[] = sprintf('SELECT %s AS tablename WHERE %s', $connection->quote($tableName), implode(' OR ', $checks));
+        }
+        $tablesToTruncate = [];
+        // Bound planning depth when a test creates many tables.
+        foreach (array_chunk($queries, 100) as $chunk) {
+            array_push($tablesToTruncate, ...$connection->executeQuery(implode(' UNION ALL ', $chunk))->fetchFirstColumn());
+        }
+        if ($tablesToTruncate !== []) {
+            $connection->executeStatement(
+                'TRUNCATE TABLE ' . implode(', ', array_map($connection->quoteIdentifier(...), $tablesToTruncate)) . ' RESTART IDENTITY CASCADE'
+            );
+        }
     }
 
     /**
