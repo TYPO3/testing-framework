@@ -53,8 +53,16 @@ readonly class DatabaseAccessor
             if (empty($tableExport)) {
                 continue;
             }
+            $autoIncrementColumnName = null;
+            foreach ($table->getColumns() as $column) {
+                if ($column->getAutoincrement()) {
+                    $autoIncrementColumnName = $column->getName();
+                    break;
+                }
+            }
             $export[] = [
                 'tableName' => $tableName,
+                'autoIncrementColumnName' => $autoIncrementColumnName,
                 'columns' => $this->prepareColumns(
                     array_keys($tableExport[0]),
                     $table
@@ -74,7 +82,8 @@ readonly class DatabaseAccessor
             $this->importTable(
                 $tableImport['tableName'] ?? '',
                 $tableImport['columns'] ?? [],
-                $tableImport['items'] ?? []
+                $tableImport['items'] ?? [],
+                $tableImport['autoIncrementColumnName'] ?? null
             );
         }
     }
@@ -89,7 +98,7 @@ readonly class DatabaseAccessor
     /**
      * @param array $columns [columnName => columnType]
      */
-    private function importTable(string $tableName, array $columns, array $items): void
+    private function importTable(string $tableName, array $columns, array $items, ?string $autoIncrementColumnName): void
     {
         if (empty($tableName) || empty($columns) || empty($items)) {
             throw new \RuntimeException(
@@ -99,10 +108,10 @@ readonly class DatabaseAccessor
         }
         $columnNames = array_keys($columns);
         $this->connection->bulkInsert($tableName, $items, $columnNames, $columns);
-        // reset table sequences after inserting snapshot data. Dataset contains primary key column data which
-        // leads to out-of-sync sequence values for some dbms platforms, thus resetting sequence values
-        // is needed.
-        Testbase::resetTableSequences($this->connection, $tableName);
+        // Snapshot rows contain explicit IDs; advance the sequence before inserting new records.
+        if ($autoIncrementColumnName !== null) {
+            Testbase::resetTableSequences($this->connection, $tableName, $autoIncrementColumnName);
+        }
     }
 
     private function prepareColumns(array $columnNames, Table $table): array
