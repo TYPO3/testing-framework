@@ -17,11 +17,9 @@ declare(strict_types=1);
 
 namespace TYPO3\TestingFramework\Tests\Unit\Core\Functional\Framework\DataHandling\Snapshot;
 
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,14 +33,15 @@ final class DatabaseAccessorTest extends UnitTestCase
 {
     public static function databaseValuesDataProvider(): iterable
     {
-        yield 'encoded JSON' => [Types::JSON, '{"value":[1,true,null]}'];
-        yield 'database datetime' => [Types::DATETIME_MUTABLE, '2026-11-14 12:34:56'];
-        yield 'plain text' => [Types::TEXT, 'unchanged'];
+        yield 'encoded JSON' => [Types::JSON, '{"value":[1,true,null]}', Types::STRING];
+        yield 'database datetime' => [Types::DATETIME_MUTABLE, '2026-11-14 12:34:56', Types::STRING];
+        yield 'plain text' => [Types::TEXT, 'unchanged', Types::STRING];
+        yield 'integer keeps its type' => [Types::INTEGER, '42', Types::INTEGER];
     }
 
     #[Test]
     #[DataProvider('databaseValuesDataProvider')]
-    public function exportedStringsCanBeRestoredWithoutConversion(string $type, string $value): void
+    public function exportPreservesValuesAndNormalizesStringBoundTypes(string $type, string $value, string $expectedType): void
     {
         $table = new Table('tx_testingframework_snapshot');
         $table->addColumn('payload', $type);
@@ -60,11 +59,7 @@ final class DatabaseAccessorTest extends UnitTestCase
         $connection->method('createQueryBuilder')->willReturn($queryBuilder);
 
         $export = (new DatabaseAccessor($connection))->export();
-        $restoredValue = Type::getType($export[0]['columns']['payload'])->convertToDatabaseValue(
-            $export[0]['items'][0][0],
-            new PostgreSQLPlatform()
-        );
-
-        self::assertSame($value, $restoredValue);
+        self::assertSame(['payload' => $expectedType], $export[0]['columns']);
+        self::assertSame([[$value]], $export[0]['items']);
     }
 }
