@@ -78,7 +78,16 @@ To provide a change to the testing framework, you have to
 
          ./Build/Scripts/runTests.sh -s functional
 
-   and confirming that the test runs have the same result as without the
+   Run the framework's own functional regression tests from that Core
+   checkout as well. They test the snapshot export and import of
+   ``DatabaseAccessor`` and run on every database, SQLite included:
+
+   .. code-block:: bash
+
+      ./Build/Scripts/runTests.sh -s functional -d sqlite -- \
+          vendor/typo3/testing-framework/Tests/Functional/
+
+   Confirm that the Core test runs have the same result as without the
    changes,
 
 4. push the change to your fork by
