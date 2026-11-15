@@ -15,6 +15,16 @@ parameters:
     - ../../Classes
     - ../../Tests
 
+  ignoreErrors:
+    # Bootstrap::loadExtTables() exists in TYPO3 v14 only. With v14 the check in
+    # Testbase::loadExtensionTables() is always true, with v15 it is necessary.
+    # So PHPStan must not report this entry as unmatched.
+    -
+      message: '#^Call to function method_exists\(\) with ''TYPO3\\\\CMS\\\\Core\\\\Core\\\\Bootstrap'' and ''loadExtTables'' will always evaluate to true\.$#'
+      identifier: function.alreadyNarrowedType
+      path: ../../Classes/Core/Testbase.php
+      reportUnmatched: false
+
   excludePaths:
     # Text fixtures extensions uses $_EXTKEY phpstan would be report as "might not defined"
     - ../../Tests/Unit/*/Fixtures/Extensions/*/ext_emconf.php
