@@ -37,8 +37,12 @@ class BackendUserHandler implements \TYPO3\CMS\Core\SingletonInterface, Middlewa
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        /** @var InternalRequestContext $internalRequestContext */
         $internalRequestContext = $request->getAttribute('typo3.testing.context');
+        if (!$internalRequestContext instanceof InternalRequestContext) {
+            // Skip requests not dispatched by executeFrontendSubRequest(), e.g. a sub-request
+            // an extension builds itself: they carry no user to log in.
+            return $handler->handle($request);
+        }
         $backendUserId = $internalRequestContext->getBackendUserId();
         $workspaceId = $internalRequestContext->getWorkspaceId();
 
