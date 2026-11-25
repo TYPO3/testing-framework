@@ -78,7 +78,26 @@ To provide a change to the testing framework, you have to
 
          ./Build/Scripts/runTests.sh -s functional
 
-   and confirming that the test runs have the same result as without the
+   *  Testing framework functional tests. Composer's distribution archive
+      omits the ``Tests/`` directory. From the Core checkout, replace the
+      distribution copy with a clone of your branch if you have not already
+      done so:
+
+      .. code-block:: bash
+
+         mv vendor/typo3/testing-framework "$(mktemp -d)" && \
+         git clone --branch "[BRANCH_OF_CHANGE]" \
+             git@github.com:[YOUR_USERNAME]/testing-framework.git \
+             vendor/typo3/testing-framework
+
+      Then run the functional tests from the Core checkout:
+
+      .. code-block:: bash
+
+         ./Build/Scripts/runTests.sh -s functional -d sqlite -- \
+             vendor/typo3/testing-framework/Tests/Functional/
+
+   and confirming that the Core test runs have the same result as without the
    changes,
 
 4. push the change to your fork by

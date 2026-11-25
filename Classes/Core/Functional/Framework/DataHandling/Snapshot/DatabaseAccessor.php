@@ -109,18 +109,12 @@ readonly class DatabaseAccessor
     {
         $columnTypes = array_map(
             function (string $columnName) use ($table) {
-                // Doctrine DBAL v4 converted the `*ParameterType` to an enum, and therefore returning this enum instead
-                // of the string value like before. As this is a non-baked enum, it cannot be serialized or json_encoded,
-                // and breaking the snapshot export badly. Due to the requirement to support Doctrine DBAL v3 and v4 it
-                // is necessary to detect the enum and return the doctrine type name instead. Connection transforms
-                // the provided types during import to the correct ParameterType again.
-                // @see https://github.com/doctrine/dbal/blob/4.0.x/UPGRADE.md#bc-break-converted-enum-like-classes-to-enums
-                // @todo Simplify this after Doctine DBAL v3 support can be dropped.
+                // Bind raw strings without reconverting them, which would double-encode JSON.
+                // Use type names because ParameterType enum cases cannot be JSON-encoded.
                 $type = $table->getColumn($columnName)->getType();
-                $bindingType = $type->getBindingType();
-                return (enum_exists(ParameterType::class))
-                    ? Type::lookupName($type)
-                    : $type->getBindingType();
+                return $type->getBindingType() === ParameterType::STRING
+                    ? Types::STRING
+                    : Type::lookupName($type);
             },
             $columnNames
         );
