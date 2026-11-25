@@ -934,6 +934,8 @@ class Testbase
      */
     public function loadExtensionTables(): void
     {
+        // Bootstrap::loadExtTables() exists in TYPO3 v14 only. For PHPStan,
+        // see the ignoreErrors entry in Build/phpstan/phpstan.neon.
         if (method_exists(Bootstrap::class, 'loadExtTables')) {
             Bootstrap::loadExtTables();
         }
