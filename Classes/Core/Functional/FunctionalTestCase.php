@@ -24,8 +24,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
-use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Core\ClassLoadingInformation;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -35,14 +33,17 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Frontend\Http\Application;
+use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
+use TYPO3\TestingFramework\Core\Functional\Framework\ComposerMode\ComposerModeInstance;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseAccessor;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseSnapshot;
 use TYPO3\TestingFramework\Core\Functional\Framework\FrameworkState;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequestContext;
+use TYPO3\TestingFramework\Core\Functional\Framework\TestInstance;
 use TYPO3\TestingFramework\Core\Testbase;
 
 /**
@@ -77,6 +78,21 @@ use TYPO3\TestingFramework\Core\Testbase;
  */
 abstract class FunctionalTestCase extends BaseTestCase implements ContainerInterface
 {
+    /**
+     * Extensions active in every test instance, in addition to the ones a test case loads.
+     */
+    private const DEFAULT_CORE_EXTENSIONS = [
+        'core',
+        'backend',
+        'frontend',
+        'extbase',
+        'fluid',
+    ];
+    private const FRAMEWORK_EXTENSIONS = [
+        'Resources/Core/Functional/Extensions/json_response',
+        'Resources/Core/Functional/Extensions/private_container',
+    ];
+
     /**
      * Unique identifier for this test case. Location of the test
      * instance and database name depend on this. Calculated early in setUp()
@@ -286,7 +302,10 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
 
         $this->identifier = static::getInstanceIdentifier();
         $this->instancePath = static::getInstancePath();
-        putenv('TYPO3_PATH_ROOT=' . $this->instancePath);
+        // TYPO3 derives the layout of an installation from whether the project root and the
+        // public path differ: the same directory means the classic layout, different ones the
+        // composer layout with config/ and var/ beside a public/ document root.
+        putenv('TYPO3_PATH_ROOT=' . $this->getDocumentRoot());
         putenv('TYPO3_PATH_APP=' . $this->instancePath);
 
         $testbase = new Testbase();
@@ -314,31 +333,30 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         } else {
             DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
             $testbase->removeOldInstanceIfExists($this->instancePath);
-            // Basic instance directory structure
-            $testbase->createDirectory($this->instancePath . '/fileadmin');
-            $testbase->createDirectory($this->instancePath . '/typo3temp/var/transient');
-            $testbase->createDirectory($this->instancePath . '/typo3temp/assets');
-            $testbase->createDirectory($this->instancePath . '/typo3conf/ext');
-            // Additionally requested directories
-            foreach ($this->additionalFoldersToCreate as $directory) {
-                $testbase->createDirectory($this->instancePath . '/' . $directory);
+            $defaultCoreExtensionsToLoad = self::DEFAULT_CORE_EXTENSIONS;
+            $frameworkExtension = self::FRAMEWORK_EXTENSIONS;
+            if (ComposerModeInstance::isEnabled()) {
+                // Composer mode instances borrow the vendor tree of a shared installation
+                // instead of linking extensions into a classic directory structure.
+                ComposerModeInstance::provisionInstanceDirectory($this->instancePath, $this->additionalFoldersToCreate);
+                ComposerModeInstance::writeCliEntryPoint($this->instancePath);
+            } else {
+                // Basic instance directory structure
+                $testbase->createDirectory($this->instancePath . '/fileadmin');
+                $testbase->createDirectory($this->instancePath . '/typo3temp/var/transient');
+                $testbase->createDirectory($this->instancePath . '/typo3temp/assets');
+                $testbase->createDirectory($this->instancePath . '/typo3conf/ext');
+                // Additionally requested directories
+                foreach ($this->additionalFoldersToCreate as $directory) {
+                    $testbase->createDirectory($this->instancePath . '/' . $directory);
+                }
+                $testbase->setUpInstanceCoreLinks($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad);
+                $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
+                $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $frameworkExtension);
             }
-            $defaultCoreExtensionsToLoad = [
-                'core',
-                'backend',
-                'frontend',
-                'extbase',
-                'fluid',
-            ];
-            $frameworkExtension = [
-                'Resources/Core/Functional/Extensions/json_response',
-                'Resources/Core/Functional/Extensions/private_container',
-            ];
-            $testbase->setUpInstanceCoreLinks($this->instancePath, $defaultCoreExtensionsToLoad, $this->coreExtensionsToLoad);
-            $testbase->linkTestExtensionsToInstance($this->instancePath, $this->testExtensionsToLoad);
-            $testbase->linkFrameworkExtensionsToInstance($this->instancePath, $frameworkExtension);
-            $testbase->linkPathsInTestInstance($this->instancePath, $this->pathsToLinkInTestInstance);
-            $testbase->providePathsInTestInstance($this->instancePath, $this->pathsToProvideInTestInstance);
+            // Destinations of linked and provided paths are relative to the document root.
+            $testbase->linkPathsInTestInstance($this->getDocumentRoot(), $this->pathsToLinkInTestInstance);
+            $testbase->providePathsInTestInstance($this->getDocumentRoot(), $this->pathsToProvideInTestInstance);
             $localConfiguration = [];
             $localConfiguration['DB'] = $testbase->getOriginalDatabaseSettingsFromEnvironmentOrLocalConfiguration();
 
@@ -419,13 +437,17 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
-            $testbase->setUpPackageStates(
-                $this->instancePath,
-                $defaultCoreExtensionsToLoad,
-                $this->coreExtensionsToLoad,
-                $this->testExtensionsToLoad,
-                $frameworkExtension
-            );
+            if (ComposerModeInstance::isEnabled()) {
+                ComposerModeInstance::writePackageArtifact($this->instancePath, $this->getActiveExtensionKeys());
+            } else {
+                $testbase->setUpPackageStates(
+                    $this->instancePath,
+                    $defaultCoreExtensionsToLoad,
+                    $this->coreExtensionsToLoad,
+                    $this->testExtensionsToLoad,
+                    $frameworkExtension
+                );
+            }
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
             $this->initializeTestDatabase(
                 $this->container,
@@ -448,16 +470,26 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     protected function tearDown(): void
     {
         // Remove any site configuration, and it's cache files, most likely created by SiteBasedTestTrait
-        if (!in_array('typo3conf/sites', $this->pathsToLinkInTestInstance, true)
-            && !in_array('typo3conf/sites/', $this->pathsToLinkInTestInstance, true)
-            && is_dir($this->instancePath . '/typo3conf/sites')
-        ) {
-            GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
-        }
-        if (file_exists($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
-            && is_file($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
-        ) {
-            @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
+        if (ComposerModeInstance::isEnabled()) {
+            // Linked paths end up below public/, so they can not replace config/sites here.
+            if (is_dir($this->instancePath . '/config/sites')) {
+                GeneralUtility::rmdir($this->instancePath . '/config/sites', true);
+            }
+            if (is_file($this->instancePath . '/var/cache/code/core/sites-configuration.php')) {
+                @unlink($this->instancePath . '/var/cache/code/core/sites-configuration.php');
+            }
+        } else {
+            if (!in_array('typo3conf/sites', $this->pathsToLinkInTestInstance, true)
+                && !in_array('typo3conf/sites/', $this->pathsToLinkInTestInstance, true)
+                && is_dir($this->instancePath . '/typo3conf/sites')
+            ) {
+                GeneralUtility::rmdir($this->instancePath . '/typo3conf/sites', true);
+            }
+            if (file_exists($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
+                && is_file($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php')
+            ) {
+                @unlink($this->instancePath . '/typo3temp/var/cache/code/core/sites-configuration.php');
+            }
         }
         parent::tearDown();
     }
@@ -582,7 +614,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     private function createServerRequest(string $url, string $method = 'GET'): ServerRequestInterface
     {
         $requestUrlParts = parse_url($url);
-        $docRoot = $this->instancePath;
+        $docRoot = $this->getDocumentRoot();
 
         $serverParams = [
             'DOCUMENT_ROOT' => $docRoot,
@@ -1006,7 +1038,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $_SERVER['HTTP_HOST'] = $_SERVER['SERVER_NAME'] = $request->getUri()->getHost() ?: 'localhost';
 
         $outputBufferingLevel = ob_get_level();
-        $container = Bootstrap::init(ClassLoadingInformation::getClassLoader());
+        $container = TestInstance::boot();
 
         /** @var InternalRequest $serverRequest */
         $serverRequest = $request->withAttribute('typo3.testing.context', $context);
@@ -1110,7 +1142,8 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
      */
     protected static function getInstanceIdentifier(): string
     {
-        return substr(sha1(static::class), 0, 7);
+        // Composer and classic mode instances of the same test case must not collide.
+        return substr(sha1(static::class . (ComposerModeInstance::isEnabled() ? '|composer' : '')), 0, 7);
     }
 
     /**
@@ -1123,5 +1156,35 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     {
         $identifier = static::getInstanceIdentifier();
         return ORIGINAL_ROOT . 'typo3temp/var/tests/functional-' . $identifier;
+    }
+
+    /**
+     * The document root of the test instance: the instance directory itself in classic
+     * mode, its public/ directory in composer mode.
+     */
+    private function getDocumentRoot(): string
+    {
+        return $this->instancePath . (ComposerModeInstance::isEnabled() ? '/public' : '');
+    }
+
+    /**
+     * Extension keys that make up this test case's instance, as the package manager knows
+     * them. The default set and the framework's own extensions are always active, as in
+     * the PackageStates.php of a classic mode instance.
+     *
+     * @return non-empty-string[]
+     */
+    private function getActiveExtensionKeys(): array
+    {
+        $composerPackageManager = new ComposerPackageManager();
+        $keys = self::DEFAULT_CORE_EXTENSIONS;
+        foreach (self::FRAMEWORK_EXTENSIONS as $extensionPath) {
+            $keys[] = basename($extensionPath);
+        }
+        foreach ([...$this->coreExtensionsToLoad, ...$this->testExtensionsToLoad] as $extension) {
+            $keys[] = $composerPackageManager->getPackageInfoWithFallback($extension)?->getExtensionKey() ?? basename($extension);
+        }
+
+        return array_values(array_unique($keys));
     }
 }

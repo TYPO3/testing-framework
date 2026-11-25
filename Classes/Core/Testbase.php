@@ -39,6 +39,7 @@ use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Composer\ComposerPackageManager;
 use TYPO3\TestingFramework\Composer\PackageInfo;
+use TYPO3\TestingFramework\Core\Functional\Framework\ComposerMode\ComposerModeInstance;
 
 /**
  * This is a helper class used by unit and functional test environment builders.
@@ -400,7 +401,7 @@ class Testbase
     public function linkPathsInTestInstance(string $instancePath, array $pathsToLinkInTestInstance): void
     {
         foreach ($pathsToLinkInTestInstance as $sourcePathToLinkInTestInstance => $destinationPathToLinkInTestInstance) {
-            $sourcePath = $instancePath . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
+            $sourcePath = $this->resolveSourcePathInTestInstance($instancePath, $sourcePathToLinkInTestInstance);
             if (!file_exists($sourcePath)) {
                 throw new Exception(
                     'Path ' . $sourcePath . ' not found',
@@ -433,7 +434,7 @@ class Testbase
     public function providePathsInTestInstance(string $instancePath, array $pathsToProvideInTestInstance): void
     {
         foreach ($pathsToProvideInTestInstance as $sourceIdentifier => $designationIdentifier) {
-            $sourcePath = $instancePath . '/' . ltrim($sourceIdentifier, '/');
+            $sourcePath = $this->resolveSourcePathInTestInstance($instancePath, $sourceIdentifier);
             if (!file_exists($sourcePath)) {
                 throw new Exception(
                     'Path ' . $sourcePath . ' not found',
@@ -458,6 +459,21 @@ class Testbase
                 );
             }
         }
+    }
+
+    /**
+     * Sources of linked and provided paths are given relative to the document root of a
+     * classic mode instance, which carries the extension tree. A composer mode instance has
+     * none, so there the same path is looked up below the original root.
+     */
+    private function resolveSourcePathInTestInstance(string $instancePath, string $source): string
+    {
+        $sourcePath = $instancePath . '/' . ltrim($source, '/');
+        if (!file_exists($sourcePath) && ComposerModeInstance::isEnabled()) {
+            return rtrim(ORIGINAL_ROOT, '/') . '/' . ltrim($source, '/');
+        }
+
+        return $sourcePath;
     }
 
     /**
@@ -566,9 +582,11 @@ class Testbase
         $finalConfigurationArray = require $coreExtensionPath . '/Configuration/FactoryConfiguration.php';
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $configuration);
         $finalConfigurationArray = array_replace_recursive($finalConfigurationArray, $overruleConfiguration);
-        $this->createDirectory($instancePath . '/typo3conf/system');
+        // A composer mode installation keeps its configuration beside the document root.
+        $configurationPath = $instancePath . (ComposerModeInstance::isEnabled() ? '/config/system' : '/typo3conf/system');
+        $this->createDirectory($configurationPath);
         $result = @file_put_contents(
-            $instancePath . '/typo3conf/system/settings.php',
+            $configurationPath . '/settings.php',
             '<?php' . chr(10) .
             'return ' .
             ArrayUtility::arrayExport(
@@ -752,10 +770,14 @@ class Testbase
         // Reset state from a possible previous run
         GeneralUtility::purgeInstances();
 
+        // The root autoloader is used in both modes. It already maps every extension, so
+        // composer mode instances - which borrow the shared installation's vendor directory
+        // only for package paths - never load a second copy of any third party package.
         $classLoader = require $this->getPackagesPath() . '/autoload.php';
-        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, false);
+        $composerMode = ComposerModeInstance::isEnabled();
+        SystemEnvironmentBuilder::run(0, SystemEnvironmentBuilder::REQUESTTYPE_CLI, $composerMode);
         $outputBufferingLevel = ob_get_level();
-        $container = Bootstrap::init($classLoader);
+        $container = $composerMode ? TestingBootstrapRunner::init($classLoader) : Bootstrap::init($classLoader);
         // Make sure output is not buffered, so command-line output can take place and
         // phpunit does not whine about changed output bufferings in tests. TYPO3 v14
         // opens an implicit output buffer in Bootstrap::init(), TYPO3 v15 does not.
