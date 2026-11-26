@@ -17,6 +17,7 @@ namespace TYPO3\TestingFramework\Core\Functional;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Exception as DBALException;
 use PHPUnit\Framework\ExpectationFailedException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -37,6 +38,7 @@ use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Frontend\Http\Application;
 use TYPO3\TestingFramework\Core\BaseTestCase;
 use TYPO3\TestingFramework\Core\Exception;
+use TYPO3\TestingFramework\Core\Functional\Attribute\ShareInstance;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\DataSet;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseAccessor;
 use TYPO3\TestingFramework\Core\Functional\Framework\DataHandling\Snapshot\DatabaseSnapshot;
@@ -274,6 +276,57 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     private bool $isFirstTest = true;
 
     /**
+     * Whether this is the first test of its test case class. The same as $isFirstTest,
+     * unless the test case class shares its instance with others, see ShareInstance:
+     * then the instance may already have been set up by another test case class.
+     */
+    private bool $isFirstTestOfTestCase = true;
+
+    /**
+     * @var array<non-empty-string, true> Identifiers of shared instances set up in this process
+     */
+    private static array $sharedInstancesSetUp = [];
+
+    /**
+     * Identifier of the instance the previous test used.
+     */
+    private static string $lastInstanceIdentifier = '';
+
+    /**
+     * @var array<class-string, bool> Whether a test case class shares its instance, by class
+     */
+    private static array $sharesInstanceByClass = [];
+
+    /**
+     * Properties that make up the configuration of a test instance. Test case classes
+     * sharing an instance are identified by their default values.
+     */
+    private const INSTANCE_CONFIGURATION_PROPERTIES = [
+        'coreExtensionsToLoad',
+        'testExtensionsToLoad',
+        'pathsToLinkInTestInstance',
+        'pathsToProvideInTestInstance',
+        'configurationToUseInTestInstance',
+        'additionalFoldersToCreate',
+        'initializeDatabase',
+    ];
+
+    /**
+     * Cache group dropped when a shared instance is handed over to another test case
+     * class. Tests legitimately write entries depending on more than the active package
+     * set to it - the TCA schema, the backend module registry - and the next test case
+     * class must not see them. The "di" group with the compiled container depends on the
+     * active package set only, and keeping it is what makes sharing an instance worth it.
+     */
+    private const SHARED_INSTANCE_RESET_CACHE_GROUP = 'core';
+
+    /**
+     * Copy of typo3conf/system/ taken when a shared instance is set up, relative to the
+     * instance. Outside typo3conf/ so TYPO3 never reads it.
+     */
+    private const SHARED_INSTANCE_CONFIGURATION_COPY = 'typo3temp/var/tests-shared-instance-configuration';
+
+    /**
      * Set up creates a test instance and database.
      *
      * This method should be called with parent::setUp() in your test cases!
@@ -299,6 +352,29 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         } else {
             $this->isFirstTest = false;
         }
+        $this->isFirstTestOfTestCase = $this->isFirstTest;
+        $sharesInstance = self::sharesInstance();
+        $switchesInstance = false;
+        if ($sharesInstance) {
+            $this->assertInstanceConfigurationIsDeclaredStatically();
+            // Shared instances are set up once per process, not once per test case class.
+            $this->isFirstTest = !isset(self::$sharedInstancesSetUp[$this->identifier]);
+            self::$sharedInstancesSetUp[$this->identifier] = true;
+            $switchesInstance = !$this->isFirstTest && self::$lastInstanceIdentifier !== $this->identifier;
+            if ($this->isFirstTestOfTestCase) {
+                // Snapshots belong to a test case class, so classes sharing an instance
+                // must not restore each other's.
+                DatabaseSnapshot::initializeWithSnapshotIdentifier(
+                    dirname($this->getInstancePath()) . '/functional-sqlite-dbs/',
+                    $this->identifier,
+                    $this->identifier . '-' . substr(sha1(static::class), 0, 7)
+                );
+            }
+            if (!$this->isFirstTest && $this->isFirstTestOfTestCase) {
+                $this->resetSharedInstanceForTestCase();
+            }
+        }
+        self::$lastInstanceIdentifier = $this->identifier;
 
         // sqlite db path preparation
         $dbPathSqlite = dirname($this->instancePath) . '/functional-sqlite-dbs/test_' . $this->identifier . '.sqlite';
@@ -309,10 +385,17 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             // in a test case, so environment is set up only once per test case.
             GeneralUtility::purgeInstances();
             $this->container = $testbase->setUpBasicTypo3Bootstrap($this->instancePath);
+            if ($switchesInstance) {
+                // Before TYPO3 v15, ConnectionPool keeps connections in a static property,
+                // which still points to the database of the previously used instance.
+                $this->closeDatabaseConnections();
+            }
             $this->initializeTestDatabaseAndTruncateTables($testbase, $this->initializeDatabase, $dbPathSqlite, $dbPathSqliteEmpty);
             $testbase->loadExtensionTables();
         } else {
-            DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
+            if (!$sharesInstance) {
+                DatabaseSnapshot::initialize(dirname($this->getInstancePath()) . '/functional-sqlite-dbs/', $this->identifier);
+            }
             $testbase->removeOldInstanceIfExists($this->instancePath);
             // Basic instance directory structure
             $testbase->createDirectory($this->instancePath . '/fileadmin');
@@ -419,6 +502,14 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
             $localConfiguration['SYS']['caching']['cacheConfigurations']['pages']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $localConfiguration['SYS']['caching']['cacheConfigurations']['rootline']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
             $testbase->setUpLocalConfiguration($this->instancePath, $localConfiguration, $this->configurationToUseInTestInstance);
+            if ($sharesInstance) {
+                // Tests may write to the configuration files, "configuration:set" does for
+                // instance. Keep the originals to restore them for the next test case class.
+                $testbase->createDirectory($this->instancePath . '/' . self::SHARED_INSTANCE_CONFIGURATION_COPY);
+                foreach (glob($this->instancePath . '/typo3conf/system/*') ?: [] as $file) {
+                    copy($file, $this->instancePath . '/' . self::SHARED_INSTANCE_CONFIGURATION_COPY . '/' . basename($file));
+                }
+            }
             $testbase->setUpPackageStates(
                 $this->instancePath,
                 $defaultCoreExtensionsToLoad,
@@ -1089,7 +1180,7 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
         $connection = $this->getConnectionPool()->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME);
         $accessor = new DatabaseAccessor($connection);
         $snapshot = DatabaseSnapshot::instance();
-        if ($this->isFirstTest) {
+        if ($this->isFirstTestOfTestCase) {
             if ($createCallback) {
                 $createCallback();
             }
@@ -1105,12 +1196,119 @@ abstract class FunctionalTestCase extends BaseTestCase implements ContainerInter
     /**
      * Create a 7 char long hash of class name as identifier.
      *
+     * Test case classes sharing their instance, see ShareInstance, get a hash of their
+     * instance configuration instead.
+     *
      * @internal
      * @return non-empty-string
      */
     protected static function getInstanceIdentifier(): string
     {
+        if (self::sharesInstance()) {
+            return substr(sha1(serialize(self::getDeclaredInstanceConfiguration())), 0, 7);
+        }
         return substr(sha1(static::class), 0, 7);
+    }
+
+    /**
+     * Whether this test case class, or one of its parents, carries the ShareInstance attribute.
+     */
+    private static function sharesInstance(): bool
+    {
+        if (!isset(self::$sharesInstanceByClass[static::class])) {
+            $class = new \ReflectionClass(static::class);
+            do {
+                $sharesInstance = $class->getAttributes(ShareInstance::class) !== [];
+            } while (!$sharesInstance && ($class = $class->getParentClass()) !== false);
+            self::$sharesInstanceByClass[static::class] = $sharesInstance;
+        }
+        return self::$sharesInstanceByClass[static::class];
+    }
+
+    /**
+     * The instance configuration declared by the default property values of this test
+     * case class, which identifies a shared instance.
+     *
+     * Test case classes overriding how the database is set up or reset - starting from a
+     * database without tables, for instance - rely on being the class that sets up the
+     * instance, so which class implements that is part of the configuration as well.
+     *
+     * @return array<string, mixed>
+     */
+    private static function getDeclaredInstanceConfiguration(): array
+    {
+        $defaults = (new \ReflectionClass(static::class))->getDefaultProperties();
+        $configuration = [];
+        foreach (self::INSTANCE_CONFIGURATION_PROPERTIES as $property) {
+            $configuration[$property] = $defaults[$property];
+        }
+        foreach (['initializeTestDatabase', 'initializeTestDatabaseAndTruncateTables'] as $method) {
+            $configuration[$method] = (new \ReflectionMethod(static::class, $method))->getDeclaringClass()->getName();
+        }
+        return $configuration;
+    }
+
+    /**
+     * A shared instance is identified before setUp() of the test case class runs, from
+     * the default property values. A test case class assigning them at runtime would get
+     * an instance set up for a different configuration, so fail instead.
+     */
+    private function assertInstanceConfigurationIsDeclaredStatically(): void
+    {
+        $declared = self::getDeclaredInstanceConfiguration();
+        foreach (self::INSTANCE_CONFIGURATION_PROPERTIES as $property) {
+            if ($this->{$property} !== $declared[$property]) {
+                throw new Exception(
+                    sprintf(
+                        'Test case class %s shares its instance, but sets $%s at runtime. Declare it as the'
+                        . ' default value of the property, or remove the %s attribute.',
+                        static::class,
+                        $property,
+                        ShareInstance::class
+                    ),
+                    1794738201
+                );
+            }
+        }
+    }
+
+    /**
+     * Drops the state a test case class may have left in a shared instance, before
+     * another test case class uses it.
+     */
+    private function resetSharedInstanceForTestCase(): void
+    {
+        foreach (['code', 'data'] as $kind) {
+            $directory = $this->instancePath . '/typo3temp/var/cache/' . $kind . '/' . self::SHARED_INSTANCE_RESET_CACHE_GROUP;
+            if (is_dir($directory)) {
+                GeneralUtility::rmdir($directory, true);
+            }
+        }
+        // Restore the configuration files as they were set up: tests write settings.php,
+        // and may add files such as file-storages.yaml, which the next class must not see.
+        $configurationPath = $this->instancePath . '/typo3conf/system';
+        $originalPath = $this->instancePath . '/' . self::SHARED_INSTANCE_CONFIGURATION_COPY;
+        if (!is_dir($originalPath)) {
+            return;
+        }
+        foreach (glob($configurationPath . '/*') ?: [] as $file) {
+            if (is_file($file) && !is_file($originalPath . '/' . basename($file))) {
+                unlink($file);
+            }
+        }
+        foreach (glob($originalPath . '/*') ?: [] as $file) {
+            copy($file, $configurationPath . '/' . basename($file));
+        }
+    }
+
+    private function closeDatabaseConnections(): void
+    {
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        try {
+            $connectionPool->getConnectionByName(ConnectionPool::DEFAULT_CONNECTION_NAME)->close();
+        } catch (DBALException) {
+        }
+        $connectionPool->resetConnections();
     }
 
     /**
