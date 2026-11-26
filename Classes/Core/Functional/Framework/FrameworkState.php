@@ -17,6 +17,11 @@ namespace TYPO3\TestingFramework\Core\Functional\Framework;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -29,6 +34,18 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * This class should not be needed. It is a manifest of technical core debt.
  * It should shrink over time and vanish altogether in the end.
+ *
+ * @phpstan-type State array{
+ *      globals-server: array<string, mixed>,
+ *      globals-beUser: BackendUserAuthentication|null,
+ *      globals-typo3-conf-vars: array<string, mixed>|null,
+ *      globals-tca: array<string, mixed>,
+ *      request: ServerRequestInterface|null,
+ *      generalUtilityIndpEnvCache?: array<string, string|bool|array<string, string|bool|null>|null>,
+ *      generalUtilitySingletonInstances: array<class-string, SingletonInterface>,
+ *      contextData: Context,
+ *      container: ContainerInterface,
+ *  }
  */
 class FrameworkState
 {
@@ -39,6 +56,7 @@ class FrameworkState
      */
     public static function push(): void
     {
+        /** @var State $state */
         $state = [];
         $state['globals-server'] = $GLOBALS['_SERVER'];
         $state['globals-beUser'] = $GLOBALS['BE_USER'] ?? null;
@@ -61,6 +79,8 @@ class FrameworkState
         }
 
         $state['generalUtilitySingletonInstances'] = GeneralUtility::getSingletonInstances();
+        $state['contextData'] = clone GeneralUtility::makeInstance(Context::class);
+        $state['container'] = GeneralUtility::getContainer();
 
         self::$state[] = $state;
     }
@@ -73,14 +93,16 @@ class FrameworkState
         unset($GLOBALS['BE_USER']);
         unset($GLOBALS['TYPO3_REQUEST']);
 
+        $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
         // @todo: Remove when v14 compat is dropped, the property no longer exists in v15.
         if (property_exists(GeneralUtility::class, 'indpEnvCache')) {
-            $generalUtilityReflection = new \ReflectionClass(GeneralUtility::class);
             $generalUtilityIndpEnvCache = $generalUtilityReflection->getProperty('indpEnvCache');
             $generalUtilityIndpEnvCache->setValue(null, []);
         }
 
         GeneralUtility::resetSingletonInstances([]);
+        self::overrideContextData(GeneralUtility::makeInstance(Context::class), new Context());
+        $generalUtilityReflection->getProperty('container')->setValue(null, null);
     }
 
     /**
@@ -88,7 +110,11 @@ class FrameworkState
      */
     public static function pop(): void
     {
+        /** @var ?State $state */
         $state = array_pop(self::$state);
+        if ($state === null) {
+            throw new \RuntimeException('No state item found in stack to pop.', 1784990840);
+        }
 
         $GLOBALS['_SERVER'] = $state['globals-server'];
         if ($state['globals-beUser'] !== null) {
@@ -109,5 +135,13 @@ class FrameworkState
         }
 
         GeneralUtility::resetSingletonInstances($state['generalUtilitySingletonInstances']);
+        self::overrideContextData(GeneralUtility::makeInstance(Context::class), $state['contextData']);
+        GeneralUtility::setContainer($state['container']);
+    }
+
+    private static function overrideContextData(Context $context, Context $overrideContext): void
+    {
+        $propertyAccessor = new \ReflectionProperty(Context::class, 'aspects');
+        $propertyAccessor->setValue($context, $propertyAccessor->getValue($overrideContext));
     }
 }
